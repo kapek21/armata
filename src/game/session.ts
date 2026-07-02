@@ -18,12 +18,15 @@ import {
 import { levelByIndex, levelCount } from '../levels/index.js';
 import { useHudStore } from '../ui/hud-store.js';
 import {
-  CANNON_WORLD,
   aimAnglesFromDrag,
+  alignCannonToCamera,
   applyCannonAim,
+  cannonAnchorWorld,
   frameGameplayCamera,
+  levelFocusPoint,
   muzzleWorldPosition,
-  shotDirection,
+  barrelWorldDirection,
+  placeCannonForCamera,
 } from './camera-frame.js';
 
 interface BodyEntry {
@@ -104,7 +107,7 @@ export class GameSession {
     this.cannonMesh.name = 'cannon-root';
 
     const base = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.85, 1.05, 0.55, 14),
+      new THREE.CylinderGeometry(1.05, 1.25, 0.65, 14),
       new THREE.MeshStandardMaterial({ color: CANNON_COLOR, roughness: 0.75 }),
     );
     base.position.y = 0.28;
@@ -161,15 +164,14 @@ export class GameSession {
     this.phase = 'aiming';
     this.removeBall();
 
-    this.cannonMesh.position.copy(CANNON_WORLD);
-    this.applyCameraFrame();
-
     for (const block of this.level.blocks) {
       this.spawnBox(block.position, block.size, block.type, block.isStatic ?? false, false);
     }
     for (const target of this.level.targets) {
       this.spawnBox(target.position, target.size, 'wood', false, true, target.id);
     }
+
+    this.applyCameraFrame();
 
     this.syncHud('');
   }
@@ -276,7 +278,7 @@ export class GameSession {
     applyCannonAim(this.cannonMesh, pitchRad, yawRad);
 
     const origin = muzzleWorldPosition(this.cannonMesh);
-    const dir = shotDirection(pitchRad, yawRad);
+    const dir = barrelWorldDirection(this.cannonMesh);
     const end = origin.clone().add(dir.multiplyScalar(2.5 + power * 5));
     this.aimLine.geometry.setFromPoints([origin, end]);
     this.aimLine.visible = true;
@@ -289,7 +291,7 @@ export class GameSession {
     const dy = this.aim.originY - this.aim.currentY;
     const { pitchRad, yawRad, power } = aimAnglesFromDrag(dx, dy, len, this.level);
     applyCannonAim(this.cannonMesh, pitchRad, yawRad);
-    const dir = shotDirection(pitchRad, yawRad);
+    const dir = barrelWorldDirection(this.cannonMesh);
     const spawn = muzzleWorldPosition(this.cannonMesh);
     const body = this.world.createRigidBody(
       RAPIER.RigidBodyDesc.dynamic()
@@ -467,7 +469,20 @@ export class GameSession {
   private applyCameraFrame(): void {
     const w = this.host?.clientWidth ?? 1;
     const h = this.host?.clientHeight ?? 1;
-    frameGameplayCamera(this.camera, this.level, w / h);
+    const aspect = w / h;
+    const focus = levelFocusPoint(this.level);
+
+    this.camera.position.set(0, focus.y * 0.35 + 1.2, aspect < 0.85 ? 11.5 : 9.5);
+    this.camera.lookAt(focus);
+
+    for (let pass = 0; pass < 3; pass++) {
+      placeCannonForCamera(this.camera, this.cannonMesh, aspect);
+      alignCannonToCamera(this.cannonMesh, this.camera);
+      const anchor = cannonAnchorWorld(this.cannonMesh);
+      frameGameplayCamera(this.camera, focus, anchor, aspect);
+    }
+    placeCannonForCamera(this.camera, this.cannonMesh, aspect);
+    alignCannonToCamera(this.cannonMesh, this.camera);
   }
 
   render(): void {

@@ -10,18 +10,18 @@
     "angleMaxDeg": 52
   },
   "blocks": [
-    { "type": "ground", "position": [0, -0.25, 0], "size": [14, 0.5, 8], "isStatic": true },
-    { "type": "wood", "position": [-0.6, 0.5, 0], "size": [0.8, 1, 0.8] },
-    { "type": "wood", "position": [0.6, 0.5, 0], "size": [0.8, 1, 0.8] },
-    { "type": "wood", "position": [0, 1.5, 0], "size": [1.8, 0.5, 0.8] },
-    { "type": "wood", "position": [-0.6, 2.5, 0], "size": [0.8, 1, 0.8] },
-    { "type": "wood", "position": [0.6, 2.5, 0], "size": [0.8, 1, 0.8] },
-    { "type": "wood", "position": [0, 3.5, 0], "size": [1.8, 0.5, 0.8] },
-    { "type": "metal", "position": [2, 0.5, -0.5], "size": [0.5, 2, 0.5], "isStatic": true },
-    { "type": "glass", "position": [2, 2.2, -0.5], "size": [1.2, 0.3, 0.6] }
+    { "type": "ground", "position": [0, -0.25, -2], "size": [14, 0.5, 8], "isStatic": true },
+    { "type": "wood", "position": [-0.6, 0.5, -2], "size": [0.8, 1, 0.8] },
+    { "type": "wood", "position": [0.6, 0.5, -2], "size": [0.8, 1, 0.8] },
+    { "type": "wood", "position": [0, 1.5, -2], "size": [1.8, 0.5, 0.8] },
+    { "type": "wood", "position": [-0.6, 2.5, -2], "size": [0.8, 1, 0.8] },
+    { "type": "wood", "position": [0.6, 2.5, -2], "size": [0.8, 1, 0.8] },
+    { "type": "wood", "position": [0, 3.5, -2], "size": [1.8, 0.5, 0.8] },
+    { "type": "metal", "position": [2, 0.5, -2.5], "size": [0.5, 2, 0.5], "isStatic": true },
+    { "type": "glass", "position": [2, 2.2, -2.5], "size": [1.2, 0.3, 0.6] }
   ],
   "targets": [
-    { "id": "t1", "position": [0, 4.2, 0], "size": [0.9, 0.9, 0.9] },
-    { "id": "t2", "position": [2, 3.1, -0.5], "size": [0.8, 0.8, 0.8] }
+    { "id": "t1", "position": [0, 4.2, -2], "size": [0.9, 0.9, 0.9] },
+    { "id": "t2", "position": [2, 3.1, -2.5], "size": [0.8, 0.8, 0.8] }
   ]
 }
