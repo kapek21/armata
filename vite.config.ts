@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
+  base: process.env.VITE_BASE || '/',
   server: { port: 5186, host: true },
   build: { target: 'es2020', sourcemap: true },
   optimizeDeps: { exclude: ['@dimforge/rapier3d-compat'] },
