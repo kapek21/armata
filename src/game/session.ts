@@ -19,14 +19,11 @@ import { levelByIndex, levelCount } from '../levels/index.js';
 import { useHudStore } from '../ui/hud-store.js';
 import {
   aimAnglesFromDrag,
-  alignCannonToCamera,
   applyCannonAim,
-  cannonAnchorWorld,
+  barrelWorldDirection,
   frameGameplayCamera,
   levelFocusPoint,
   muzzleWorldPosition,
-  barrelWorldDirection,
-  placeCannonForCamera,
 } from './camera-frame.js';
 
 interface BodyEntry {
@@ -471,18 +468,7 @@ export class GameSession {
     const h = this.host?.clientHeight ?? 1;
     const aspect = w / h;
     const focus = levelFocusPoint(this.level);
-
-    this.camera.position.set(0, focus.y * 0.35 + 1.2, aspect < 0.85 ? 11.5 : 9.5);
-    this.camera.lookAt(focus);
-
-    for (let pass = 0; pass < 3; pass++) {
-      placeCannonForCamera(this.camera, this.cannonMesh, aspect);
-      alignCannonToCamera(this.cannonMesh, this.camera);
-      const anchor = cannonAnchorWorld(this.cannonMesh);
-      frameGameplayCamera(this.camera, focus, anchor, aspect);
-    }
-    placeCannonForCamera(this.camera, this.cannonMesh, aspect);
-    alignCannonToCamera(this.cannonMesh, this.camera);
+    frameGameplayCamera(this.camera, this.cannonMesh, focus, aspect);
   }
 
   render(): void {
