@@ -65,8 +65,8 @@ export class GameSession {
   async init(host: HTMLElement, tier: QualityTier): Promise<void> {
     this.host = host;
     this.tier = tier;
-    this.scene.background = new THREE.Color(0x9ec4e8);
-    this.scene.fog = new THREE.Fog(0x9ec4e8, 14, 38);
+    this.scene.background = new THREE.Color(0xb5e0b0);
+    this.scene.fog = new THREE.Fog(0xb5e0b0, 14, 38);
 
     this.renderer = new THREE.WebGLRenderer({
       antialias: tier !== 'low',
