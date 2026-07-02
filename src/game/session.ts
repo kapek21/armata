@@ -17,6 +17,14 @@ import {
 } from '../meta/profile.js';
 import { levelByIndex, levelCount } from '../levels/index.js';
 import { useHudStore } from '../ui/hud-store.js';
+import {
+  CANNON_WORLD,
+  aimAnglesFromDrag,
+  applyCannonAim,
+  frameGameplayCamera,
+  muzzleWorldPosition,
+  shotDirection,
+} from './camera-frame.js';
 
 interface BodyEntry {
   mesh: THREE.Mesh;
@@ -32,7 +40,7 @@ const MAX_DRAG_PX = 140;
 
 export class GameSession {
   private readonly scene = new THREE.Scene();
-  private readonly camera = new THREE.PerspectiveCamera(50, 1, 0.1, 200);
+  private readonly camera = new THREE.PerspectiveCamera(54, 1, 0.1, 120);
   private renderer!: THREE.WebGLRenderer;
   private world!: RAPIER.World;
   private entries: BodyEntry[] = [];
@@ -57,8 +65,8 @@ export class GameSession {
   async init(host: HTMLElement, tier: QualityTier): Promise<void> {
     this.host = host;
     this.tier = tier;
-    this.scene.background = new THREE.Color(0x87a8c8);
-    this.scene.fog = new THREE.Fog(0x87a8c8, 20, 45);
+    this.scene.background = new THREE.Color(0x9ec4e8);
+    this.scene.fog = new THREE.Fog(0x9ec4e8, 14, 38);
 
     this.renderer = new THREE.WebGLRenderer({
       antialias: tier !== 'low',
@@ -71,8 +79,8 @@ export class GameSession {
 
     const hemi = new THREE.HemisphereLight(0xffffff, 0x556677, 1.1);
     this.scene.add(hemi);
-    const sun = new THREE.DirectionalLight(0xffffff, 1.2);
-    sun.position.set(-6, 12, 8);
+    const sun = new THREE.DirectionalLight(0xffffff, 1.15);
+    sun.position.set(2, 14, 10);
     if (tier === 'high') {
       sun.castShadow = true;
       sun.shadow.mapSize.set(1024, 1024);
@@ -93,18 +101,40 @@ export class GameSession {
 
   private buildCannon(): void {
     this.cannonMesh = new THREE.Group();
+    this.cannonMesh.name = 'cannon-root';
+
     const base = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.7, 0.9, 0.5, 12),
-      new THREE.MeshStandardMaterial({ color: CANNON_COLOR }),
+      new THREE.CylinderGeometry(0.85, 1.05, 0.55, 14),
+      new THREE.MeshStandardMaterial({ color: CANNON_COLOR, roughness: 0.75 }),
     );
-    base.position.y = 0.25;
+    base.position.y = 0.28;
+    base.castShadow = this.tier === 'high';
+
+    const yawMount = new THREE.Group();
+    yawMount.name = 'yaw-pivot';
+    yawMount.position.y = 0.52;
+
+    const pitchPivot = new THREE.Group();
+    pitchPivot.name = 'pitch-pivot';
+
     const barrel = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.18, 0.22, 1.6, 10),
-      new THREE.MeshStandardMaterial({ color: 0x333333 }),
+      new THREE.CylinderGeometry(0.2, 0.26, 1.75, 12),
+      new THREE.MeshStandardMaterial({ color: 0x2a2a2a, roughness: 0.55, metalness: 0.35 }),
     );
-    barrel.rotation.z = Math.PI / 2;
-    barrel.position.set(0.8, 0.55, 0);
-    this.cannonMesh.add(base, barrel);
+    barrel.rotation.x = Math.PI / 2;
+    barrel.position.set(0, 0, -0.88);
+    barrel.castShadow = this.tier === 'high';
+
+    const muzzleRing = new THREE.Mesh(
+      new THREE.TorusGeometry(0.24, 0.05, 8, 16),
+      new THREE.MeshStandardMaterial({ color: 0x555555, metalness: 0.5 }),
+    );
+    muzzleRing.rotation.x = Math.PI / 2;
+    muzzleRing.position.set(0, 0, -1.72);
+
+    pitchPivot.add(barrel, muzzleRing);
+    yawMount.add(pitchPivot);
+    this.cannonMesh.add(base, yawMount);
     this.scene.add(this.cannonMesh);
   }
 
@@ -131,13 +161,8 @@ export class GameSession {
     this.phase = 'aiming';
     this.removeBall();
 
-    const [cx, cy, cz] = this.level.camera.position;
-    const [lx, ly, lz] = this.level.camera.lookAt;
-    this.camera.position.set(cx, cy, cz);
-    this.camera.lookAt(lx, ly, lz);
-
-    const [px, py, pz] = this.level.cannon.position;
-    this.cannonMesh.position.set(px, py, pz);
+    this.cannonMesh.position.copy(CANNON_WORLD);
+    this.applyCameraFrame();
 
     for (const block of this.level.blocks) {
       this.spawnBox(block.position, block.size, block.type, block.isStatic ?? false, false);
@@ -246,32 +271,26 @@ export class GameSession {
       this.aimLine.visible = false;
       return;
     }
-    const power = len / MAX_DRAG_PX;
-    const angleDeg =
-      this.level.cannon.angleMinDeg +
-      power * (this.level.cannon.angleMaxDeg - this.level.cannon.angleMinDeg);
-    const angleRad = (angleDeg * Math.PI) / 180;
-    const dir = new THREE.Vector3(Math.cos(angleRad), Math.sin(angleRad), 0).normalize();
-    const origin = this.cannonMesh.position.clone().add(new THREE.Vector3(0.5, 0.55, 0));
-    const end = origin.clone().add(dir.multiplyScalar(2 + power * 4));
-    const pts = [origin, end];
-    this.aimLine.geometry.setFromPoints(pts);
+
+    const { pitchRad, yawRad, power } = aimAnglesFromDrag(dx, dy, len, this.level);
+    applyCannonAim(this.cannonMesh, pitchRad, yawRad);
+
+    const origin = muzzleWorldPosition(this.cannonMesh);
+    const dir = shotDirection(pitchRad, yawRad);
+    const end = origin.clone().add(dir.multiplyScalar(2.5 + power * 5));
+    this.aimLine.geometry.setFromPoints([origin, end]);
     this.aimLine.visible = true;
-    this.cannonMesh.rotation.z = angleRad - Math.PI / 2;
   }
 
   private fireShot(_dx: number, _dy: number, len: number): void {
     if (this.ammoLeft <= 0) return;
-    const clamped = Math.min(MAX_DRAG_PX, len);
-    const power = clamped / MAX_DRAG_PX;
-    const angleDeg =
-      this.level.cannon.angleMinDeg +
-      power * (this.level.cannon.angleMaxDeg - this.level.cannon.angleMinDeg);
-    const angleRad = (angleDeg * Math.PI) / 180;
-    const dir = new THREE.Vector3(Math.cos(angleRad), Math.sin(angleRad), 0).normalize();
 
-    const origin = this.cannonMesh.position;
-    const spawn = new THREE.Vector3(origin.x + 1.2, origin.y + 0.55, origin.z);
+    const dx = this.aim.originX - this.aim.currentX;
+    const dy = this.aim.originY - this.aim.currentY;
+    const { pitchRad, yawRad, power } = aimAnglesFromDrag(dx, dy, len, this.level);
+    applyCannonAim(this.cannonMesh, pitchRad, yawRad);
+    const dir = shotDirection(pitchRad, yawRad);
+    const spawn = muzzleWorldPosition(this.cannonMesh);
     const body = this.world.createRigidBody(
       RAPIER.RigidBodyDesc.dynamic()
         .setTranslation(spawn.x, spawn.y, spawn.z)
@@ -279,7 +298,7 @@ export class GameSession {
         .setAngularDamping(0.2),
     );
     this.world.createCollider(RAPIER.ColliderDesc.ball(0.35).setDensity(2.2).setRestitution(0.25), body);
-    const impulse = 18 + power * 42;
+    const impulse = 20 + power * 44;
     body.applyImpulse({ x: dir.x * impulse, y: dir.y * impulse, z: dir.z * impulse }, true);
 
     const mesh = new THREE.Mesh(
@@ -322,7 +341,7 @@ export class GameSession {
     if (this.ballBody && this.ballMesh) {
       this.ballAgeMs += dtMs;
       const t = this.ballBody.translation();
-      if (this.ballAgeMs > 8000 || t.y < this.level.killZoneY - 5 || Math.abs(t.x) > 30) {
+      if (this.ballAgeMs > 8000 || t.y < this.level.killZoneY - 5 || Math.abs(t.x) > 20 || t.z < -25) {
         this.removeBall();
       }
     }
@@ -445,6 +464,12 @@ export class GameSession {
     });
   }
 
+  private applyCameraFrame(): void {
+    const w = this.host?.clientWidth ?? 1;
+    const h = this.host?.clientHeight ?? 1;
+    frameGameplayCamera(this.camera, this.level, w / h);
+  }
+
   render(): void {
     this.renderer.render(this.scene, this.camera);
   }
@@ -453,8 +478,11 @@ export class GameSession {
     const w = this.host.clientWidth;
     const h = this.host.clientHeight;
     if (w <= 0 || h <= 0) return;
-    this.camera.aspect = w / h;
-    this.camera.updateProjectionMatrix();
+    if (this.level) this.applyCameraFrame();
+    else {
+      this.camera.aspect = w / h;
+      this.camera.updateProjectionMatrix();
+    }
     this.renderer.setSize(w, h, false);
   }
 

@@ -32,10 +32,6 @@ export interface LevelDefinition {
     angleMinDeg: number;
     angleMaxDeg: number;
   };
-  camera: {
-    position: [number, number, number];
-    lookAt: [number, number, number];
-  };
   blocks: LevelBlock[];
   targets: LevelTarget[];
 }
