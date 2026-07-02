@@ -1,0 +1,64 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body,
+#root {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  background: #1a1208;
+  font-family: system-ui, 'Segoe UI', sans-serif;
+  color: #f5f0e6;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.game-shell {
+  background: linear-gradient(180deg, #2a2218 0%, #1a1208 100%);
+}
+
+.panel {
+  background: rgba(20, 16, 10, 0.88);
+  border: 1px solid rgba(255, 200, 100, 0.35);
+  border-radius: 12px;
+  backdrop-filter: blur(8px);
+}
+
+.btn-primary {
+  background: linear-gradient(180deg, #d4a017 0%, #a67c00 100%);
+  border: 1px solid #ffd666;
+  border-radius: 12px;
+  padding: 14px 22px;
+  min-height: 44px;
+  min-width: 44px;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #1a1208;
+}
+
+.btn-primary:active {
+  transform: translateY(1px);
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 12px 18px;
+  min-height: 44px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.safe-top {
+  padding-top: max(12px, env(safe-area-inset-top));
+}
+
+.safe-bottom {
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
+}
