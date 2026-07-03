@@ -4,13 +4,14 @@ import type { LevelDefinition } from '../core/types.js';
 /** Cel — przed armatą w osi Z. */
 export const GOAL_PLANE_Z = -4;
 
-/** Armata między kamerą a celem (+Z = strona gracza). */
+/** Armata — pierwszy plan, bliżej kamery niż cel. */
 export const CANNON_WORLD_Y = 0.55;
-export const CANNON_WORLD_Z = 7.6;
+export const CANNON_WORLD_Z = 8.2;
+export const CANNON_SCALE = 0.55;
 
-/** Kamera tuż za armatą. */
-const CAMERA_Y = 0.92;
-const CAMERA_Z = 9.35;
+/** Kamera wyżej — cel nad lufą, bez zasłaniania. */
+const CAMERA_Y = 1.4;
+const CAMERA_Z = 9.2;
 const CAMERA_FOV = 54;
 
 export interface GoalFrame {
@@ -68,6 +69,7 @@ export function frameGameplayCamera(
 
   cannonRoot.position.set(0, CANNON_WORLD_Y, CANNON_WORLD_Z);
   cannonRoot.rotation.set(0, 0, 0);
+  cannonRoot.scale.setScalar(CANNON_SCALE);
 
   const lookAt = new THREE.Vector3(0, goalFrame.center.y, GOAL_PLANE_Z);
 
