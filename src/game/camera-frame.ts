@@ -9,6 +9,12 @@ export const CANNON_WORLD_Y = 0.55;
 export const CANNON_WORLD_Z = 8.2;
 export const CANNON_SCALE = 0.55;
 
+export const BALL_RADIUS = 0.35;
+export const BALL_DENSITY = 2.2;
+export const GRAVITY = 9.81;
+
+const BALL_MASS = BALL_DENSITY * ((4 / 3) * Math.PI * BALL_RADIUS ** 3);
+
 /** Kamera wyżej — cel nad lufą, bez zasłaniania. */
 const CAMERA_Y = 1.4;
 const CAMERA_Z = 9.2;
@@ -115,13 +121,65 @@ export function pickAimTarget(
 
   if (meshes.length > 0) {
     const hits = _raycaster.intersectObjects(meshes, false);
-    if (hits.length > 0) return hits[0].point.clone();
+    if (hits.length > 0) {
+      const hit = hits[0];
+      const box = new THREE.Box3().setFromObject(hit.object);
+      const center = new THREE.Vector3();
+      box.getCenter(center);
+      // Środek trafionego klocka — stabilniejsze niż punkt na ścianie z boku kamery
+      return center;
+    }
   }
 
   return _raycaster.ray.intersectPlane(_goalPlane, _hit) ? _hit.clone() : null;
 }
 
-/** Celuj lufą dokładnie w punkt świata (np. trafiony klocek). */
+export function shotImpulse(power: number): number {
+  return 6 + power * 16;
+}
+
+export function ballLaunchSpeed(power: number): number {
+  return shotImpulse(power) / BALL_MASS;
+}
+
+/** Kąty lufy tak, by kula wpadła w punkt celu (uwzględnia grawitację). */
+export function aimCannonBallistic(
+  cannonRoot: THREE.Object3D,
+  target: THREE.Vector3,
+  power: number,
+): boolean {
+  const muzzle = muzzleWorldPosition(cannonRoot);
+  const dx = target.x - muzzle.x;
+  const dy = target.y - muzzle.y;
+  const dz = target.z - muzzle.z;
+  const dh = Math.hypot(dx, dz);
+  if (dh < 0.08) return false;
+
+  const v = ballLaunchSpeed(power);
+  const v2 = v * v;
+  const g = GRAVITY;
+  const disc = v2 * v2 - g * (g * dh * dh + 2 * dy * v2);
+
+  let pitchWorld: number;
+  if (disc < 0) {
+    pitchWorld = Math.atan2(dy + 1.2, dh);
+  } else {
+    const sqrtDisc = Math.sqrt(disc);
+    const pitchLow = Math.atan((v2 - sqrtDisc) / (g * dh));
+    const pitchHigh = Math.atan((v2 + sqrtDisc) / (g * dh));
+    const direct = Math.atan2(dy, dh);
+    pitchWorld = pitchLow >= direct * 0.85 ? pitchLow : pitchHigh;
+  }
+
+  const yawWorld = Math.atan2(dx, -dz);
+  pitchWorld = THREE.MathUtils.clamp(pitchWorld, (4 * Math.PI) / 180, (72 * Math.PI) / 180);
+  const yaw = THREE.MathUtils.clamp(yawWorld, (-42 * Math.PI) / 180, (42 * Math.PI) / 180);
+
+  applyCannonAim(cannonRoot, pitchWorld, yaw);
+  return true;
+}
+
+/** Proste celowanie liniowe — bez kompensacji grawitacji. */
 export function aimCannonAtWorldPoint(cannonRoot: THREE.Object3D, target: THREE.Vector3): void {
   const muzzle = muzzleWorldPosition(cannonRoot);
   _dir.copy(target).sub(muzzle);
@@ -189,6 +247,27 @@ export function aimAnglesFromDrag(dx: number, _dy: number, len: number, level: L
   const pitchRad = (pitchDeg * Math.PI) / 180;
   const yawRad = (dx / 140) * (32 * Math.PI) / 180;
   return { pitchRad, yawRad, power };
+}
+
+export function simulateBallisticArc(
+  muzzle: THREE.Vector3,
+  power: number,
+  cannonRoot: THREE.Object3D,
+  steps = 24,
+): THREE.Vector3[] {
+  const dir = barrelWorldDirection(cannonRoot);
+  const speed = ballLaunchSpeed(power);
+  const vel = dir.multiplyScalar(speed);
+  const points: THREE.Vector3[] = [];
+  const p = muzzle.clone();
+  const dt = 0.055;
+  for (let i = 0; i < steps; i++) {
+    points.push(p.clone());
+    vel.y -= GRAVITY * dt;
+    p.add(vel.clone().multiplyScalar(dt));
+    if (p.y < -3) break;
+  }
+  return points;
 }
 
 export function barrelWorldDirection(cannonRoot: THREE.Object3D): THREE.Vector3 {

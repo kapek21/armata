@@ -18,7 +18,7 @@ import {
 import { levelByIndex, levelCount } from '../levels/index.js';
 import { useHudStore } from '../ui/hud-store.js';
 import {
-  aimCannonAtWorldPoint,
+  aimCannonBallistic,
   applyWorldOffset,
   barrelWorldDirection,
   computeGoalFrame,
@@ -27,12 +27,15 @@ import {
   pickAimTarget,
   powerFromDrag,
   resetCannonAim,
+  shotImpulse,
+  simulateBallisticArc,
   type GoalFrame,
 } from './camera-frame.js';
 
 interface BodyEntry {
   mesh: THREE.Mesh;
   isTarget: boolean;
+  isStatic: boolean;
   targetId?: string;
   cleared: boolean;
 }
@@ -259,7 +262,7 @@ export class GameSession {
       .setRestitution(mat.restitution);
     this.world.createCollider(collider, body);
     mesh.userData.bodyHandle = body.handle;
-    this.entries.push({ mesh, isTarget, targetId, cleared: false });
+    this.entries.push({ mesh, isTarget, isStatic, targetId, cleared: false });
   }
 
   private onLostPointerCapture = (e: PointerEvent): void => {
@@ -299,13 +302,24 @@ export class GameSession {
   }
 
   private aimMeshes(): THREE.Object3D[] {
-    return this.entries.map((e) => e.mesh);
+    return this.entries.filter((e) => !e.isStatic).map((e) => e.mesh);
+  }
+
+  private currentDragPower(): number {
+    const dx = this.aim.originX - this.aim.currentX;
+    const dy = this.aim.originY - this.aim.currentY;
+    return Math.max(0.3, powerFromDrag(Math.hypot(dx, dy), MAX_DRAG_PX));
+  }
+
+  private applyBallisticAim(power = this.currentDragPower()): void {
+    if (!this.aimWorldTarget) return;
+    aimCannonBallistic(this.cannonMesh, this.aimWorldTarget, power);
   }
 
   private lockAimTarget(clientX: number, clientY: number): void {
     this.aimWorldTarget = pickAimTarget(this.camera, clientX, clientY, this.host, this.aimMeshes());
     if (this.aimWorldTarget) {
-      aimCannonAtWorldPoint(this.cannonMesh, this.aimWorldTarget);
+      this.applyBallisticAim(0.55);
     }
   }
 
@@ -334,7 +348,7 @@ export class GameSession {
     this.aim.currentX = e.clientX;
     this.aim.currentY = e.clientY;
     if (this.aimWorldTarget) {
-      aimCannonAtWorldPoint(this.cannonMesh, this.aimWorldTarget);
+      this.applyBallisticAim();
     }
     this.updateAimVisual();
   }
@@ -363,8 +377,9 @@ export class GameSession {
     this.aimLine.visible = false;
 
     if (len >= MIN_DRAG_PX && this.aimWorldTarget) {
-      aimCannonAtWorldPoint(this.cannonMesh, this.aimWorldTarget);
-      this.fireShot(len);
+      const power = powerFromDrag(len, MAX_DRAG_PX);
+      aimCannonBallistic(this.cannonMesh, this.aimWorldTarget, power);
+      this.fireShot(power);
     }
     this.aimWorldTarget = null;
   }
@@ -379,17 +394,18 @@ export class GameSession {
     }
 
     const power = powerFromDrag(len, MAX_DRAG_PX);
+    this.applyBallisticAim(power);
     const origin = muzzleWorldPosition(this.cannonMesh);
-    const dir = barrelWorldDirection(this.cannonMesh);
-    const end = origin.clone().add(dir.multiplyScalar(3 + power * 8));
-    this.aimLine.geometry.setFromPoints([origin, end]);
-    this.aimLine.visible = true;
+    const arc = simulateBallisticArc(origin, power, this.cannonMesh);
+    if (arc.length >= 2) {
+      this.aimLine.geometry.setFromPoints(arc);
+      this.aimLine.visible = true;
+    }
   }
 
-  private fireShot(len: number): void {
+  private fireShot(power: number): void {
     if (this.ammoLeft <= 0) return;
 
-    const power = powerFromDrag(len, MAX_DRAG_PX);
     const dir = barrelWorldDirection(this.cannonMesh);
     const spawn = muzzleWorldPosition(this.cannonMesh);
     const body = this.world.createRigidBody(
@@ -400,7 +416,7 @@ export class GameSession {
         .setAngularDamping(0.25),
     );
     this.world.createCollider(RAPIER.ColliderDesc.ball(0.35).setDensity(2.2).setRestitution(0.22), body);
-    const impulse = 5.5 + power * 13;
+    const impulse = shotImpulse(power);
     body.applyImpulse({ x: dir.x * impulse, y: dir.y * impulse, z: dir.z * impulse }, true);
 
     const mesh = new THREE.Mesh(
