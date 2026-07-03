@@ -18,12 +18,13 @@ import {
 import { levelByIndex, levelCount } from '../levels/index.js';
 import { useHudStore } from '../ui/hud-store.js';
 import {
-  aimCannonAtScreen,
+  aimCannonAtWorldPoint,
   applyWorldOffset,
   barrelWorldDirection,
   computeGoalFrame,
   frameGameplayCamera,
   muzzleWorldPosition,
+  pickAimTarget,
   powerFromDrag,
   resetCannonAim,
   type GoalFrame,
@@ -65,6 +66,7 @@ export class GameSession {
   private phase: GamePhase = 'loading';
   private aim: AimState = { active: false, originX: 0, originY: 0, currentX: 0, currentY: 0 };
   private activePointerId = -1;
+  private aimWorldTarget: THREE.Vector3 | null = null;
   private clearedTargets = new Set<string>();
   private goalFrame!: GoalFrame;
   private viewportW = 0;
@@ -181,6 +183,7 @@ export class GameSession {
     this.postBallIdleMs = 0;
     this.activePointerId = -1;
     this.aim.active = false;
+    this.aimWorldTarget = null;
 
     this.goalFrame = computeGoalFrame(this.level);
 
@@ -295,6 +298,17 @@ export class GameSession {
     }
   }
 
+  private aimMeshes(): THREE.Object3D[] {
+    return this.entries.map((e) => e.mesh);
+  }
+
+  private lockAimTarget(clientX: number, clientY: number): void {
+    this.aimWorldTarget = pickAimTarget(this.camera, clientX, clientY, this.host, this.aimMeshes());
+    if (this.aimWorldTarget) {
+      aimCannonAtWorldPoint(this.cannonMesh, this.aimWorldTarget);
+    }
+  }
+
   private handlePointerDown(e: PointerEvent): void {
     if (this.phase !== 'aiming' || this.ammoLeft <= 0) return;
     if (e.button !== 0) return;
@@ -310,7 +324,7 @@ export class GameSession {
       currentX: e.clientX,
       currentY: e.clientY,
     };
-    aimCannonAtScreen(this.cannonMesh, this.camera, e.clientX, e.clientY, this.host, this.level);
+    this.lockAimTarget(e.clientX, e.clientY);
     this.updateAimVisual();
   }
 
@@ -319,7 +333,9 @@ export class GameSession {
     e.preventDefault();
     this.aim.currentX = e.clientX;
     this.aim.currentY = e.clientY;
-    aimCannonAtScreen(this.cannonMesh, this.camera, e.clientX, e.clientY, this.host, this.level);
+    if (this.aimWorldTarget) {
+      aimCannonAtWorldPoint(this.cannonMesh, this.aimWorldTarget);
+    }
     this.updateAimVisual();
   }
 
@@ -328,6 +344,7 @@ export class GameSession {
     this.releasePointer(e);
     this.activePointerId = -1;
     this.aim.active = false;
+    this.aimWorldTarget = null;
     this.aimLine.visible = false;
   }
 
@@ -345,10 +362,11 @@ export class GameSession {
     this.aim.active = false;
     this.aimLine.visible = false;
 
-    if (len >= MIN_DRAG_PX) {
-      aimCannonAtScreen(this.cannonMesh, this.camera, e.clientX, e.clientY, this.host, this.level);
+    if (len >= MIN_DRAG_PX && this.aimWorldTarget) {
+      aimCannonAtWorldPoint(this.cannonMesh, this.aimWorldTarget);
       this.fireShot(len);
     }
+    this.aimWorldTarget = null;
   }
 
   private updateAimVisual(): void {
@@ -382,7 +400,7 @@ export class GameSession {
         .setAngularDamping(0.25),
     );
     this.world.createCollider(RAPIER.ColliderDesc.ball(0.35).setDensity(2.2).setRestitution(0.22), body);
-    const impulse = 4.5 + power * 11;
+    const impulse = 5.5 + power * 13;
     body.applyImpulse({ x: dir.x * impulse, y: dir.y * impulse, z: dir.z * impulse }, true);
 
     const mesh = new THREE.Mesh(

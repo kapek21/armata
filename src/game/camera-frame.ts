@@ -97,7 +97,50 @@ const _dir = new THREE.Vector3();
 const _localDir = new THREE.Vector3();
 const _quat = new THREE.Quaternion();
 
-/** Promień z ekranu na płaszczyznę celu (z = GOAL_PLANE_Z). */
+/** Promień z ekranu — trafia w klocek lub (fallback) płaszczyznę celu. */
+export function pickAimTarget(
+  camera: THREE.PerspectiveCamera,
+  clientX: number,
+  clientY: number,
+  host: HTMLElement,
+  meshes: THREE.Object3D[],
+): THREE.Vector3 | null {
+  const rect = host.getBoundingClientRect();
+  if (rect.width <= 0 || rect.height <= 0) return null;
+  _ndc.set(
+    ((clientX - rect.left) / rect.width) * 2 - 1,
+    -((clientY - rect.top) / rect.height) * 2 + 1,
+  );
+  _raycaster.setFromCamera(_ndc, camera);
+
+  if (meshes.length > 0) {
+    const hits = _raycaster.intersectObjects(meshes, false);
+    if (hits.length > 0) return hits[0].point.clone();
+  }
+
+  return _raycaster.ray.intersectPlane(_goalPlane, _hit) ? _hit.clone() : null;
+}
+
+/** Celuj lufą dokładnie w punkt świata (np. trafiony klocek). */
+export function aimCannonAtWorldPoint(cannonRoot: THREE.Object3D, target: THREE.Vector3): void {
+  const muzzle = muzzleWorldPosition(cannonRoot);
+  _dir.copy(target).sub(muzzle);
+  if (_dir.lengthSq() < 0.01) return;
+  _dir.normalize();
+
+  cannonRoot.getWorldQuaternion(_quat);
+  _localDir.copy(_dir).applyQuaternion(_quat.invert());
+
+  let pitch = Math.atan2(_localDir.y, Math.hypot(_localDir.x, _localDir.z));
+  let yaw = Math.atan2(_localDir.x, -_localDir.z);
+
+  pitch = THREE.MathUtils.clamp(pitch, (3 * Math.PI) / 180, (74 * Math.PI) / 180);
+  yaw = THREE.MathUtils.clamp(yaw, (-42 * Math.PI) / 180, (42 * Math.PI) / 180);
+
+  applyCannonAim(cannonRoot, pitch, yaw);
+}
+
+/** @deprecated Prefer pickAimTarget + aimCannonAtWorldPoint */
 export function screenToGoalPlane(
   camera: THREE.PerspectiveCamera,
   clientX: number,
@@ -114,35 +157,18 @@ export function screenToGoalPlane(
   return _raycaster.ray.intersectPlane(_goalPlane, _hit) ? _hit.clone() : null;
 }
 
-/** Celuj lufą w punkt na ekranie (np. pod palcem). Siła strzału osobno. */
+/** Celuj lufą w punkt ekranu — używane gdy brak trafienia w klocek. */
 export function aimCannonAtScreen(
   cannonRoot: THREE.Object3D,
   camera: THREE.PerspectiveCamera,
   clientX: number,
   clientY: number,
   host: HTMLElement,
-  level: LevelDefinition,
+  meshes: THREE.Object3D[],
 ): boolean {
-  const target = screenToGoalPlane(camera, clientX, clientY, host);
+  const target = pickAimTarget(camera, clientX, clientY, host, meshes);
   if (!target) return false;
-
-  const muzzle = muzzleWorldPosition(cannonRoot);
-  _dir.copy(target).sub(muzzle);
-  if (_dir.lengthSq() < 0.01) return false;
-  _dir.normalize();
-
-  cannonRoot.getWorldQuaternion(_quat);
-  _localDir.copy(_dir).applyQuaternion(_quat.invert());
-
-  let pitch = Math.atan2(_localDir.y, Math.hypot(_localDir.x, _localDir.z));
-  let yaw = Math.atan2(_localDir.x, -_localDir.z);
-
-  const minP = (level.cannon.angleMinDeg * Math.PI) / 180;
-  const maxP = (level.cannon.angleMaxDeg * Math.PI) / 180;
-  pitch = THREE.MathUtils.clamp(pitch, minP, maxP);
-  yaw = THREE.MathUtils.clamp(yaw, (-36 * Math.PI) / 180, (36 * Math.PI) / 180);
-
-  applyCannonAim(cannonRoot, pitch, yaw);
+  aimCannonAtWorldPoint(cannonRoot, target);
   return true;
 }
 
