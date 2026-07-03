@@ -89,18 +89,79 @@ export function muzzleWorldPosition(cannonRoot: THREE.Object3D): THREE.Vector3 {
   return cannonRoot.localToWorld(new THREE.Vector3(0, 0.58, -1.05));
 }
 
+const _goalPlane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 4);
+const _raycaster = new THREE.Raycaster();
+const _ndc = new THREE.Vector2();
+const _hit = new THREE.Vector3();
+const _dir = new THREE.Vector3();
+const _localDir = new THREE.Vector3();
+const _quat = new THREE.Quaternion();
+
+/** Promień z ekranu na płaszczyznę celu (z = GOAL_PLANE_Z). */
+export function screenToGoalPlane(
+  camera: THREE.PerspectiveCamera,
+  clientX: number,
+  clientY: number,
+  host: HTMLElement,
+): THREE.Vector3 | null {
+  const rect = host.getBoundingClientRect();
+  if (rect.width <= 0 || rect.height <= 0) return null;
+  _ndc.set(
+    ((clientX - rect.left) / rect.width) * 2 - 1,
+    -((clientY - rect.top) / rect.height) * 2 + 1,
+  );
+  _raycaster.setFromCamera(_ndc, camera);
+  return _raycaster.ray.intersectPlane(_goalPlane, _hit) ? _hit.clone() : null;
+}
+
+/** Celuj lufą w punkt na ekranie (np. pod palcem). Siła strzału osobno. */
+export function aimCannonAtScreen(
+  cannonRoot: THREE.Object3D,
+  camera: THREE.PerspectiveCamera,
+  clientX: number,
+  clientY: number,
+  host: HTMLElement,
+  level: LevelDefinition,
+): boolean {
+  const target = screenToGoalPlane(camera, clientX, clientY, host);
+  if (!target) return false;
+
+  const muzzle = muzzleWorldPosition(cannonRoot);
+  _dir.copy(target).sub(muzzle);
+  if (_dir.lengthSq() < 0.01) return false;
+  _dir.normalize();
+
+  cannonRoot.getWorldQuaternion(_quat);
+  _localDir.copy(_dir).applyQuaternion(_quat.invert());
+
+  let pitch = Math.atan2(_localDir.y, Math.hypot(_localDir.x, _localDir.z));
+  let yaw = Math.atan2(_localDir.x, -_localDir.z);
+
+  const minP = (level.cannon.angleMinDeg * Math.PI) / 180;
+  const maxP = (level.cannon.angleMaxDeg * Math.PI) / 180;
+  pitch = THREE.MathUtils.clamp(pitch, minP, maxP);
+  yaw = THREE.MathUtils.clamp(yaw, (-36 * Math.PI) / 180, (36 * Math.PI) / 180);
+
+  applyCannonAim(cannonRoot, pitch, yaw);
+  return true;
+}
+
+export function powerFromDrag(len: number, maxPx = 140): number {
+  return Math.min(maxPx, len) / maxPx;
+}
+
+/** @deprecated Użyj aimCannonAtScreen + powerFromDrag */
 export function aimAnglesFromDrag(dx: number, _dy: number, len: number, level: LevelDefinition): {
   pitchRad: number;
   yawRad: number;
   power: number;
 } {
-  const clamped = Math.min(140, len);
-  const power = clamped / 140;
+  const power = powerFromDrag(len);
   const pitchDeg =
     level.cannon.angleMinDeg +
     power * (level.cannon.angleMaxDeg - level.cannon.angleMinDeg);
   const pitchRad = (pitchDeg * Math.PI) / 180;
-  const yawRad = (dx / 140) * (14 * Math.PI) / 180;
+  const yawRad = (dx / 140) * (32 * Math.PI) / 180;
   return { pitchRad, yawRad, power };
 }
 

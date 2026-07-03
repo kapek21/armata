@@ -113,7 +113,7 @@ export function Hud({ phase, onRetry, onNext, onMenu, onStartLevel }: HudProps):
 
       {phase === 'aiming' && (
         <div className="pointer-events-none absolute inset-x-0 bottom-16 z-10 flex justify-center safe-bottom">
-          <p className="text-[11px] text-white/50">Przeciągnij i puść, aby strzelić</p>
+          <p className="text-[11px] text-white/50">Dotknij celu, przeciągnij i puść — strzał</p>
         </div>
       )}
     </>

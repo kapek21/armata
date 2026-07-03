@@ -18,13 +18,13 @@ import {
 import { levelByIndex, levelCount } from '../levels/index.js';
 import { useHudStore } from '../ui/hud-store.js';
 import {
-  aimAnglesFromDrag,
-  applyCannonAim,
+  aimCannonAtScreen,
   applyWorldOffset,
   barrelWorldDirection,
   computeGoalFrame,
   frameGameplayCamera,
   muzzleWorldPosition,
+  powerFromDrag,
   resetCannonAim,
   type GoalFrame,
 } from './camera-frame.js';
@@ -36,8 +36,12 @@ interface BodyEntry {
   cleared: boolean;
 }
 
-const SETTLE_SPEED = 0.08;
-const SETTLE_ANG = 0.15;
+const SETTLE_SPEED = 0.12;
+const SETTLE_ANG = 0.2;
+const POST_BALL_READY_MS = 700;
+const POST_BALL_FORCE_MS = 2800;
+const BALL_STILL_MS = 350;
+const BALL_MAX_AGE_MS = 4500;
 const MIN_DRAG_PX = 24;
 const MAX_DRAG_PX = 140;
 
@@ -52,6 +56,8 @@ export class GameSession {
   private ballBody: RAPIER.RigidBody | null = null;
   private ballMesh: THREE.Mesh | null = null;
   private ballAgeMs = 0;
+  private ballStillMs = 0;
+  private postBallIdleMs = 0;
   private level!: LevelDefinition;
   private levelIndex = 0;
   private ammoLeft = 0;
@@ -170,6 +176,7 @@ export class GameSession {
     this.clearedTargets.clear();
     this.phase = 'aiming';
     this.removeBall();
+    this.postBallIdleMs = 0;
 
     this.goalFrame = computeGoalFrame(this.level);
 
@@ -266,19 +273,25 @@ export class GameSession {
 
   private handlePointerDown(e: PointerEvent): void {
     if (this.phase !== 'aiming' || this.ammoLeft <= 0) return;
+    this.renderer.domElement.setPointerCapture(e.pointerId);
     this.aim = { active: true, originX: e.clientX, originY: e.clientY, currentX: e.clientX, currentY: e.clientY };
-    this.phase = 'aiming';
+    aimCannonAtScreen(this.cannonMesh, this.camera, e.clientX, e.clientY, this.host, this.level);
+    this.updateAimVisual();
   }
 
   private handlePointerMove(e: PointerEvent): void {
     if (!this.aim.active) return;
     this.aim.currentX = e.clientX;
     this.aim.currentY = e.clientY;
+    aimCannonAtScreen(this.cannonMesh, this.camera, e.clientX, e.clientY, this.host, this.level);
     this.updateAimVisual();
   }
 
   private handlePointerUp(e: PointerEvent): void {
     if (!this.aim.active) return;
+    if (this.renderer.domElement.hasPointerCapture(e.pointerId)) {
+      this.renderer.domElement.releasePointerCapture(e.pointerId);
+    }
     this.aim.currentX = e.clientX;
     this.aim.currentY = e.clientY;
     this.aim.active = false;
@@ -286,35 +299,33 @@ export class GameSession {
     const dx = this.aim.originX - this.aim.currentX;
     const dy = this.aim.originY - this.aim.currentY;
     const len = Math.hypot(dx, dy);
-    if (len >= MIN_DRAG_PX) this.fireShot(dx, dy, len);
+    if (len >= MIN_DRAG_PX) {
+      aimCannonAtScreen(this.cannonMesh, this.camera, e.clientX, e.clientY, this.host, this.level);
+      this.fireShot(len);
+    }
   }
 
   private updateAimVisual(): void {
     const dx = this.aim.originX - this.aim.currentX;
     const dy = this.aim.originY - this.aim.currentY;
-    const len = Math.min(MAX_DRAG_PX, Math.hypot(dx, dy));
+    const len = Math.hypot(dx, dy);
     if (len < MIN_DRAG_PX) {
       this.aimLine.visible = false;
       return;
     }
 
-    const { pitchRad, yawRad, power } = aimAnglesFromDrag(dx, dy, len, this.level);
-    applyCannonAim(this.cannonMesh, pitchRad, yawRad);
-
+    const power = powerFromDrag(len, MAX_DRAG_PX);
     const origin = muzzleWorldPosition(this.cannonMesh);
     const dir = barrelWorldDirection(this.cannonMesh);
-    const end = origin.clone().add(dir.multiplyScalar(2.5 + power * 5));
+    const end = origin.clone().add(dir.multiplyScalar(3 + power * 8));
     this.aimLine.geometry.setFromPoints([origin, end]);
     this.aimLine.visible = true;
   }
 
-  private fireShot(_dx: number, _dy: number, len: number): void {
+  private fireShot(len: number): void {
     if (this.ammoLeft <= 0) return;
 
-    const dx = this.aim.originX - this.aim.currentX;
-    const dy = this.aim.originY - this.aim.currentY;
-    const { pitchRad, yawRad, power } = aimAnglesFromDrag(dx, dy, len, this.level);
-    applyCannonAim(this.cannonMesh, pitchRad, yawRad);
+    const power = powerFromDrag(len, MAX_DRAG_PX);
     const dir = barrelWorldDirection(this.cannonMesh);
     const spawn = muzzleWorldPosition(this.cannonMesh);
     const body = this.world.createRigidBody(
@@ -338,6 +349,8 @@ export class GameSession {
     this.ballBody = body;
     this.ballMesh = mesh;
     this.ballAgeMs = 0;
+    this.ballStillMs = 0;
+    this.postBallIdleMs = 0;
 
     this.ammoLeft -= 1;
     this.shotsUsed += 1;
@@ -357,6 +370,12 @@ export class GameSession {
       this.ballMesh = null;
     }
     this.ballAgeMs = 0;
+    this.ballStillMs = 0;
+  }
+
+  private removeBallAndStartCooldown(): void {
+    this.removeBall();
+    this.postBallIdleMs = 0;
   }
 
   tick(dtMs: number): void {
@@ -369,8 +388,16 @@ export class GameSession {
     if (this.ballBody && this.ballMesh) {
       this.ballAgeMs += dtMs;
       const t = this.ballBody.translation();
-      if (this.ballAgeMs > 8000 || t.y < this.level.killZoneY - 5 || Math.abs(t.x) > 20 || t.z < -30) {
-        this.removeBall();
+      const lv = this.ballBody.linvel();
+      const speed = Math.hypot(lv.x, lv.y, lv.z);
+      if (speed < 0.06) {
+        this.ballStillMs += dtMs;
+        if (this.ballStillMs >= BALL_STILL_MS) this.removeBallAndStartCooldown();
+      } else {
+        this.ballStillMs = 0;
+      }
+      if (this.ballAgeMs > BALL_MAX_AGE_MS || t.y < this.level.killZoneY - 5 || Math.abs(t.x) > 20 || t.z < -30) {
+        this.removeBallAndStartCooldown();
       }
     }
 
@@ -381,14 +408,34 @@ export class GameSession {
       return;
     }
 
-    if (this.phase === 'simulating' && !this.ballBody && this.isSettled()) {
-      if (this.ammoLeft > 0) {
-        this.phase = 'aiming';
-        this.syncHud('');
-      } else {
-        this.handleLose();
+    if (this.phase === 'simulating' && !this.ballBody) {
+      this.postBallIdleMs += dtMs;
+      if (this.canTakeNextShot()) {
+        if (this.ammoLeft > 0) {
+          this.phase = 'aiming';
+          resetCannonAim(this.cannonMesh, this.level);
+          this.syncHud('');
+        } else {
+          this.handleLose();
+        }
       }
     }
+  }
+
+  private canTakeNextShot(): boolean {
+    if (this.postBallIdleMs < POST_BALL_READY_MS) return false;
+    if (this.postBallIdleMs >= POST_BALL_FORCE_MS) return true;
+
+    let moving = false;
+    this.world.forEachRigidBody((body) => {
+      if (body.isFixed() || !body.isEnabled() || body.isSleeping()) return;
+      const lv = body.linvel();
+      const av = body.angvel();
+      if (Math.hypot(lv.x, lv.y, lv.z) > SETTLE_SPEED || Math.hypot(av.x, av.y, av.z) > SETTLE_ANG) {
+        moving = true;
+      }
+    });
+    return !moving;
   }
 
   private syncMeshes(): void {
@@ -420,19 +467,6 @@ export class GameSession {
         this.scene.remove(entry.mesh);
       }
     }
-  }
-
-  private isSettled(): boolean {
-    let settled = true;
-    this.world.forEachRigidBody((body) => {
-      if (body.isFixed() || !body.isEnabled()) return;
-      const lv = body.linvel();
-      const av = body.angvel();
-      const speed = Math.hypot(lv.x, lv.y, lv.z);
-      const ang = Math.hypot(av.x, av.y, av.z);
-      if (speed > SETTLE_SPEED || ang > SETTLE_ANG) settled = false;
-    });
-    return settled;
   }
 
   private handleWin(): void {
