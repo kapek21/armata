@@ -1,153 +1,103 @@
 import * as THREE from 'three';
 import type { LevelDefinition } from '../core/types.js';
 
-/** Bottom HUD + safe-area reserve (~14% viewport height). */
-const HUD_BOTTOM_NDC = 0.14;
+/** Cel dokładnie w centrum ekranu (NDC 0,0). */
+const TARGET_NDC = new THREE.Vector2(0, 0);
+/** Podstawa armaty — dolny środek, nad HUD-em. */
+const CANNON_NDC = new THREE.Vector2(0, -0.62);
 
-interface LayoutProfile {
-  cannonNdcY: number;
-  focusNdcY: number;
-  fov: number;
-  cameraStartZ: number;
-  cannonForward: number;
-  cannonDown: number;
+export function levelTargetCenter(level: LevelDefinition): THREE.Vector3 {
+  if (level.targets.length === 0) return new THREE.Vector3(0, 3, -3);
+  const sum = level.targets.reduce(
+    (acc, t) => acc.add(new THREE.Vector3(t.position[0], t.position[1], t.position[2])),
+    new THREE.Vector3(),
+  );
+  return sum.multiplyScalar(1 / level.targets.length);
 }
 
-function layoutProfile(aspect: number): LayoutProfile {
-  const portrait = aspect < 0.85;
-  const narrow = aspect < 0.55;
-
-  if (portrait) {
-    return {
-      // Just above bottom HUD — barrel visible, not clipped
-      cannonNdcY: -0.52 - HUD_BOTTOM_NDC * 0.35,
-      focusNdcY: narrow ? 0.24 : 0.2,
-      fov: narrow ? 54 : 56,
-      cameraStartZ: narrow ? 11.2 : 10.6,
-      cannonForward: narrow ? 2.65 : 2.85,
-      cannonDown: narrow ? 0.62 : 0.72,
-    };
-  }
-
-  return {
-    cannonNdcY: -0.58,
-    focusNdcY: 0.14,
-    fov: 50,
-    cameraStartZ: 9.4,
-    cannonForward: 3.05,
-    cannonDown: 0.82,
-  };
+function projectNdc(camera: THREE.PerspectiveCamera, point: THREE.Vector3): THREE.Vector2 {
+  const v = point.clone().project(camera);
+  return new THREE.Vector2(v.x, v.y);
 }
 
-export function levelFocusPoint(level: LevelDefinition): THREE.Vector3 {
-  const points: THREE.Vector3[] = [];
-  for (const t of level.targets) {
-    points.push(new THREE.Vector3(t.position[0], t.position[1], t.position[2]));
-  }
-  for (const b of level.blocks) {
-    if (b.type === 'ground') continue;
-    points.push(new THREE.Vector3(b.position[0], b.position[1], b.position[2]));
-  }
-  if (points.length === 0) return new THREE.Vector3(0, 3, -2);
-  const sum = points.reduce((acc, p) => acc.add(p), new THREE.Vector3());
-  sum.multiplyScalar(1 / points.length);
-  return new THREE.Vector3(sum.x, sum.y, -2);
+function cannonLocalOffset(aspect: number): THREE.Vector3 {
+  if (aspect < 0.55) return new THREE.Vector3(0, -0.62, -1.85);
+  if (aspect < 0.85) return new THREE.Vector3(0, -0.56, -2.0);
+  return new THREE.Vector3(0, -0.48, -2.25);
 }
 
-function projectToNdc(camera: THREE.PerspectiveCamera, point: THREE.Vector3): THREE.Vector3 {
-  return point.clone().project(camera);
-}
-
-function placeCannonRelative(
+function attachCannonToCamera(
   camera: THREE.PerspectiveCamera,
   cannonRoot: THREE.Object3D,
-  forward: number,
-  down: number,
+  aspect: number,
 ): void {
-  camera.updateMatrixWorld(true);
-  const viewForward = new THREE.Vector3();
-  camera.getWorldDirection(viewForward);
-  const right = new THREE.Vector3().crossVectors(viewForward, camera.up).normalize();
-  const up = new THREE.Vector3().crossVectors(right, viewForward).normalize();
-
-  cannonRoot.position
-    .copy(camera.position)
-    .add(viewForward.clone().multiplyScalar(-forward))
-    .add(up.clone().multiplyScalar(-down));
+  if (cannonRoot.parent !== camera) {
+    cannonRoot.parent?.remove(cannonRoot);
+    camera.add(cannonRoot);
+  }
+  cannonRoot.position.copy(cannonLocalOffset(aspect));
+  cannonRoot.rotation.set(0, 0, 0);
   cannonRoot.updateMatrixWorld(true);
 }
 
 export function frameGameplayCamera(
   camera: THREE.PerspectiveCamera,
   cannonRoot: THREE.Object3D,
-  focus: THREE.Vector3,
+  level: LevelDefinition,
   aspect: number,
 ): void {
-  const profile = layoutProfile(aspect);
-  let forward = profile.cannonForward;
-  let down = profile.cannonDown;
+  const target = levelTargetCenter(level);
+  const portrait = aspect < 0.85;
 
-  camera.fov = profile.fov;
+  camera.fov = portrait ? 52 : 48;
   camera.aspect = aspect;
-  camera.near = 0.12;
-  camera.far = 120;
+  camera.near = 0.1;
+  camera.far = 150;
   camera.updateProjectionMatrix();
 
-  const camPos = new THREE.Vector3(focus.x * 0.15, focus.y * 0.32 + 1.15, profile.cameraStartZ);
+  const camPos = new THREE.Vector3(target.x, target.y + 0.6, target.z + (portrait ? 9.5 : 8.5));
 
-  for (let i = 0; i < 32; i++) {
-    placeCannonRelative(camera, cannonRoot, forward, down);
-    alignCannonToCamera(cannonRoot, camera);
+  attachCannonToCamera(camera, cannonRoot, aspect);
 
+  for (let i = 0; i < 40; i++) {
     camera.position.copy(camPos);
-    camera.lookAt(focus);
+    camera.lookAt(target);
     camera.updateMatrixWorld(true);
 
-    const focusNdc = projectToNdc(camera, focus);
-    const anchor = cannonAnchorWorld(cannonRoot);
-    const cannonNdc = projectToNdc(camera, anchor);
+    const targetNdc = projectNdc(camera, target);
+    const cannonWorld = new THREE.Vector3();
+    cannonRoot.getWorldPosition(cannonWorld);
+    const cannonNdc = projectNdc(camera, cannonWorld);
 
-    const focusErrX = focusNdc.x;
-    const focusErrY = focusNdc.y - profile.focusNdcY;
-    const cannonErrY = cannonNdc.y - profile.cannonNdcY;
+    const errTx = targetNdc.x - TARGET_NDC.x;
+    const errTy = targetNdc.y - TARGET_NDC.y;
+    const errCy = cannonNdc.y - CANNON_NDC.y;
 
-    camPos.x -= focusErrX * 2.0;
-    camPos.y -= focusErrY * 2.2;
-    camPos.z += focusErrY * 1.0 - cannonErrY * 0.9;
+    const dist = Math.max(4, camPos.distanceTo(target));
+    camPos.x -= errTx * dist * 0.85;
+    camPos.y -= errTy * dist * 0.85;
+    camPos.z += errTy * dist * 0.35;
 
-    down += cannonErrY * 0.55;
-    forward += cannonErrY * 0.25;
-
-    down = THREE.MathUtils.clamp(down, 0.45, 1.35);
-    forward = THREE.MathUtils.clamp(forward, 2.2, 4.2);
+    const off = cannonLocalOffset(aspect);
+    off.y -= errCy * 0.35;
+    off.z -= errCy * 0.15;
+    off.y = THREE.MathUtils.clamp(off.y, -0.85, -0.35);
+    off.z = THREE.MathUtils.clamp(off.z, -2.8, -1.5);
+    cannonRoot.position.copy(off);
   }
 
-  placeCannonRelative(camera, cannonRoot, forward, down);
-  alignCannonToCamera(cannonRoot, camera);
   camera.position.copy(camPos);
-  camera.lookAt(focus);
+  camera.lookAt(target);
   camera.updateProjectionMatrix();
-}
-
-export function placeCannonForCamera(
-  camera: THREE.PerspectiveCamera,
-  cannonRoot: THREE.Object3D,
-  aspect: number,
-): THREE.Vector3 {
-  const profile = layoutProfile(aspect);
-  placeCannonRelative(camera, cannonRoot, profile.cannonForward, profile.cannonDown);
-  alignCannonToCamera(cannonRoot, camera);
-  return cannonRoot.position.clone();
-}
-
-export function cannonAnchorWorld(cannonRoot: THREE.Object3D): THREE.Vector3 {
-  const anchor = new THREE.Vector3(0, 0.35, 0.15);
-  return cannonRoot.localToWorld(anchor);
+  cannonRoot.updateMatrixWorld(true);
 }
 
 export function muzzleWorldPosition(cannonRoot: THREE.Object3D): THREE.Vector3 {
-  const local = new THREE.Vector3(0, 0.58, -1.05);
-  return cannonRoot.localToWorld(local);
+  return cannonRoot.localToWorld(new THREE.Vector3(0, 0.58, -1.05));
+}
+
+export function cannonBaseWorld(cannonRoot: THREE.Object3D): THREE.Vector3 {
+  return cannonRoot.localToWorld(new THREE.Vector3(0, 0.2, 0));
 }
 
 export function aimAnglesFromDrag(dx: number, _dy: number, len: number, level: LevelDefinition): {
@@ -161,7 +111,7 @@ export function aimAnglesFromDrag(dx: number, _dy: number, len: number, level: L
     level.cannon.angleMinDeg +
     power * (level.cannon.angleMaxDeg - level.cannon.angleMinDeg);
   const pitchRad = (pitchDeg * Math.PI) / 180;
-  const yawRad = (dx / 140) * (12 * Math.PI) / 180;
+  const yawRad = (dx / 140) * (14 * Math.PI) / 180;
   return { pitchRad, yawRad, power };
 }
 
@@ -180,6 +130,7 @@ export function applyCannonAim(cannonRoot: THREE.Object3D, pitchRad: number, yaw
   if (pitchPivot) pitchPivot.rotation.x = -pitchRad;
 }
 
-export function alignCannonToCamera(cannonRoot: THREE.Object3D, camera: THREE.PerspectiveCamera): void {
-  cannonRoot.quaternion.copy(camera.quaternion);
+/** @deprecated use levelTargetCenter */
+export function levelFocusPoint(level: LevelDefinition): THREE.Vector3 {
+  return levelTargetCenter(level);
 }

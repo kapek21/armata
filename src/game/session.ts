@@ -22,7 +22,6 @@ import {
   applyCannonAim,
   barrelWorldDirection,
   frameGameplayCamera,
-  levelFocusPoint,
   muzzleWorldPosition,
 } from './camera-frame.js';
 
@@ -92,6 +91,7 @@ export class GameSession {
 
     this.buildCannon();
     this.buildAimLine();
+    this.scene.add(this.camera);
     this.loadLevel(0);
     this.resize();
     this.attachInput();
@@ -135,7 +135,7 @@ export class GameSession {
     pitchPivot.add(barrel, muzzleRing);
     yawMount.add(pitchPivot);
     this.cannonMesh.add(base, yawMount);
-    this.scene.add(this.cannonMesh);
+    // Dodawana do kamery w frameGameplayCamera — zawsze widoczna na dole ekranu
   }
 
   private buildAimLine(): void {
@@ -466,9 +466,7 @@ export class GameSession {
   private applyCameraFrame(): void {
     const w = this.host?.clientWidth ?? 1;
     const h = this.host?.clientHeight ?? 1;
-    const aspect = w / h;
-    const focus = levelFocusPoint(this.level);
-    frameGameplayCamera(this.camera, this.cannonMesh, focus, aspect);
+    frameGameplayCamera(this.camera, this.cannonMesh, this.level, w / h);
   }
 
   render(): void {
