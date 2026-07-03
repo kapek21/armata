@@ -20,9 +20,13 @@ import { useHudStore } from '../ui/hud-store.js';
 import {
   aimAnglesFromDrag,
   applyCannonAim,
+  applyWorldOffset,
   barrelWorldDirection,
+  computeGoalFrame,
   frameGameplayCamera,
   muzzleWorldPosition,
+  resetCannonAim,
+  type GoalFrame,
 } from './camera-frame.js';
 
 interface BodyEntry {
@@ -55,6 +59,7 @@ export class GameSession {
   private phase: GamePhase = 'loading';
   private aim: AimState = { active: false, originX: 0, originY: 0, currentX: 0, currentY: 0 };
   private clearedTargets = new Set<string>();
+  private goalFrame!: GoalFrame;
   private host!: HTMLElement;
   private tier!: QualityTier;
   private onPointerDown = (e: PointerEvent): void => this.handlePointerDown(e);
@@ -91,7 +96,6 @@ export class GameSession {
 
     this.buildCannon();
     this.buildAimLine();
-    this.scene.add(this.camera);
     this.loadLevel(0);
     this.resize();
     this.attachInput();
@@ -135,7 +139,7 @@ export class GameSession {
     pitchPivot.add(barrel, muzzleRing);
     yawMount.add(pitchPivot);
     this.cannonMesh.add(base, yawMount);
-    // Dodawana do kamery w frameGameplayCamera — zawsze widoczna na dole ekranu
+    this.scene.add(this.cannonMesh);
   }
 
   private buildAimLine(): void {
@@ -161,14 +165,19 @@ export class GameSession {
     this.phase = 'aiming';
     this.removeBall();
 
+    this.goalFrame = computeGoalFrame(this.level);
+
     for (const block of this.level.blocks) {
-      this.spawnBox(block.position, block.size, block.type, block.isStatic ?? false, false);
+      const pos = applyWorldOffset(block.position, this.goalFrame.worldOffset);
+      this.spawnBox(pos, block.size, block.type, block.isStatic ?? false, false);
     }
     for (const target of this.level.targets) {
-      this.spawnBox(target.position, target.size, 'wood', false, true, target.id);
+      const pos = applyWorldOffset(target.position, this.goalFrame.worldOffset);
+      this.spawnBox(pos, target.size, 'wood', false, true, target.id);
     }
 
     this.applyCameraFrame();
+    resetCannonAim(this.cannonMesh, this.level);
 
     this.syncHud('');
   }
@@ -293,11 +302,12 @@ export class GameSession {
     const body = this.world.createRigidBody(
       RAPIER.RigidBodyDesc.dynamic()
         .setTranslation(spawn.x, spawn.y, spawn.z)
-        .setLinearDamping(0.05)
-        .setAngularDamping(0.2),
+        .setCcdEnabled(true)
+        .setLinearDamping(0.08)
+        .setAngularDamping(0.25),
     );
-    this.world.createCollider(RAPIER.ColliderDesc.ball(0.35).setDensity(2.2).setRestitution(0.25), body);
-    const impulse = 20 + power * 44;
+    this.world.createCollider(RAPIER.ColliderDesc.ball(0.35).setDensity(2.2).setRestitution(0.22), body);
+    const impulse = 4.5 + power * 11;
     body.applyImpulse({ x: dir.x * impulse, y: dir.y * impulse, z: dir.z * impulse }, true);
 
     const mesh = new THREE.Mesh(
@@ -334,13 +344,14 @@ export class GameSession {
   tick(dtMs: number): void {
     if (this.phase === 'loading' || this.phase === 'menu') return;
 
+    this.world.integrationParameters.dt = Math.min(1 / 30, dtMs / 1000);
     this.world.step();
     this.syncMeshes();
 
     if (this.ballBody && this.ballMesh) {
       this.ballAgeMs += dtMs;
       const t = this.ballBody.translation();
-      if (this.ballAgeMs > 8000 || t.y < this.level.killZoneY - 5 || Math.abs(t.x) > 20 || t.z < -25) {
+      if (this.ballAgeMs > 8000 || t.y < this.level.killZoneY - 5 || Math.abs(t.x) > 20 || t.z < -30) {
         this.removeBall();
       }
     }
@@ -466,7 +477,7 @@ export class GameSession {
   private applyCameraFrame(): void {
     const w = this.host?.clientWidth ?? 1;
     const h = this.host?.clientHeight ?? 1;
-    frameGameplayCamera(this.camera, this.cannonMesh, this.level, w / h);
+    frameGameplayCamera(this.camera, this.cannonMesh, this.goalFrame, w / h);
   }
 
   render(): void {
