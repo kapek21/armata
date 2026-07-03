@@ -60,7 +60,8 @@ export class GameSession {
   private aim: AimState = { active: false, originX: 0, originY: 0, currentX: 0, currentY: 0 };
   private clearedTargets = new Set<string>();
   private goalFrame!: GoalFrame;
-  private cameraFramed = false;
+  private viewportW = 0;
+  private viewportH = 0;
   private host!: HTMLElement;
   private tier!: QualityTier;
   private onPointerDown = (e: PointerEvent): void => this.handlePointerDown(e);
@@ -71,7 +72,7 @@ export class GameSession {
     this.host = host;
     this.tier = tier;
     this.scene.background = new THREE.Color(0x9ec4e8);
-    this.scene.fog = new THREE.Fog(0x9ec4e8, 14, 38);
+    this.scene.fog = new THREE.Fog(0x9ec4e8, 22, 45);
 
     this.renderer = new THREE.WebGLRenderer({
       antialias: tier !== 'low',
@@ -80,7 +81,11 @@ export class GameSession {
     this.renderer.setPixelRatio(pixelRatioForTier(tier));
     this.renderer.shadowMap.enabled = tier === 'high';
     host.appendChild(this.renderer.domElement);
-    this.renderer.domElement.style.touchAction = 'none';
+    const canvas = this.renderer.domElement;
+    canvas.style.display = 'block';
+    canvas.style.width = '100%';
+    canvas.style.height = '100%';
+    canvas.style.touchAction = 'none';
 
     const hemi = new THREE.HemisphereLight(0xffffff, 0x556677, 1.1);
     this.scene.add(hemi);
@@ -167,7 +172,6 @@ export class GameSession {
     this.removeBall();
 
     this.goalFrame = computeGoalFrame(this.level);
-    this.cameraFramed = false;
 
     for (const block of this.level.blocks) {
       const pos = applyWorldOffset(block.position, this.goalFrame.worldOffset);
@@ -182,6 +186,18 @@ export class GameSession {
     resetCannonAim(this.cannonMesh, this.level);
 
     this.syncHud('');
+  }
+
+  private syncViewport(force = false): void {
+    const w = this.host?.clientWidth ?? 0;
+    const h = this.host?.clientHeight ?? 0;
+    if (w <= 0 || h <= 0) return;
+    if (!force && w === this.viewportW && h === this.viewportH) return;
+
+    this.viewportW = w;
+    this.viewportH = h;
+    this.renderer.setSize(w, h, true);
+    this.applyCameraFrame();
   }
 
   private clearLevel(): void {
@@ -484,24 +500,12 @@ export class GameSession {
   }
 
   render(): void {
-    if (this.goalFrame && this.host.clientWidth > 0 && !this.cameraFramed) {
-      this.applyCameraFrame();
-      this.cameraFramed = true;
-    }
+    this.syncViewport();
     this.renderer.render(this.scene, this.camera);
   }
 
   resize(): void {
-    const w = this.host.clientWidth;
-    const h = this.host.clientHeight;
-    if (w <= 0 || h <= 0) return;
-    this.cameraFramed = false;
-    if (this.level) this.applyCameraFrame();
-    else {
-      this.camera.aspect = w / h;
-      this.camera.updateProjectionMatrix();
-    }
-    this.renderer.setSize(w, h, false);
+    this.syncViewport(true);
   }
 
   destroy(): void {
