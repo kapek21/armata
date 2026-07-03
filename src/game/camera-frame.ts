@@ -4,14 +4,13 @@ import type { LevelDefinition } from '../core/types.js';
 /** Płaszczyzna celu po normalizacji poziomu (ujemne Z = przed armatą). */
 export const GOAL_PLANE_Z = -4;
 
-/** Armata w stałej pozycji świata — bliżej kamery niż cel. */
+/** Armata — pierwszy plan, przed kamerą w osi Z. */
 export const CANNON_WORLD_Y = 0.45;
 export const CANNON_WORLD_Z = 5.5;
 
-/** Cel w górnej części kadru; armata w dolnej. */
-const GOAL_NDC = new THREE.Vector2(0, 0.22);
-const GOAL_NDC_MARGIN = new THREE.Vector2(0.44, 0.38);
-const CANNON_NDC = new THREE.Vector2(0, -0.52);
+/** Cel w górnej połowie kadru; armata na dole. */
+const GOAL_NDC = new THREE.Vector2(0, 0.18);
+const CANNON_NDC = new THREE.Vector2(0, -0.48);
 
 export interface GoalFrame {
   center: THREE.Vector3;
@@ -83,7 +82,7 @@ function goalBoxCorners(lookAt: THREE.Vector3, size: THREE.Vector3): THREE.Vecto
 }
 
 function cannonAnchor(): THREE.Vector3 {
-  return new THREE.Vector3(0, CANNON_WORLD_Y + 0.35, CANNON_WORLD_Z);
+  return new THREE.Vector3(0, CANNON_WORLD_Y + 0.4, CANNON_WORLD_Z);
 }
 
 function placeCannonInWorld(cannonRoot: THREE.Object3D): void {
@@ -92,12 +91,30 @@ function placeCannonInWorld(cannonRoot: THREE.Object3D): void {
   cannonRoot.updateMatrixWorld(true);
 }
 
+function goalOverflow(
+  camera: THREE.PerspectiveCamera,
+  corners: THREE.Vector3[],
+): { maxX: number; maxY: number; minY: number } {
+  let maxX = 0;
+  let maxY = 0;
+  let minY = 0;
+  for (const corner of corners) {
+    const ndc = projectNdc(camera, corner);
+    maxX = Math.max(maxX, Math.abs(ndc.x));
+    maxY = Math.max(maxY, ndc.y);
+    minY = Math.min(minY, ndc.y);
+  }
+  return { maxX, maxY, minY };
+}
+
 export function frameGameplayCamera(
   camera: THREE.PerspectiveCamera,
   cannonRoot: THREE.Object3D,
   goalFrame: GoalFrame,
   aspect: number,
 ): void {
+  if (!Number.isFinite(aspect) || aspect <= 0) return;
+
   placeCannonInWorld(cannonRoot);
 
   const lookAt = normalizedGoalLookAt(goalFrame);
@@ -105,59 +122,43 @@ export function frameGameplayCamera(
   const cannonPt = cannonAnchor();
   const portrait = aspect < 0.85;
 
-  camera.fov = portrait ? 50 : 44;
+  /** Kamera tuż za armatą, na wysokości lufy. */
+  const camZ = CANNON_WORLD_Z + 2.35;
+  let camY = CANNON_WORLD_Y + 0.85;
+  let fov = portrait ? 56 : 50;
+
   camera.aspect = aspect;
   camera.near = 0.05;
-  camera.far = 120;
-  camera.updateProjectionMatrix();
+  camera.far = 80;
 
-  const goalSpan = Math.max(goalFrame.size.y * 1.12, goalFrame.size.x / aspect * 1.08, 2.2);
-  const camToGoal = CANNON_WORLD_Z - GOAL_PLANE_Z + 2.8;
-  let camZ = CANNON_WORLD_Z + 2.2 + goalSpan * 0.22;
-  let camY = lookAt.y + Math.max(1.6, goalFrame.size.y * 0.42);
-
-  for (let i = 0; i < 32; i++) {
+  for (let i = 0; i < 36; i++) {
+    camera.fov = fov;
+    camera.updateProjectionMatrix();
     camera.position.set(0, camY, camZ);
     camera.lookAt(lookAt);
     camera.updateMatrixWorld(true);
 
     const centerNdc = projectNdc(camera, lookAt);
-    const errCx = centerNdc.x - GOAL_NDC.x;
-    const errCy = centerNdc.y - GOAL_NDC.y;
+    camY -= (centerNdc.y - GOAL_NDC.y) * 0.45;
 
-    let maxDx = 0;
-    let maxDyTop = 0;
-    let maxDyBot = 0;
-    for (const corner of corners) {
-      const ndc = projectNdc(camera, corner);
-      maxDx = Math.max(maxDx, Math.abs(ndc.x - GOAL_NDC.x));
-      const dy = ndc.y - GOAL_NDC.y;
-      maxDyTop = Math.max(maxDyTop, dy);
-      maxDyBot = Math.max(maxDyBot, -dy);
-    }
-
-    if (maxDx > GOAL_NDC_MARGIN.x || maxDyTop > GOAL_NDC_MARGIN.y || maxDyBot > GOAL_NDC_MARGIN.y) {
-      camZ += 0.28;
-    }
-
-    camY -= errCy * 0.55;
-    camZ += errCy * 0.08;
-
+    const { maxX, maxY, minY } = goalOverflow(camera, corners);
     const cannonNdc = projectNdc(camera, cannonPt);
-    const errCannY = cannonNdc.y - CANNON_NDC.y;
-    if (errCannY > 0.06) camZ += 0.14;
-    if (errCannY < -0.06) camZ -= 0.1;
+    const cannErr = cannonNdc.y - CANNON_NDC.y;
 
-    camZ = THREE.MathUtils.clamp(camZ, CANNON_WORLD_Z + 1.6, camToGoal + 8);
-    camY = THREE.MathUtils.clamp(camY, lookAt.y + 0.8, lookAt.y + 6.5);
+    const tooWide = maxX > 0.42 || maxY > GOAL_NDC.y + 0.38 || minY < -0.05;
+    if (tooWide) fov += 1.6;
+    else if (fov > (portrait ? 52 : 46)) fov -= 0.3;
+
+    camY += cannErr * 0.55;
+
+    camY = THREE.MathUtils.clamp(camY, CANNON_WORLD_Y + 0.55, lookAt.y + 1.1);
+    fov = THREE.MathUtils.clamp(fov, portrait ? 50 : 44, 72);
 
     if (
-      Math.abs(errCx) < 0.012 &&
-      Math.abs(errCy) < 0.012 &&
-      maxDx < GOAL_NDC_MARGIN.x + 0.02 &&
-      maxDyTop < GOAL_NDC_MARGIN.y + 0.02 &&
-      maxDyBot < GOAL_NDC_MARGIN.y + 0.02 &&
-      Math.abs(errCannY) < 0.07
+      !tooWide &&
+      Math.abs(centerNdc.y - GOAL_NDC.y) < 0.015 &&
+      Math.abs(cannErr) < 0.07 &&
+      maxX < 0.4
     ) {
       break;
     }

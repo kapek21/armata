@@ -60,6 +60,7 @@ export class GameSession {
   private aim: AimState = { active: false, originX: 0, originY: 0, currentX: 0, currentY: 0 };
   private clearedTargets = new Set<string>();
   private goalFrame!: GoalFrame;
+  private cameraFramed = false;
   private host!: HTMLElement;
   private tier!: QualityTier;
   private onPointerDown = (e: PointerEvent): void => this.handlePointerDown(e);
@@ -166,6 +167,7 @@ export class GameSession {
     this.removeBall();
 
     this.goalFrame = computeGoalFrame(this.level);
+    this.cameraFramed = false;
 
     for (const block of this.level.blocks) {
       const pos = applyWorldOffset(block.position, this.goalFrame.worldOffset);
@@ -475,12 +477,17 @@ export class GameSession {
   }
 
   private applyCameraFrame(): void {
-    const w = this.host?.clientWidth ?? 1;
-    const h = this.host?.clientHeight ?? 1;
+    const w = this.host?.clientWidth ?? 0;
+    const h = this.host?.clientHeight ?? 0;
+    if (w <= 0 || h <= 0 || !this.goalFrame) return;
     frameGameplayCamera(this.camera, this.cannonMesh, this.goalFrame, w / h);
   }
 
   render(): void {
+    if (this.goalFrame && this.host.clientWidth > 0 && !this.cameraFramed) {
+      this.applyCameraFrame();
+      this.cameraFramed = true;
+    }
     this.renderer.render(this.scene, this.camera);
   }
 
@@ -488,6 +495,7 @@ export class GameSession {
     const w = this.host.clientWidth;
     const h = this.host.clientHeight;
     if (w <= 0 || h <= 0) return;
+    this.cameraFramed = false;
     if (this.level) this.applyCameraFrame();
     else {
       this.camera.aspect = w / h;
