@@ -64,6 +64,7 @@ export class GameSession {
   private shotsUsed = 0;
   private phase: GamePhase = 'loading';
   private aim: AimState = { active: false, originX: 0, originY: 0, currentX: 0, currentY: 0 };
+  private activePointerId = -1;
   private clearedTargets = new Set<string>();
   private goalFrame!: GoalFrame;
   private viewportW = 0;
@@ -73,6 +74,7 @@ export class GameSession {
   private onPointerDown = (e: PointerEvent): void => this.handlePointerDown(e);
   private onPointerMove = (e: PointerEvent): void => this.handlePointerMove(e);
   private onPointerUp = (e: PointerEvent): void => this.handlePointerUp(e);
+  private onPointerCancel = (e: PointerEvent): void => this.handlePointerCancel(e);
 
   async init(host: HTMLElement, tier: QualityTier): Promise<void> {
     this.host = host;
@@ -177,6 +179,8 @@ export class GameSession {
     this.phase = 'aiming';
     this.removeBall();
     this.postBallIdleMs = 0;
+    this.activePointerId = -1;
+    this.aim.active = false;
 
     this.goalFrame = computeGoalFrame(this.level);
 
@@ -255,50 +259,92 @@ export class GameSession {
     this.entries.push({ mesh, isTarget, targetId, cleared: false });
   }
 
+  private onLostPointerCapture = (e: PointerEvent): void => {
+    if (e.pointerId !== this.activePointerId || !this.aim.active) return;
+    this.activePointerId = -1;
+    this.aim.active = false;
+    this.aimLine.visible = false;
+  };
+
   private attachInput(): void {
     const el = this.renderer.domElement;
     el.addEventListener('pointerdown', this.onPointerDown);
-    window.addEventListener('pointermove', this.onPointerMove);
-    window.addEventListener('pointerup', this.onPointerUp);
-    window.addEventListener('pointercancel', this.onPointerUp);
+    el.addEventListener('pointermove', this.onPointerMove);
+    el.addEventListener('pointerup', this.onPointerUp);
+    el.addEventListener('pointercancel', this.onPointerCancel);
+    el.addEventListener('lostpointercapture', this.onLostPointerCapture);
   }
 
   private detachInput(): void {
     const el = this.renderer.domElement;
     el.removeEventListener('pointerdown', this.onPointerDown);
-    window.removeEventListener('pointermove', this.onPointerMove);
-    window.removeEventListener('pointerup', this.onPointerUp);
-    window.removeEventListener('pointercancel', this.onPointerUp);
+    el.removeEventListener('pointermove', this.onPointerMove);
+    el.removeEventListener('pointerup', this.onPointerUp);
+    el.removeEventListener('pointercancel', this.onPointerCancel);
+    el.removeEventListener('lostpointercapture', this.onLostPointerCapture);
+  }
+
+  private releasePointer(e: PointerEvent): void {
+    const el = this.renderer.domElement;
+    if (el.hasPointerCapture(e.pointerId)) {
+      try {
+        el.releasePointerCapture(e.pointerId);
+      } catch {
+        /* już zwolniony */
+      }
+    }
   }
 
   private handlePointerDown(e: PointerEvent): void {
     if (this.phase !== 'aiming' || this.ammoLeft <= 0) return;
+    if (e.button !== 0) return;
+
+    e.preventDefault();
+    this.activePointerId = e.pointerId;
     this.renderer.domElement.setPointerCapture(e.pointerId);
-    this.aim = { active: true, originX: e.clientX, originY: e.clientY, currentX: e.clientX, currentY: e.clientY };
+
+    this.aim = {
+      active: true,
+      originX: e.clientX,
+      originY: e.clientY,
+      currentX: e.clientX,
+      currentY: e.clientY,
+    };
     aimCannonAtScreen(this.cannonMesh, this.camera, e.clientX, e.clientY, this.host, this.level);
     this.updateAimVisual();
   }
 
   private handlePointerMove(e: PointerEvent): void {
-    if (!this.aim.active) return;
+    if (!this.aim.active || e.pointerId !== this.activePointerId) return;
+    e.preventDefault();
     this.aim.currentX = e.clientX;
     this.aim.currentY = e.clientY;
     aimCannonAtScreen(this.cannonMesh, this.camera, e.clientX, e.clientY, this.host, this.level);
     this.updateAimVisual();
   }
 
-  private handlePointerUp(e: PointerEvent): void {
-    if (!this.aim.active) return;
-    if (this.renderer.domElement.hasPointerCapture(e.pointerId)) {
-      this.renderer.domElement.releasePointerCapture(e.pointerId);
-    }
-    this.aim.currentX = e.clientX;
-    this.aim.currentY = e.clientY;
+  private handlePointerCancel(e: PointerEvent): void {
+    if (e.pointerId !== this.activePointerId) return;
+    this.releasePointer(e);
+    this.activePointerId = -1;
     this.aim.active = false;
     this.aimLine.visible = false;
+  }
+
+  private handlePointerUp(e: PointerEvent): void {
+    if (!this.aim.active || e.pointerId !== this.activePointerId) return;
+
+    this.aim.currentX = e.clientX;
+    this.aim.currentY = e.clientY;
     const dx = this.aim.originX - this.aim.currentX;
     const dy = this.aim.originY - this.aim.currentY;
     const len = Math.hypot(dx, dy);
+
+    this.releasePointer(e);
+    this.activePointerId = -1;
+    this.aim.active = false;
+    this.aimLine.visible = false;
+
     if (len >= MIN_DRAG_PX) {
       aimCannonAtScreen(this.cannonMesh, this.camera, e.clientX, e.clientY, this.host, this.level);
       this.fireShot(len);
