@@ -92,7 +92,25 @@ export function frameGameplayCamera(
 }
 
 export function muzzleWorldPosition(cannonRoot: THREE.Object3D): THREE.Vector3 {
+  const pitch = cannonRoot.getObjectByName('pitch-pivot');
+  if (pitch) return pitch.localToWorld(new THREE.Vector3(0, 0, -1.72));
   return cannonRoot.localToWorld(new THREE.Vector3(0, 0.58, -1.05));
+}
+
+function restMuzzleWorld(cannonRoot: THREE.Object3D): THREE.Vector3 {
+  const yawP = cannonRoot.getObjectByName('yaw-pivot');
+  const pitchP = cannonRoot.getObjectByName('pitch-pivot');
+  if (!yawP || !pitchP) return muzzleWorldPosition(cannonRoot);
+  const savedYaw = yawP.rotation.y;
+  const savedPitch = pitchP.rotation.x;
+  yawP.rotation.y = 0;
+  pitchP.rotation.x = 0;
+  cannonRoot.updateMatrixWorld(true);
+  const muzzle = pitchP.localToWorld(new THREE.Vector3(0, 0, -1.72)).clone();
+  yawP.rotation.y = savedYaw;
+  pitchP.rotation.x = savedPitch;
+  cannonRoot.updateMatrixWorld(true);
+  return muzzle;
 }
 
 const _goalPlane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 4);
@@ -122,11 +140,24 @@ export function pickAimTarget(
   if (meshes.length > 0) {
     const hits = _raycaster.intersectObjects(meshes, false);
     if (hits.length > 0) {
-      const hit = hits[0];
-      const box = new THREE.Box3().setFromObject(hit.object);
+      let best = hits[0];
+      let bestScreen = Infinity;
+      for (const hit of hits) {
+        const box = new THREE.Box3().setFromObject(hit.object);
+        const center = new THREE.Vector3();
+        box.getCenter(center);
+        center.project(camera);
+        const sx = (center.x * 0.5 + 0.5) * rect.width + rect.left;
+        const sy = (-center.y * 0.5 + 0.5) * rect.height + rect.top;
+        const d = Math.hypot(sx - clientX, sy - clientY);
+        if (d < bestScreen) {
+          bestScreen = d;
+          best = hit;
+        }
+      }
+      const box = new THREE.Box3().setFromObject(best.object);
       const center = new THREE.Vector3();
       box.getCenter(center);
-      // Środek trafionego klocka — stabilniejsze niż punkt na ścianie z boku kamery
       return center;
     }
   }
@@ -148,7 +179,7 @@ export function aimCannonBallistic(
   target: THREE.Vector3,
   power: number,
 ): boolean {
-  const muzzle = muzzleWorldPosition(cannonRoot);
+  const muzzle = restMuzzleWorld(cannonRoot);
   const dx = target.x - muzzle.x;
   const dy = target.y - muzzle.y;
   const dz = target.z - muzzle.z;
@@ -171,7 +202,8 @@ export function aimCannonBallistic(
     pitchWorld = pitchLow >= direct * 0.85 ? pitchLow : pitchHigh;
   }
 
-  const yawWorld = Math.atan2(dx, -dz);
+  // Pivot yaw: dodatni obrót skręca lufę w lewo — odwracamy znak względem dx.
+  const yawWorld = -Math.atan2(dx, -dz);
   pitchWorld = THREE.MathUtils.clamp(pitchWorld, (4 * Math.PI) / 180, (72 * Math.PI) / 180);
   const yaw = THREE.MathUtils.clamp(yawWorld, (-42 * Math.PI) / 180, (42 * Math.PI) / 180);
 
@@ -190,7 +222,7 @@ export function aimCannonAtWorldPoint(cannonRoot: THREE.Object3D, target: THREE.
   _localDir.copy(_dir).applyQuaternion(_quat.invert());
 
   let pitch = Math.atan2(_localDir.y, Math.hypot(_localDir.x, _localDir.z));
-  let yaw = Math.atan2(_localDir.x, -_localDir.z);
+  let yaw = -Math.atan2(_localDir.x, -_localDir.z);
 
   pitch = THREE.MathUtils.clamp(pitch, (3 * Math.PI) / 180, (74 * Math.PI) / 180);
   yaw = THREE.MathUtils.clamp(yaw, (-42 * Math.PI) / 180, (42 * Math.PI) / 180);
@@ -271,6 +303,12 @@ export function simulateBallisticArc(
 }
 
 export function barrelWorldDirection(cannonRoot: THREE.Object3D): THREE.Vector3 {
+  const pitch = cannonRoot.getObjectByName('pitch-pivot');
+  if (pitch) {
+    const from = pitch.localToWorld(new THREE.Vector3(0, 0, -0.2));
+    const to = pitch.localToWorld(new THREE.Vector3(0, 0, -1.72));
+    return to.sub(from).normalize();
+  }
   const from = new THREE.Vector3(0, 0.58, -0.15);
   const to = new THREE.Vector3(0, 0.58, -1.7);
   cannonRoot.localToWorld(from);
