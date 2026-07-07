@@ -4,10 +4,10 @@ import type { LevelDefinition } from '../core/types.js';
 /** Cel — przed armatą w osi Z. */
 export const GOAL_PLANE_Z = -4;
 
-/** Armata — wyśrodkowana na dole ekranu, kompaktowa. */
+/** Armata — statyczne ucięcie dolne: podstawa pod krawędzią kadru, widać głównie lufę. */
 export const CANNON_WORLD_X = 0;
-export const CANNON_WORLD_Y = 0.45;
-export const CANNON_WORLD_Z = 8.2;
+export const CANNON_WORLD_Y = 0.14;
+export const CANNON_WORLD_Z = 8.8;
 export const CANNON_SCALE = 0.42;
 
 /** Kamera nad armatą — cel w górnej części kadru. */
