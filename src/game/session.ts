@@ -42,12 +42,13 @@ interface BodyEntry {
   cleared: boolean;
 }
 
-const SETTLE_SPEED = 0.12;
-const SETTLE_ANG = 0.2;
-const POST_BALL_READY_MS = 700;
-const POST_BALL_FORCE_MS = 2800;
-const BALL_STILL_MS = 350;
-const BALL_MAX_AGE_MS = 4500;
+const SETTLE_SPEED = 0.2;
+const SETTLE_ANG = 0.3;
+const POST_BALL_READY_MS = 350;
+const POST_BALL_FORCE_MS = 2000;
+const BALL_STILL_MS = 200;
+const BALL_STILL_SPEED = 0.1;
+const BALL_MAX_AGE_MS = 4000;
 const MIN_DRAG_PX = 24;
 const MAX_DRAG_PX = 140;
 
@@ -358,8 +359,21 @@ export class GameSession {
     }
   }
 
+  private canAimNow(): boolean {
+    if (this.ammoLeft <= 0) return false;
+    if (this.phase === 'aiming') return true;
+    return this.phase === 'simulating' && !this.ballBody;
+  }
+
+  private canFireNow(): boolean {
+    if (this.ammoLeft <= 0) return false;
+    if (this.phase === 'aiming') return true;
+    if (this.phase === 'simulating' && !this.ballBody) return this.canTakeNextShot();
+    return false;
+  }
+
   private handlePointerDown(e: PointerEvent): void {
-    if (this.phase !== 'aiming' || this.ammoLeft <= 0) return;
+    if (!this.canAimNow()) return;
     if (e.button !== 0) return;
 
     e.preventDefault();
@@ -412,7 +426,7 @@ export class GameSession {
     this.aim.active = false;
     this.aimLine.visible = false;
 
-    if (len >= MIN_DRAG_PX && this.aimWorldTarget) {
+    if (len >= MIN_DRAG_PX && this.aimWorldTarget && this.canFireNow()) {
       const power = powerFromDrag(len, MAX_DRAG_PX);
       this.refreshAimTargetPoint();
       aimCannonBallistic(this.cannonMesh, this.aimWorldTarget, power, this.aimObstacleBoxes());
@@ -451,7 +465,7 @@ export class GameSession {
       RAPIER.RigidBodyDesc.dynamic()
         .setTranslation(spawn.x, spawn.y, spawn.z)
         .setCcdEnabled(true)
-        .setLinearDamping(0.08)
+        .setLinearDamping(0.12)
         .setAngularDamping(0.25),
     );
     this.world.createCollider(RAPIER.ColliderDesc.ball(0.35).setDensity(2.2).setRestitution(0.22), body);
@@ -509,7 +523,7 @@ export class GameSession {
       const t = this.ballBody.translation();
       const lv = this.ballBody.linvel();
       const speed = Math.hypot(lv.x, lv.y, lv.z);
-      if (speed < 0.06) {
+      if (speed < BALL_STILL_SPEED) {
         this.ballStillMs += dtMs;
         if (this.ballStillMs >= BALL_STILL_MS) this.removeBallAndStartCooldown();
       } else {
