@@ -7,8 +7,7 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --port 5186",
-    "typecheck": "tsc --noEmit",
-    "check:occlusion": "node scripts/check-cannon-ground-occlusion.mjs"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@dimforge/rapier3d-compat": "^0.14.0",
