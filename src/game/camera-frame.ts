@@ -425,31 +425,6 @@ export function applyCannonAim(cannonRoot: THREE.Object3D, pitchRad: number, yaw
   const pitchPivot = cannonRoot.getObjectByName('pitch-pivot');
   if (yawPivot) yawPivot.rotation.y = yawRad;
   if (pitchPivot) pitchPivot.rotation.x = pitchRad;
-  applyCannonDisplayForPitch(cannonRoot);
-}
-
-/** Przy celowaniu w górę zmniejsza wizualnie podstawę i lufę (~1/5 ekranu), bez zmiany fizyki strzału. */
-export function applyCannonDisplayForPitch(cannonRoot: THREE.Object3D): void {
-  const pitchPivot = cannonRoot.getObjectByName('pitch-pivot');
-  if (!pitchPivot) return;
-
-  const pitch = Math.max(0, pitchPivot.rotation.x);
-  const t = THREE.MathUtils.smoothstep(pitch, (10 * Math.PI) / 180, (42 * Math.PI) / 180);
-  const meshScale = THREE.MathUtils.lerp(1, 0.2, t);
-  const barrelLen = THREE.MathUtils.lerp(1, 0.35, t);
-
-  const base = cannonRoot.getObjectByName('cannon-base');
-  const barrel = cannonRoot.getObjectByName('cannon-barrel');
-  const muzzle = cannonRoot.getObjectByName('cannon-muzzle');
-
-  if (base) base.scale.setScalar(meshScale);
-  if (barrel) barrel.scale.set(meshScale, meshScale, barrelLen * meshScale);
-  if (muzzle) {
-    muzzle.scale.setScalar(meshScale);
-    const mat = (muzzle as THREE.Mesh).material as THREE.MeshStandardMaterial;
-    mat.opacity = THREE.MathUtils.lerp(1, 0.35, t);
-    mat.transparent = t > 0.02;
-  }
 }
 
 export function resetCannonAim(cannonRoot: THREE.Object3D, level: LevelDefinition): void {
