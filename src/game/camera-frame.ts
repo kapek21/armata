@@ -190,7 +190,8 @@ export function pickAimTarget(
 
 function worldDirFromAim(yaw: number, pitch: number, out: THREE.Vector3): THREE.Vector3 {
   const cp = Math.cos(pitch);
-  return out.set(Math.sin(yaw) * cp, Math.sin(pitch), -Math.cos(yaw) * cp);
+  // Pivot yaw: dodatni obrót skręca lufę w lewo — odwracamy składową X.
+  return out.set(-Math.sin(yaw) * cp, Math.sin(pitch), -Math.cos(yaw) * cp);
 }
 
 function arcHitsObstacle(
@@ -265,7 +266,7 @@ export function aimCannonBallistic(
   const v2 = v * v;
   const g = GRAVITY;
   const disc = v2 * v2 - g * (g * dh * dh + 2 * dy * v2);
-  const yawWorld = Math.atan2(dx, -dz);
+  const yawWorld = -Math.atan2(dx, -dz);
 
   let pitchWorld: number;
   if (disc < 0) {
@@ -306,7 +307,7 @@ export function aimCannonAtWorldPoint(cannonRoot: THREE.Object3D, target: THREE.
   _localDir.copy(_dir).applyQuaternion(_quat.invert());
 
   let pitch = Math.atan2(_localDir.y, Math.hypot(_localDir.x, _localDir.z));
-  let yaw = Math.atan2(_localDir.x, -_localDir.z);
+  let yaw = -Math.atan2(_localDir.x, -_localDir.z);
 
   pitch = THREE.MathUtils.clamp(pitch, (3 * Math.PI) / 180, (74 * Math.PI) / 180);
   yaw = THREE.MathUtils.clamp(yaw, (-42 * Math.PI) / 180, (42 * Math.PI) / 180);
