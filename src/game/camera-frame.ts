@@ -4,10 +4,10 @@ import type { LevelDefinition } from '../core/types.js';
 /** Cel — przed armatą w osi Z. */
 export const GOAL_PLANE_Z = -4;
 
-/** Armata — wyśrodkowana na dole ekranu, kompaktowa. */
+/** Armata — wyśrodkowana na dole, obniżona (podstawa pod krawędzią kadru). */
 export const CANNON_WORLD_X = 0;
-export const CANNON_WORLD_Y = 0.45;
-export const CANNON_WORLD_Z = 8.2;
+export const CANNON_WORLD_Y = 0.24;
+export const CANNON_WORLD_Z = 8.62;
 export const CANNON_SCALE = 0.42;
 
 /** Kamera nad armatą — cel w górnej części kadru. */
@@ -92,6 +92,7 @@ export function frameGameplayCamera(
   camera.updateProjectionMatrix();
   camera.updateMatrixWorld(true);
   cannonRoot.updateMatrixWorld(true);
+  applyCannonDisplayForPitch(cannonRoot);
 }
 
 export function muzzleWorldPosition(cannonRoot: THREE.Object3D): THREE.Vector3 {
@@ -425,6 +426,32 @@ export function applyCannonAim(cannonRoot: THREE.Object3D, pitchRad: number, yaw
   const pitchPivot = cannonRoot.getObjectByName('pitch-pivot');
   if (yawPivot) yawPivot.rotation.y = yawRad;
   if (pitchPivot) pitchPivot.rotation.x = pitchRad;
+  applyCannonDisplayForPitch(cannonRoot);
+}
+
+/** Przy celowaniu w górę delikatnie kurczy tylko meshe wizualne — fizyka strzału bez zmian. */
+export function applyCannonDisplayForPitch(cannonRoot: THREE.Object3D): void {
+  const pitchPivot = cannonRoot.getObjectByName('pitch-pivot');
+  if (!pitchPivot) return;
+
+  const pitch = Math.max(0, pitchPivot.rotation.x);
+  const t = THREE.MathUtils.smoothstep(pitch, (12 * Math.PI) / 180, (52 * Math.PI) / 180);
+  const meshScale = THREE.MathUtils.lerp(1, 0.34, t);
+  const barrelLen = THREE.MathUtils.lerp(1, 0.38, t);
+  const muzzleScale = THREE.MathUtils.lerp(1, 0.32, t);
+
+  const base = cannonRoot.getObjectByName('cannon-base');
+  const barrel = cannonRoot.getObjectByName('cannon-barrel');
+  const muzzle = cannonRoot.getObjectByName('cannon-muzzle');
+
+  if (base) base.scale.setScalar(meshScale);
+  if (barrel) barrel.scale.set(meshScale, meshScale, barrelLen * meshScale);
+  if (muzzle) {
+    muzzle.scale.setScalar(muzzleScale);
+    const mat = (muzzle as THREE.Mesh).material as THREE.MeshStandardMaterial;
+    mat.opacity = THREE.MathUtils.lerp(1, 0.7, t);
+    mat.transparent = t > 0.04;
+  }
 }
 
 export function resetCannonAim(cannonRoot: THREE.Object3D, level: LevelDefinition): void {
