@@ -234,6 +234,22 @@ export function powerFromDrag(len: number, maxPx = 140): number {
   return Math.min(maxPx, len) / maxPx;
 }
 
+const _aimArcYellow = new THREE.Color(0xffee44);
+const _aimArcGreen = new THREE.Color(0x44dd55);
+const _aimArcRed = new THREE.Color(0xff3322);
+const _aimArcColor = new THREE.Color();
+
+/** Żółty = słaby, zielony = średni, czerwony = mocny (power 0…1). */
+export function aimArcColorFromPower(power: number): number {
+  const p = THREE.MathUtils.clamp(power, 0, 1);
+  if (p <= 0.5) {
+    _aimArcColor.copy(_aimArcYellow).lerp(_aimArcGreen, p * 2);
+  } else {
+    _aimArcColor.copy(_aimArcGreen).lerp(_aimArcRed, (p - 0.5) * 2);
+  }
+  return _aimArcColor.getHex();
+}
+
 /** @deprecated Użyj aimCannonAtScreen + powerFromDrag */
 export function aimAnglesFromDrag(dx: number, _dy: number, len: number, level: LevelDefinition): {
   pitchRad: number;

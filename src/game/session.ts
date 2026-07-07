@@ -18,6 +18,7 @@ import {
 import { levelByIndex, levelCount } from '../levels/index.js';
 import { useHudStore } from '../ui/hud-store.js';
 import {
+  aimArcColorFromPower,
   aimCannonBallistic,
   applyWorldOffset,
   barrelWorldDirection,
@@ -57,6 +58,7 @@ export class GameSession {
   private entries: BodyEntry[] = [];
   private cannonMesh!: THREE.Group;
   private aimLine!: THREE.Line;
+  private aimLineMaterial!: THREE.LineBasicMaterial;
   private ballBody: RAPIER.RigidBody | null = null;
   private ballMesh: THREE.Mesh | null = null;
   private ballAgeMs = 0;
@@ -166,10 +168,12 @@ export class GameSession {
       new THREE.Vector3(),
       new THREE.Vector3(),
     ]);
-    this.aimLine = new THREE.Line(
-      geom,
-      new THREE.LineBasicMaterial({ color: 0xffee88, transparent: true, opacity: 0.85 }),
-    );
+    this.aimLineMaterial = new THREE.LineBasicMaterial({
+      color: 0xffee44,
+      transparent: true,
+      opacity: 0.9,
+    });
+    this.aimLine = new THREE.Line(geom, this.aimLineMaterial);
     this.scene.add(this.aimLine);
     this.aimLine.visible = false;
   }
@@ -395,6 +399,7 @@ export class GameSession {
 
     const power = powerFromDrag(len, MAX_DRAG_PX);
     this.applyBallisticAim(power);
+    this.aimLineMaterial.color.setHex(aimArcColorFromPower(power));
     const origin = muzzleWorldPosition(this.cannonMesh);
     const arc = simulateBallisticArc(origin, power, this.cannonMesh);
     if (arc.length >= 2) {
