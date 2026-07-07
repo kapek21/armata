@@ -131,33 +131,33 @@ export class GameSession {
     this.cannonMesh.name = 'cannon-root';
 
     const base = new THREE.Mesh(
-      new THREE.CylinderGeometry(1.05, 1.25, 0.65, 14),
+      new THREE.CylinderGeometry(0.88, 1.05, 0.58, 14),
       new THREE.MeshStandardMaterial({ color: CANNON_COLOR, roughness: 0.75 }),
     );
-    base.position.y = 0.28;
+    base.position.y = 0.26;
     base.castShadow = this.tier === 'high';
 
     const yawMount = new THREE.Group();
     yawMount.name = 'yaw-pivot';
-    yawMount.position.y = 0.52;
+    yawMount.position.y = 0.48;
 
     const pitchPivot = new THREE.Group();
     pitchPivot.name = 'pitch-pivot';
 
     const barrel = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.2, 0.26, 1.75, 12),
+      new THREE.CylinderGeometry(0.18, 0.24, 1.6, 12),
       new THREE.MeshStandardMaterial({ color: 0x2a2a2a, roughness: 0.55, metalness: 0.35 }),
     );
     barrel.rotation.x = Math.PI / 2;
-    barrel.position.set(0, 0, -0.88);
+    barrel.position.set(0, 0, -0.82);
     barrel.castShadow = this.tier === 'high';
 
     const muzzleRing = new THREE.Mesh(
-      new THREE.TorusGeometry(0.24, 0.05, 8, 16),
+      new THREE.TorusGeometry(0.21, 0.045, 8, 16),
       new THREE.MeshStandardMaterial({ color: 0x555555, metalness: 0.5 }),
     );
     muzzleRing.rotation.x = Math.PI / 2;
-    muzzleRing.position.set(0, 0, -1.72);
+    muzzleRing.position.set(0, 0, -1.58);
 
     pitchPivot.add(barrel, muzzleRing);
     yawMount.add(pitchPivot);

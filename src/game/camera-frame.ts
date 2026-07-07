@@ -4,21 +4,23 @@ import type { LevelDefinition } from '../core/types.js';
 /** Cel — przed armatą w osi Z. */
 export const GOAL_PLANE_Z = -4;
 
-/** Armata — pierwszy plan, bliżej kamery niż cel. */
-export const CANNON_WORLD_Y = 0.55;
+/** Armata — wyśrodkowana na dole ekranu, kompaktowa. */
+export const CANNON_WORLD_X = 0;
+export const CANNON_WORLD_Y = 0.45;
 export const CANNON_WORLD_Z = 8.2;
-export const CANNON_SCALE = 0.55;
+export const CANNON_SCALE = 0.42;
+
+/** Kamera nad armatą — cel w górnej części kadru. */
+const CAMERA_X = 0;
+const CAMERA_Y = 1.28;
+const CAMERA_Z = 9.35;
+const CAMERA_FOV = 55;
 
 export const BALL_RADIUS = 0.35;
 export const BALL_DENSITY = 2.2;
 export const GRAVITY = 9.81;
 
 const BALL_MASS = BALL_DENSITY * ((4 / 3) * Math.PI * BALL_RADIUS ** 3);
-
-/** Kamera wyżej — cel nad lufą, bez zasłaniania. */
-const CAMERA_Y = 1.4;
-const CAMERA_Z = 9.2;
-const CAMERA_FOV = 54;
 
 export interface GoalFrame {
   center: THREE.Vector3;
@@ -73,13 +75,14 @@ export function frameGameplayCamera(
 ): void {
   if (!Number.isFinite(aspect) || aspect <= 0) return;
 
-  cannonRoot.position.set(0, CANNON_WORLD_Y, CANNON_WORLD_Z);
+  cannonRoot.position.set(CANNON_WORLD_X, CANNON_WORLD_Y, CANNON_WORLD_Z);
   cannonRoot.rotation.set(0, 0, 0);
   cannonRoot.scale.setScalar(CANNON_SCALE);
 
-  const lookAt = new THREE.Vector3(0, goalFrame.center.y, GOAL_PLANE_Z);
+  const lookAtY = THREE.MathUtils.lerp(2.1, goalFrame.center.y, 0.68);
+  const lookAt = new THREE.Vector3(0, lookAtY, GOAL_PLANE_Z);
 
-  camera.position.set(0, CAMERA_Y, CAMERA_Z);
+  camera.position.set(CAMERA_X, CAMERA_Y, CAMERA_Z);
   camera.up.set(0, 1, 0);
   camera.fov = CAMERA_FOV;
   camera.aspect = aspect;
@@ -93,7 +96,7 @@ export function frameGameplayCamera(
 
 export function muzzleWorldPosition(cannonRoot: THREE.Object3D): THREE.Vector3 {
   const pitch = cannonRoot.getObjectByName('pitch-pivot');
-  if (pitch) return pitch.localToWorld(new THREE.Vector3(0, 0, -1.72));
+  if (pitch) return pitch.localToWorld(new THREE.Vector3(0, 0, -1.58));
   return cannonRoot.localToWorld(new THREE.Vector3(0, 0.58, -1.05));
 }
 
@@ -106,7 +109,7 @@ function restMuzzleWorld(cannonRoot: THREE.Object3D): THREE.Vector3 {
   yawP.rotation.y = 0;
   pitchP.rotation.x = 0;
   cannonRoot.updateMatrixWorld(true);
-  const muzzle = pitchP.localToWorld(new THREE.Vector3(0, 0, -1.72)).clone();
+  const muzzle = pitchP.localToWorld(new THREE.Vector3(0, 0, -1.58)).clone();
   yawP.rotation.y = savedYaw;
   pitchP.rotation.x = savedPitch;
   cannonRoot.updateMatrixWorld(true);
@@ -406,8 +409,8 @@ export function simulateBallisticArc(
 export function barrelWorldDirection(cannonRoot: THREE.Object3D): THREE.Vector3 {
   const pitch = cannonRoot.getObjectByName('pitch-pivot');
   if (pitch) {
-    const from = pitch.localToWorld(new THREE.Vector3(0, 0, -0.2));
-    const to = pitch.localToWorld(new THREE.Vector3(0, 0, -1.72));
+    const from = pitch.localToWorld(new THREE.Vector3(0, 0, -0.18));
+    const to = pitch.localToWorld(new THREE.Vector3(0, 0, -1.58));
     return to.sub(from).normalize();
   }
   const from = new THREE.Vector3(0, 0.58, -0.15);
