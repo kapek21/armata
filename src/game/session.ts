@@ -134,7 +134,6 @@ export class GameSession {
       new THREE.CylinderGeometry(0.88, 1.05, 0.58, 14),
       new THREE.MeshStandardMaterial({ color: CANNON_COLOR, roughness: 0.75 }),
     );
-    base.name = 'cannon-base';
     base.position.y = 0.26;
     base.castShadow = this.tier === 'high';
 
@@ -149,7 +148,6 @@ export class GameSession {
       new THREE.CylinderGeometry(0.18, 0.24, 1.6, 12),
       new THREE.MeshStandardMaterial({ color: 0x2a2a2a, roughness: 0.55, metalness: 0.35 }),
     );
-    barrel.name = 'cannon-barrel';
     barrel.rotation.x = Math.PI / 2;
     barrel.position.set(0, 0, -0.82);
     barrel.castShadow = this.tier === 'high';
@@ -158,7 +156,6 @@ export class GameSession {
       new THREE.TorusGeometry(0.21, 0.045, 8, 16),
       new THREE.MeshStandardMaterial({ color: 0x555555, metalness: 0.5 }),
     );
-    muzzleRing.name = 'cannon-muzzle';
     muzzleRing.rotation.x = Math.PI / 2;
     muzzleRing.position.set(0, 0, -1.58);
 
