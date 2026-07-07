@@ -21,6 +21,7 @@ import {
   aimArcColorFromPower,
   aimCannonBallistic,
   applyWorldOffset,
+  BALL_RADIUS,
   barrelWorldDirection,
   computeGoalFrame,
   frameGameplayCamera,
@@ -72,6 +73,7 @@ export class GameSession {
   private aim: AimState = { active: false, originX: 0, originY: 0, currentX: 0, currentY: 0 };
   private activePointerId = -1;
   private aimWorldTarget: THREE.Vector3 | null = null;
+  private aimTargetMesh: THREE.Mesh | null = null;
   private clearedTargets = new Set<string>();
   private goalFrame!: GoalFrame;
   private viewportW = 0;
@@ -191,6 +193,7 @@ export class GameSession {
     this.activePointerId = -1;
     this.aim.active = false;
     this.aimWorldTarget = null;
+    this.aimTargetMesh = null;
 
     this.goalFrame = computeGoalFrame(this.level);
 
@@ -306,7 +309,9 @@ export class GameSession {
   }
 
   private aimMeshes(): THREE.Object3D[] {
-    return this.entries.filter((e) => !e.isStatic).map((e) => e.mesh);
+    return this.entries
+      .filter((e) => !e.isStatic && !e.cleared && e.mesh.parent !== null)
+      .map((e) => e.mesh);
   }
 
   private currentDragPower(): number {
@@ -315,15 +320,41 @@ export class GameSession {
     return Math.max(0.3, powerFromDrag(Math.hypot(dx, dy), MAX_DRAG_PX));
   }
 
+  private aimObstacleBoxes(): THREE.Box3[] {
+    const margin = BALL_RADIUS * 0.85;
+    const boxes: THREE.Box3[] = [];
+    for (const entry of this.entries) {
+      if (entry.isStatic || entry.cleared || entry.mesh === this.aimTargetMesh || entry.mesh.parent === null) {
+        continue;
+      }
+      const box = new THREE.Box3().setFromObject(entry.mesh);
+      box.expandByScalar(margin);
+      boxes.push(box);
+    }
+    return boxes;
+  }
+
+  private refreshAimTargetPoint(): void {
+    if (!this.aimTargetMesh || !this.aimWorldTarget) return;
+    const box = new THREE.Box3().setFromObject(this.aimTargetMesh);
+    box.getCenter(this.aimWorldTarget);
+  }
+
   private applyBallisticAim(power = this.currentDragPower()): void {
     if (!this.aimWorldTarget) return;
-    aimCannonBallistic(this.cannonMesh, this.aimWorldTarget, power);
+    this.refreshAimTargetPoint();
+    aimCannonBallistic(this.cannonMesh, this.aimWorldTarget, power, this.aimObstacleBoxes());
   }
 
   private lockAimTarget(clientX: number, clientY: number): void {
-    this.aimWorldTarget = pickAimTarget(this.camera, clientX, clientY, this.host, this.aimMeshes());
-    if (this.aimWorldTarget) {
+    const pick = pickAimTarget(this.camera, clientX, clientY, this.host, this.aimMeshes());
+    if (pick) {
+      this.aimWorldTarget = pick.point;
+      this.aimTargetMesh = pick.mesh as THREE.Mesh | null;
       this.applyBallisticAim(0.55);
+    } else {
+      this.aimWorldTarget = null;
+      this.aimTargetMesh = null;
     }
   }
 
@@ -363,6 +394,7 @@ export class GameSession {
     this.activePointerId = -1;
     this.aim.active = false;
     this.aimWorldTarget = null;
+    this.aimTargetMesh = null;
     this.aimLine.visible = false;
   }
 
@@ -382,10 +414,12 @@ export class GameSession {
 
     if (len >= MIN_DRAG_PX && this.aimWorldTarget) {
       const power = powerFromDrag(len, MAX_DRAG_PX);
-      aimCannonBallistic(this.cannonMesh, this.aimWorldTarget, power);
+      this.refreshAimTargetPoint();
+      aimCannonBallistic(this.cannonMesh, this.aimWorldTarget, power, this.aimObstacleBoxes());
       this.fireShot(power);
     }
     this.aimWorldTarget = null;
+    this.aimTargetMesh = null;
   }
 
   private updateAimVisual(): void {

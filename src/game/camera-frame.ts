@@ -92,7 +92,25 @@ export function frameGameplayCamera(
 }
 
 export function muzzleWorldPosition(cannonRoot: THREE.Object3D): THREE.Vector3 {
+  const pitch = cannonRoot.getObjectByName('pitch-pivot');
+  if (pitch) return pitch.localToWorld(new THREE.Vector3(0, 0, -1.72));
   return cannonRoot.localToWorld(new THREE.Vector3(0, 0.58, -1.05));
+}
+
+function restMuzzleWorld(cannonRoot: THREE.Object3D): THREE.Vector3 {
+  const yawP = cannonRoot.getObjectByName('yaw-pivot');
+  const pitchP = cannonRoot.getObjectByName('pitch-pivot');
+  if (!yawP || !pitchP) return muzzleWorldPosition(cannonRoot);
+  const savedYaw = yawP.rotation.y;
+  const savedPitch = pitchP.rotation.x;
+  yawP.rotation.y = 0;
+  pitchP.rotation.x = 0;
+  cannonRoot.updateMatrixWorld(true);
+  const muzzle = pitchP.localToWorld(new THREE.Vector3(0, 0, -1.72)).clone();
+  yawP.rotation.y = savedYaw;
+  pitchP.rotation.x = savedPitch;
+  cannonRoot.updateMatrixWorld(true);
+  return muzzle;
 }
 
 const _goalPlane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 4);
@@ -102,15 +120,45 @@ const _hit = new THREE.Vector3();
 const _dir = new THREE.Vector3();
 const _localDir = new THREE.Vector3();
 const _quat = new THREE.Quaternion();
+const _box = new THREE.Box3();
+const _center = new THREE.Vector3();
+const _arcPos = new THREE.Vector3();
+const _arcVel = new THREE.Vector3();
 
-/** Promień z ekranu — trafia w klocek lub (fallback) płaszczyznę celu. */
+export interface AimTargetPick {
+  point: THREE.Vector3;
+  mesh: THREE.Object3D | null;
+}
+
+function meshAimPoint(mesh: THREE.Object3D): THREE.Vector3 {
+  _box.setFromObject(mesh);
+  _box.getCenter(_center);
+  return _center.clone();
+}
+
+function screenDistToMesh(
+  mesh: THREE.Object3D,
+  camera: THREE.PerspectiveCamera,
+  clientX: number,
+  clientY: number,
+  rect: DOMRect,
+): number {
+  _box.setFromObject(mesh);
+  _box.getCenter(_center);
+  _center.project(camera);
+  const sx = (_center.x * 0.5 + 0.5) * rect.width + rect.left;
+  const sy = (-_center.y * 0.5 + 0.5) * rect.height + rect.top;
+  return Math.hypot(sx - clientX, sy - clientY);
+}
+
+/** Promień z ekranu — wybiera klocek najbliższy dotknięciu (nie pierwszy wzdłuż promienia). */
 export function pickAimTarget(
   camera: THREE.PerspectiveCamera,
   clientX: number,
   clientY: number,
   host: HTMLElement,
   meshes: THREE.Object3D[],
-): THREE.Vector3 | null {
+): AimTargetPick | null {
   const rect = host.getBoundingClientRect();
   if (rect.width <= 0 || rect.height <= 0) return null;
   _ndc.set(
@@ -122,16 +170,73 @@ export function pickAimTarget(
   if (meshes.length > 0) {
     const hits = _raycaster.intersectObjects(meshes, false);
     if (hits.length > 0) {
-      const hit = hits[0];
-      const box = new THREE.Box3().setFromObject(hit.object);
-      const center = new THREE.Vector3();
-      box.getCenter(center);
-      // Środek trafionego klocka — stabilniejsze niż punkt na ścianie z boku kamery
-      return center;
+      let best = hits[0];
+      let bestScreen = Infinity;
+      for (const hit of hits) {
+        const d = screenDistToMesh(hit.object, camera, clientX, clientY, rect);
+        if (d < bestScreen) {
+          bestScreen = d;
+          best = hit;
+        }
+      }
+      return { point: meshAimPoint(best.object), mesh: best.object };
     }
   }
 
-  return _raycaster.ray.intersectPlane(_goalPlane, _hit) ? _hit.clone() : null;
+  return _raycaster.ray.intersectPlane(_goalPlane, _hit)
+    ? { point: _hit.clone(), mesh: null }
+    : null;
+}
+
+function worldDirFromAim(yaw: number, pitch: number, out: THREE.Vector3): THREE.Vector3 {
+  const cp = Math.cos(pitch);
+  return out.set(Math.sin(yaw) * cp, Math.sin(pitch), -Math.cos(yaw) * cp);
+}
+
+function arcHitsObstacle(
+  muzzle: THREE.Vector3,
+  yaw: number,
+  pitch: number,
+  speed: number,
+  obstacles: THREE.Box3[],
+  target: THREE.Vector3,
+): boolean {
+  if (obstacles.length === 0) return false;
+  worldDirFromAim(yaw, pitch, _arcVel).multiplyScalar(speed);
+  _arcPos.copy(muzzle);
+  const dt = 0.045;
+  for (let step = 0; step < 42; step++) {
+    _arcPos.addScaledVector(_arcVel, dt);
+    _arcVel.y -= GRAVITY * dt;
+    if (_arcPos.distanceToSquared(target) < 0.28 * 0.28) return false;
+    for (const box of obstacles) {
+      if (box.min.y > target.y + 0.2) continue;
+      if (box.containsPoint(_arcPos)) return true;
+    }
+    if (_arcPos.y < -4) return false;
+  }
+  return false;
+}
+
+function selectBallisticPitch(
+  pitchLow: number,
+  pitchHigh: number,
+  direct: number,
+  muzzle: THREE.Vector3,
+  yaw: number,
+  speed: number,
+  obstacles: THREE.Box3[],
+  target: THREE.Vector3,
+): number {
+  if (obstacles.length === 0) {
+    return pitchLow >= direct * 0.85 ? pitchLow : pitchHigh;
+  }
+  const lowBlocked = arcHitsObstacle(muzzle, yaw, pitchLow, speed, obstacles, target);
+  const highBlocked = arcHitsObstacle(muzzle, yaw, pitchHigh, speed, obstacles, target);
+  if (lowBlocked && !highBlocked) return pitchHigh;
+  if (!lowBlocked && highBlocked) return pitchLow;
+  if (lowBlocked && highBlocked) return pitchHigh;
+  return pitchLow >= direct * 0.85 ? pitchLow : pitchHigh;
 }
 
 export function shotImpulse(power: number): number {
@@ -147,8 +252,9 @@ export function aimCannonBallistic(
   cannonRoot: THREE.Object3D,
   target: THREE.Vector3,
   power: number,
+  obstacles: THREE.Box3[] = [],
 ): boolean {
-  const muzzle = muzzleWorldPosition(cannonRoot);
+  const muzzle = restMuzzleWorld(cannonRoot);
   const dx = target.x - muzzle.x;
   const dy = target.y - muzzle.y;
   const dz = target.z - muzzle.z;
@@ -159,6 +265,7 @@ export function aimCannonBallistic(
   const v2 = v * v;
   const g = GRAVITY;
   const disc = v2 * v2 - g * (g * dh * dh + 2 * dy * v2);
+  const yawWorld = Math.atan2(dx, -dz);
 
   let pitchWorld: number;
   if (disc < 0) {
@@ -168,14 +275,23 @@ export function aimCannonBallistic(
     const pitchLow = Math.atan((v2 - sqrtDisc) / (g * dh));
     const pitchHigh = Math.atan((v2 + sqrtDisc) / (g * dh));
     const direct = Math.atan2(dy, dh);
-    pitchWorld = pitchLow >= direct * 0.85 ? pitchLow : pitchHigh;
+    pitchWorld = selectBallisticPitch(
+      pitchLow,
+      pitchHigh,
+      direct,
+      muzzle,
+      yawWorld,
+      v,
+      obstacles,
+      target,
+    );
   }
 
-  const yawWorld = Math.atan2(dx, -dz);
   pitchWorld = THREE.MathUtils.clamp(pitchWorld, (4 * Math.PI) / 180, (72 * Math.PI) / 180);
   const yaw = THREE.MathUtils.clamp(yawWorld, (-42 * Math.PI) / 180, (42 * Math.PI) / 180);
 
   applyCannonAim(cannonRoot, pitchWorld, yaw);
+  cannonRoot.updateMatrixWorld(true);
   return true;
 }
 
@@ -226,7 +342,7 @@ export function aimCannonAtScreen(
 ): boolean {
   const target = pickAimTarget(camera, clientX, clientY, host, meshes);
   if (!target) return false;
-  aimCannonAtWorldPoint(cannonRoot, target);
+  aimCannonAtWorldPoint(cannonRoot, target.point);
   return true;
 }
 
@@ -287,6 +403,12 @@ export function simulateBallisticArc(
 }
 
 export function barrelWorldDirection(cannonRoot: THREE.Object3D): THREE.Vector3 {
+  const pitch = cannonRoot.getObjectByName('pitch-pivot');
+  if (pitch) {
+    const from = pitch.localToWorld(new THREE.Vector3(0, 0, -0.2));
+    const to = pitch.localToWorld(new THREE.Vector3(0, 0, -1.72));
+    return to.sub(from).normalize();
+  }
   const from = new THREE.Vector3(0, 0.58, -0.15);
   const to = new THREE.Vector3(0, 0.58, -1.7);
   cannonRoot.localToWorld(from);
@@ -298,7 +420,7 @@ export function applyCannonAim(cannonRoot: THREE.Object3D, pitchRad: number, yaw
   const yawPivot = cannonRoot.getObjectByName('yaw-pivot');
   const pitchPivot = cannonRoot.getObjectByName('pitch-pivot');
   if (yawPivot) yawPivot.rotation.y = yawRad;
-  if (pitchPivot) pitchPivot.rotation.x = -pitchRad;
+  if (pitchPivot) pitchPivot.rotation.x = pitchRad;
 }
 
 export function resetCannonAim(cannonRoot: THREE.Object3D, level: LevelDefinition): void {
