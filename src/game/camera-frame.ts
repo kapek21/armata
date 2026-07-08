@@ -432,9 +432,11 @@ export function applyCannonAim(cannonRoot: THREE.Object3D, pitchRad: number, yaw
 function setCannonMeshOpacity(mesh: THREE.Object3D | null, opacity: number): void {
   if (!mesh || !(mesh as THREE.Mesh).isMesh) return;
   const mat = (mesh as THREE.Mesh).material as THREE.MeshStandardMaterial;
+  const isTransparent = opacity < 0.995;
   mat.opacity = opacity;
-  mat.transparent = opacity < 0.98;
-  mat.depthWrite = opacity > 0.85;
+  mat.transparent = isTransparent;
+  mat.depthWrite = !isTransparent;
+  mat.needsUpdate = true;
 }
 
 /** Półprzezroczysta podstawa/lufa tylko gdy obręcz jest ukryta (ten sam próg pitch). */
@@ -447,7 +449,8 @@ export function applyCannonVisualForPitch(cannonRoot: THREE.Object3D): void {
   const fadeEnd = (52 * Math.PI) / 180;
   const hideMuzzle = pitch >= muzzleHiddenAt;
   const fadeT = hideMuzzle ? THREE.MathUtils.smoothstep(pitch, muzzleHiddenAt, fadeEnd) : 0;
-  const opacity = THREE.MathUtils.lerp(1, 0.38, fadeT);
+  // Gdy obręcz znika, armata od razu półprzezroczysta (wcześniej fade startował od 100%).
+  const opacity = hideMuzzle ? THREE.MathUtils.lerp(0.48, 0.2, fadeT) : 1;
 
   setCannonMeshOpacity(cannonRoot.getObjectByName('cannon-base') ?? null, opacity);
   setCannonMeshOpacity(cannonRoot.getObjectByName('cannon-barrel') ?? null, opacity);
