@@ -92,6 +92,7 @@ export function frameGameplayCamera(
   camera.updateProjectionMatrix();
   camera.updateMatrixWorld(true);
   cannonRoot.updateMatrixWorld(true);
+  applyCannonVisualForPitch(cannonRoot);
 }
 
 export function muzzleWorldPosition(cannonRoot: THREE.Object3D): THREE.Vector3 {
@@ -425,6 +426,35 @@ export function applyCannonAim(cannonRoot: THREE.Object3D, pitchRad: number, yaw
   const pitchPivot = cannonRoot.getObjectByName('pitch-pivot');
   if (yawPivot) yawPivot.rotation.y = yawRad;
   if (pitchPivot) pitchPivot.rotation.x = pitchRad;
+  applyCannonVisualForPitch(cannonRoot);
+}
+
+function setCannonMeshOpacity(mesh: THREE.Object3D | null, opacity: number): void {
+  if (!mesh || !(mesh as THREE.Mesh).isMesh) return;
+  const mat = (mesh as THREE.Mesh).material as THREE.MeshStandardMaterial;
+  mat.opacity = opacity;
+  mat.transparent = opacity < 0.98;
+  mat.depthWrite = opacity > 0.85;
+}
+
+/** Przy wysokim pitch: półprzezroczysta lufa/podstawa, ukryta obręcz (tylko wizualnie). */
+export function applyCannonVisualForPitch(cannonRoot: THREE.Object3D): void {
+  const pitchPivot = cannonRoot.getObjectByName('pitch-pivot');
+  if (!pitchPivot) return;
+
+  const pitch = Math.max(0, pitchPivot.rotation.x);
+  const fadeT = THREE.MathUtils.smoothstep(pitch, (24 * Math.PI) / 180, (52 * Math.PI) / 180);
+  const opacity = THREE.MathUtils.lerp(1, 0.38, fadeT);
+  const hideMuzzle = pitch >= (28 * Math.PI) / 180;
+
+  setCannonMeshOpacity(cannonRoot.getObjectByName('cannon-base') ?? null, opacity);
+  setCannonMeshOpacity(cannonRoot.getObjectByName('cannon-barrel') ?? null, opacity);
+
+  const muzzle = cannonRoot.getObjectByName('cannon-muzzle');
+  if (muzzle) {
+    muzzle.visible = !hideMuzzle;
+    if (!hideMuzzle) setCannonMeshOpacity(muzzle, 1);
+  }
 }
 
 export function resetCannonAim(cannonRoot: THREE.Object3D, level: LevelDefinition): void {
