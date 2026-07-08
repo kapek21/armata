@@ -437,15 +437,17 @@ function setCannonMeshOpacity(mesh: THREE.Object3D | null, opacity: number): voi
   mat.depthWrite = opacity > 0.85;
 }
 
-/** Przy wysokim pitch: półprzezroczysta lufa/podstawa, ukryta obręcz (tylko wizualnie). */
+/** Półprzezroczysta podstawa/lufa tylko gdy obręcz jest ukryta (ten sam próg pitch). */
 export function applyCannonVisualForPitch(cannonRoot: THREE.Object3D): void {
   const pitchPivot = cannonRoot.getObjectByName('pitch-pivot');
   if (!pitchPivot) return;
 
   const pitch = Math.max(0, pitchPivot.rotation.x);
-  const fadeT = THREE.MathUtils.smoothstep(pitch, (24 * Math.PI) / 180, (52 * Math.PI) / 180);
+  const muzzleHiddenAt = (28 * Math.PI) / 180;
+  const fadeEnd = (52 * Math.PI) / 180;
+  const hideMuzzle = pitch >= muzzleHiddenAt;
+  const fadeT = hideMuzzle ? THREE.MathUtils.smoothstep(pitch, muzzleHiddenAt, fadeEnd) : 0;
   const opacity = THREE.MathUtils.lerp(1, 0.38, fadeT);
-  const hideMuzzle = pitch >= (28 * Math.PI) / 180;
 
   setCannonMeshOpacity(cannonRoot.getObjectByName('cannon-base') ?? null, opacity);
   setCannonMeshOpacity(cannonRoot.getObjectByName('cannon-barrel') ?? null, opacity);
