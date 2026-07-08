@@ -158,7 +158,8 @@ export class GameSession {
       new THREE.MeshStandardMaterial({ color: 0x555555, metalness: 0.5 }),
     );
     muzzleRing.rotation.x = Math.PI / 2;
-    muzzleRing.position.set(0, 0, -1.58);
+    // Wyrównane z końcem lufy (−0.82 − 1.6/2); balistyka nadal używa z = −1.58.
+    muzzleRing.position.set(0, 0, -1.62);
 
     pitchPivot.add(barrel, muzzleRing);
     yawMount.add(pitchPivot);
