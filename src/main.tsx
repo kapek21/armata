@@ -67,6 +67,7 @@ function App(): JSX.Element {
           onRetry={() => session?.retry()}
           onNext={() => session?.nextLevel()}
           onMenu={() => session?.showMenu()}
+          onCloseMenu={() => session?.closeMenu()}
           onStartLevel={(i) => session?.startFromMenu(i)}
         />
       )}

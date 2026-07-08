@@ -71,6 +71,7 @@ export class GameSession {
   private ammoLeft = 0;
   private shotsUsed = 0;
   private phase: GamePhase = 'loading';
+  private menuReturnPhase: GamePhase = 'aiming';
   private aim: AimState = { active: false, originX: 0, originY: 0, currentX: 0, currentY: 0 };
   private activePointerId = -1;
   private aimWorldTarget: THREE.Vector3 | null = null;
@@ -635,7 +636,15 @@ export class GameSession {
   }
 
   showMenu(): void {
+    if (this.phase === 'menu') return;
+    this.menuReturnPhase = this.phase;
     this.phase = 'menu';
+    this.syncHud('');
+  }
+
+  closeMenu(): void {
+    if (this.phase !== 'menu') return;
+    this.phase = this.menuReturnPhase;
     this.syncHud('');
   }
 

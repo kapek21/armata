@@ -7,18 +7,39 @@ interface HudProps {
   onRetry: () => void;
   onNext: () => void;
   onMenu: () => void;
+  onCloseMenu: () => void;
   onStartLevel: (index: number) => void;
 }
 
-export function Hud({ phase, onRetry, onNext, onMenu, onStartLevel }: HudProps): JSX.Element {
+export function Hud({ phase, onRetry, onNext, onMenu, onCloseMenu, onStartLevel }: HudProps): JSX.Element {
   const snap = useHudStore((s) => s.snapshot);
   const profile = useHudStore((s) => s.profile);
 
   if (phase === 'menu') {
     return (
-      <div className="pointer-events-auto absolute inset-0 z-20 flex items-center justify-center bg-black/50 p-4 safe-top safe-bottom">
-        <div className="panel w-full max-w-sm p-5">
-          <h1 className="font-display text-center text-xl text-amber-300">ARMATA</h1>
+      <div
+        className="pointer-events-auto absolute inset-0 z-20 flex items-center justify-center bg-black/50 p-4 safe-top safe-bottom"
+        onClick={onCloseMenu}
+        role="presentation"
+      >
+        <div
+          className="panel relative w-full max-w-sm p-5"
+          onClick={(e) => e.stopPropagation()}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="menu-title"
+        >
+          <button
+            type="button"
+            className="btn-secondary absolute right-3 top-3 min-h-11 min-w-11 px-0 text-lg leading-none"
+            aria-label="Zamknij menu"
+            onClick={onCloseMenu}
+          >
+            ×
+          </button>
+          <h1 id="menu-title" className="font-display text-center text-xl text-amber-300 pr-10">
+            ARMATA
+          </h1>
           <p className="mt-1 text-center text-xs text-white/60">Physics puzzler — przewróć cele</p>
           <ul className="mt-4 flex flex-col gap-2">
             {Array.from({ length: levelCount() }, (_, i) => {
@@ -44,7 +65,10 @@ export function Hud({ phase, onRetry, onNext, onMenu, onStartLevel }: HudProps):
               );
             })}
           </ul>
-          <p className="mt-4 text-center text-[11px] text-white/45">
+          <button type="button" className="btn-primary mt-4 w-full" onClick={onCloseMenu}>
+            Wróć do gry
+          </button>
+          <p className="mt-3 text-center text-[11px] text-white/45">
             Przeciągnij palcem, puść — strzał
           </p>
         </div>
