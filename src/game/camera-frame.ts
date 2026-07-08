@@ -433,20 +433,19 @@ function setCannonMeshOpacity(mesh: THREE.Object3D | null, opacity: number): voi
   if (!mesh || !(mesh as THREE.Mesh).isMesh) return;
   const mat = (mesh as THREE.Mesh).material as THREE.MeshStandardMaterial;
   mat.opacity = opacity;
-  mat.transparent = opacity < 0.99;
-  mat.depthWrite = opacity > 0.9;
+  mat.transparent = opacity < 0.98;
+  mat.depthWrite = opacity > 0.85;
 }
 
-/** Przy pionowym kadrze lufy: półprzezroczysta podstawa/lufa, ukryta obręcz (tylko wizualnie). */
+/** Przy wysokim pitch: półprzezroczysta lufa/podstawa, ukryta obręcz (tylko wizualnie). */
 export function applyCannonVisualForPitch(cannonRoot: THREE.Object3D): void {
   const pitchPivot = cannonRoot.getObjectByName('pitch-pivot');
   if (!pitchPivot) return;
 
   const pitch = Math.max(0, pitchPivot.rotation.x);
-  // Lufa jest pionowa na ekranie już od ~12° — fade od razu, nie dopiero od 24°.
-  const fadeT = THREE.MathUtils.smoothstep(pitch, (12 * Math.PI) / 180, (40 * Math.PI) / 180);
-  const opacity = THREE.MathUtils.lerp(0.52, 0.18, fadeT);
-  const hideMuzzle = pitch >= (18 * Math.PI) / 180;
+  const fadeT = THREE.MathUtils.smoothstep(pitch, (24 * Math.PI) / 180, (52 * Math.PI) / 180);
+  const opacity = THREE.MathUtils.lerp(1, 0.38, fadeT);
+  const hideMuzzle = pitch >= (28 * Math.PI) / 180;
 
   setCannonMeshOpacity(cannonRoot.getObjectByName('cannon-base') ?? null, opacity);
   setCannonMeshOpacity(cannonRoot.getObjectByName('cannon-barrel') ?? null, opacity);
