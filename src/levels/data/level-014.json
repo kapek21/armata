@@ -1,24 +1,24 @@
 {
-  "id": "level-001",
-  "name": "Mur Podstawowy 1",
-  "chapter": 1,
-  "difficulty": 1,
-  "ammoLimit": 6,
-  "timeLimitSec": 102,
+  "id": "level-014",
+  "name": "Drewniane Wieże 4",
+  "chapter": 2,
+  "difficulty": 2,
+  "ammoLimit": 5,
+  "timeLimitSec": 82,
   "starTimeSec": [
-    56,
-    39,
-    22
+    45,
+    31,
+    18
   ],
   "starShots": [
+    3,
     4,
-    5,
-    6
+    5
   ],
   "starScore": [
-    915,
-    715,
-    465
+    1060,
+    860,
+    610
   ],
   "killZoneY": -2,
   "cannon": {
@@ -27,8 +27,8 @@
       0.6,
       8.2
     ],
-    "angleMinDeg": 11,
-    "angleMaxDeg": 46
+    "angleMinDeg": 12,
+    "angleMaxDeg": 48
   },
   "enemyCastle": {
     "origin": [
@@ -47,7 +47,7 @@
           -2
         ],
         "size": [
-          10.4,
+          10.8,
           0.5,
           7
         ],
@@ -72,11 +72,28 @@
         "isStatic": false
       },
       {
+        "id": "wall-1",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          0,
+          1.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
         "id": "side-l",
         "type": "tower",
         "material": "stone",
         "position": [
-          -1.395,
+          -1.44,
           0.5,
           -2
         ],
@@ -92,7 +109,7 @@
         "type": "tower",
         "material": "stone",
         "position": [
-          1.395,
+          1.44,
           0.5,
           -2
         ],
@@ -104,12 +121,28 @@
         "importance": "structural"
       },
       {
+        "id": "bridge",
+        "type": "wall",
+        "material": "glass",
+        "position": [
+          0.8,
+          1.7999999999999998,
+          -2
+        ],
+        "size": [
+          1.8,
+          0.35,
+          0.7
+        ],
+        "importance": "decorative"
+      },
+      {
         "id": "keystone",
         "type": "keystone",
         "material": "wood",
         "position": [
           0,
-          1.5,
+          2.5,
           -2
         ],
         "size": [
@@ -118,7 +151,7 @@
           0.85
         ],
         "importance": "critical",
-        "hitPoints": 88
+        "hitPoints": 96
       }
     ]
   }

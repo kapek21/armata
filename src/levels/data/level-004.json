@@ -1,14 +1,14 @@
 {
-  "id": "level-003",
-  "name": "Mur Podstawowy 3",
+  "id": "level-004",
+  "name": "Mur Podstawowy 4",
   "chapter": 1,
   "difficulty": 1,
   "ammoLimit": 6,
-  "timeLimitSec": 98,
+  "timeLimitSec": 96,
   "starTimeSec": [
-    54,
-    37,
-    22
+    53,
+    36,
+    21
   ],
   "starShots": [
     4,
@@ -16,9 +16,9 @@
     6
   ],
   "starScore": [
-    945,
-    745,
-    495
+    960,
+    760,
+    510
   ],
   "killZoneY": -2,
   "cannon": {
@@ -72,12 +72,61 @@
         "isStatic": false
       },
       {
+        "id": "wall-1",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          0,
+          1.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "side-l",
+        "type": "tower",
+        "material": "stone",
+        "position": [
+          -1.395,
+          0.5,
+          -2
+        ],
+        "size": [
+          0.7,
+          1.2,
+          0.7
+        ],
+        "importance": "structural"
+      },
+      {
+        "id": "side-r",
+        "type": "tower",
+        "material": "stone",
+        "position": [
+          1.395,
+          0.5,
+          -2
+        ],
+        "size": [
+          0.7,
+          1.2,
+          0.7
+        ],
+        "importance": "structural"
+      },
+      {
         "id": "keystone",
         "type": "keystone",
         "material": "wood",
         "position": [
           0,
-          1.5,
+          2.5,
           -2
         ],
         "size": [

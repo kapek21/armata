@@ -38,9 +38,11 @@ export function computeGoalFrame(level: LevelDefinition): GoalFrame {
     box.expandByPoint(new THREE.Vector3(x + hw, y + hh, z + hd));
   };
 
-  for (const t of level.targets) addBox(t.position, t.size);
-  for (const b of level.blocks) {
-    if (!b.isStatic && b.type !== 'ground') addBox(b.position, b.size);
+  const modules = level.enemyCastle?.modules ?? [];
+  for (const m of modules) {
+    if (m.isStatic && m.type === 'foundation') continue;
+    if (m.importance === 'decorative' && m.type !== 'keystone') continue;
+    addBox(m.position, m.size);
   }
 
   if (box.isEmpty()) {

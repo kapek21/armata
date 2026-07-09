@@ -1,24 +1,24 @@
 {
-  "id": "level-003",
-  "name": "Mur Podstawowy 3",
+  "id": "level-008",
+  "name": "Mur Podstawowy 8",
   "chapter": 1,
   "difficulty": 1,
-  "ammoLimit": 6,
-  "timeLimitSec": 98,
+  "ammoLimit": 5,
+  "timeLimitSec": 88,
   "starTimeSec": [
-    54,
-    37,
-    22
+    48,
+    33,
+    19
   ],
   "starShots": [
+    3,
     4,
-    5,
-    6
+    5
   ],
   "starScore": [
-    945,
-    745,
-    495
+    1020,
+    820,
+    570
   ],
   "killZoneY": -2,
   "cannon": {
@@ -72,12 +72,46 @@
         "isStatic": false
       },
       {
+        "id": "wall-1",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          0,
+          1.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "wall-2",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          0,
+          2.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
         "id": "keystone",
         "type": "keystone",
         "material": "wood",
         "position": [
           0,
-          1.5,
+          3.5,
           -2
         ],
         "size": [

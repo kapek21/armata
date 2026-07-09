@@ -1,24 +1,24 @@
 {
-  "id": "level-003",
-  "name": "Mur Podstawowy 3",
-  "chapter": 1,
-  "difficulty": 1,
-  "ammoLimit": 6,
-  "timeLimitSec": 98,
+  "id": "level-015",
+  "name": "Drewniane Wieże 5",
+  "chapter": 2,
+  "difficulty": 2,
+  "ammoLimit": 5,
+  "timeLimitSec": 80,
   "starTimeSec": [
-    54,
-    37,
-    22
+    44,
+    30,
+    18
   ],
   "starShots": [
+    3,
     4,
-    5,
-    6
+    5
   ],
   "starScore": [
-    945,
-    745,
-    495
+    1075,
+    875,
+    625
   ],
   "killZoneY": -2,
   "cannon": {
@@ -27,8 +27,8 @@
       0.6,
       8.2
     ],
-    "angleMinDeg": 11,
-    "angleMaxDeg": 46
+    "angleMinDeg": 12,
+    "angleMaxDeg": 48
   },
   "enemyCastle": {
     "origin": [
@@ -47,7 +47,7 @@
           -2
         ],
         "size": [
-          10.4,
+          10.8,
           0.5,
           7
         ],
@@ -72,12 +72,29 @@
         "isStatic": false
       },
       {
+        "id": "wall-1",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          0,
+          1.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
         "id": "keystone",
         "type": "keystone",
         "material": "wood",
         "position": [
           0,
-          1.5,
+          3,
           -2
         ],
         "size": [
@@ -86,7 +103,7 @@
           0.85
         ],
         "importance": "critical",
-        "hitPoints": 88
+        "hitPoints": 96
       }
     ]
   }

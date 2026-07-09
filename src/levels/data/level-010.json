@@ -1,24 +1,24 @@
 {
-  "id": "level-001",
-  "name": "Mur Podstawowy 1",
+  "id": "level-010",
+  "name": "Mur Podstawowy 10",
   "chapter": 1,
   "difficulty": 1,
-  "ammoLimit": 6,
-  "timeLimitSec": 102,
+  "ammoLimit": 5,
+  "timeLimitSec": 84,
   "starTimeSec": [
-    56,
-    39,
-    22
+    46,
+    32,
+    18
   ],
   "starShots": [
+    3,
     4,
-    5,
-    6
+    5
   ],
   "starScore": [
-    915,
-    715,
-    465
+    1050,
+    850,
+    600
   ],
   "killZoneY": -2,
   "cannon": {
@@ -72,6 +72,40 @@
         "isStatic": false
       },
       {
+        "id": "wall-1",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          0,
+          1.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "wall-2",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          0,
+          2.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
         "id": "side-l",
         "type": "tower",
         "material": "stone",
@@ -109,7 +143,7 @@
         "material": "wood",
         "position": [
           0,
-          1.5,
+          4,
           -2
         ],
         "size": [

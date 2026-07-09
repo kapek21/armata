@@ -1,25 +1,93 @@
 {
   "id": "level-002",
-  "name": "Podpora",
-  "ammoLimit": 4,
-  "starShots": [1, 2, 3],
+  "name": "Mur Podstawowy 2",
+  "chapter": 1,
+  "difficulty": 1,
+  "ammoLimit": 6,
+  "timeLimitSec": 100,
+  "starTimeSec": [
+    55,
+    38,
+    22
+  ],
+  "starShots": [
+    4,
+    5,
+    6
+  ],
+  "starScore": [
+    930,
+    730,
+    480
+  ],
   "killZoneY": -2,
   "cannon": {
-    "position": [0, 0.6, 8.2],
-    "angleMinDeg": 12,
-    "angleMaxDeg": 50
+    "position": [
+      0,
+      0.6,
+      8.2
+    ],
+    "angleMinDeg": 11,
+    "angleMaxDeg": 46
   },
-  "blocks": [
-    { "type": "ground", "position": [0, -0.25, -2], "size": [14, 0.5, 8], "isStatic": true },
-    { "type": "metal", "position": [-1.2, 0.5, -2], "size": [0.6, 1, 0.6], "isStatic": true },
-    { "type": "wood", "position": [-0.5, 0.5, -2], "size": [1, 1, 1] },
-    { "type": "wood", "position": [0.5, 0.5, -2], "size": [1, 1, 1] },
-    { "type": "wood", "position": [1.5, 0.5, -2], "size": [1, 1, 1] },
-    { "type": "glass", "position": [0.5, 1.5, -2], "size": [2.2, 0.4, 0.8] },
-    { "type": "wood", "position": [0.5, 2.2, -2], "size": [0.8, 0.8, 0.8] }
-  ],
-  "targets": [
-    { "id": "t1", "position": [0.5, 3.1, -2], "size": [0.9, 0.9, 0.9] },
-    { "id": "t2", "position": [1.5, 1.6, -2], "size": [0.7, 0.7, 0.7] }
-  ]
+  "enemyCastle": {
+    "origin": [
+      0,
+      0,
+      -2
+    ],
+    "modules": [
+      {
+        "id": "found",
+        "type": "foundation",
+        "material": "ground",
+        "position": [
+          0,
+          -0.25,
+          -2
+        ],
+        "size": [
+          10.4,
+          0.5,
+          7
+        ],
+        "importance": "structural",
+        "isStatic": true
+      },
+      {
+        "id": "wall-0",
+        "type": "gate",
+        "material": "stone",
+        "position": [
+          0,
+          0.5,
+          -2
+        ],
+        "size": [
+          1.2,
+          1,
+          1
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "keystone",
+        "type": "keystone",
+        "material": "wood",
+        "position": [
+          0,
+          1.5,
+          -2
+        ],
+        "size": [
+          0.85,
+          0.85,
+          0.85
+        ],
+        "importance": "critical",
+        "hitPoints": 88
+      }
+    ]
+  }
 }

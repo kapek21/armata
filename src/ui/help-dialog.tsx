@@ -1,8 +1,12 @@
+import { useHudStore } from './hud-store.js';
+
 interface HelpDialogProps {
   onClose: () => void;
 }
 
 export function HelpDialog({ onClose }: HelpDialogProps): JSX.Element {
+  const profile = useHudStore((s) => s.profile);
+
   return (
     <div
       className="pointer-events-auto absolute inset-0 z-30 flex items-center justify-center bg-black/55 p-4 safe-top safe-bottom"
@@ -31,48 +35,41 @@ export function HelpDialog({ onClose }: HelpDialogProps): JSX.Element {
           <section>
             <h3 className="font-semibold text-amber-200">Cel</h3>
             <p className="mt-1 text-white/70">
-              Przewróć wszystkie <span className="text-red-300">czerwone cele</span> — muszą spaść
-              poza platformę. Wygrywasz, gdy znikną wszystkie; przegrywasz, gdy skończy się amunicja.
+              Strzelasz z własnego zamku przez <strong>otwór strzelniczy</strong>. Zniszcz{' '}
+              <span className="text-red-300">czerwony moduł kluczowy</span> w zamku wroga, zanim
+              skończy się <strong>czas</strong> lub <strong>amunicja</strong>.
             </p>
           </section>
           <section>
             <h3 className="font-semibold text-amber-200">Strzał</h3>
             <ol className="mt-1 list-decimal space-y-1 pl-4 text-white/70">
-              <li>Dotknij klocka (celu lub konstrukcji).</li>
+              <li>Dotknij modułu zamku wroga.</li>
               <li>Odsuń palec — dłuższe przeciągnięcie = mocniejszy strzał.</li>
-              <li>Puść palec, aby wystrzelić kulę.</li>
+              <li>Puść, aby wystrzelić kulę.</li>
             </ol>
-            <p className="mt-2 text-xs text-white/50">
-              Łuk trajektorii: żółty (słabo) → zielony → czerwony (mocno).
-            </p>
           </section>
           <section>
-            <h3 className="font-semibold text-amber-200">Amunicja</h3>
+            <h3 className="font-semibold text-amber-200">Punkty i gwiazdki</h3>
             <p className="mt-1 text-white/70">
-              Każdy strzał zużywa 1 pocisk. Licznik w górnym pasku:{' '}
-              <span className="text-amber-300">amunicja / limit</span>. Nie trzeba trafiać wprost w
-              cel — wystarczy przewrócić konstrukcję.
+              Trafienia w kluczowy moduł dają punkty. Wygrana przy zniszczeniu keystone. Gwiazdki
+              za szybkość, oszczędność strzałów i wysoki wynik.
             </p>
           </section>
           <section>
-            <h3 className="font-semibold text-amber-200">Gwiazdki</h3>
-            <p className="mt-1 text-white/70">
-              Po wygranej dostajesz 1–3★ za oszczędność strzałów — im mniej zużytych, tym więcej
-              gwiazdek. Każdy poziom ma własne progi.
-            </p>
-          </section>
-          <section>
-            <h3 className="font-semibold text-amber-200">Materiały</h3>
+            <h3 className="font-semibold text-amber-200">Power-upy</h3>
             <ul className="mt-1 space-y-1 text-white/70">
-              <li>
-                <span className="text-amber-600">Drewno</span> — lekkie, łatwo się przewraca.
-              </li>
-              <li>
-                <span className="text-slate-300">Metal</span> — cięższy; część jest nieruchoma.
-              </li>
-              <li>
-                <span className="text-cyan-200">Szkło</span> — kruche i lekkie.
-              </li>
+              <li>⚓ Ciężki — większa siła uderzenia</li>
+              <li>💥 Wybuch — fala przy trafieniu</li>
+              <li>🎯 Celownik — pełna trajektoria</li>
+            </ul>
+            <p className="mt-1 text-xs text-white/50">Masz: ciężki {profile.powerups.heavy}, wybuch {profile.powerups.explosive}, celownik {profile.powerups.trajectory}</p>
+          </section>
+          <section>
+            <h3 className="font-semibold text-amber-200">Materiały zamku</h3>
+            <ul className="mt-1 space-y-1 text-white/70">
+              <li>Kamień / drewno — moduły konstrukcyjne</li>
+              <li>Metal — cięższe podpory</li>
+              <li>Szkło — kruche segmenty</li>
             </ul>
           </section>
         </div>

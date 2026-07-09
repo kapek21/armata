@@ -1,24 +1,24 @@
 {
-  "id": "level-001",
-  "name": "Mur Podstawowy 1",
-  "chapter": 1,
-  "difficulty": 1,
-  "ammoLimit": 6,
-  "timeLimitSec": 102,
+  "id": "level-021",
+  "name": "Kamienne Bastiony 1",
+  "chapter": 3,
+  "difficulty": 3,
+  "ammoLimit": 5,
+  "timeLimitSec": 74,
   "starTimeSec": [
-    56,
-    39,
-    22
+    41,
+    28,
+    16
   ],
   "starShots": [
+    3,
     4,
-    5,
-    6
+    5
   ],
   "starScore": [
+    1115,
     915,
-    715,
-    465
+    665
   ],
   "killZoneY": -2,
   "cannon": {
@@ -27,8 +27,8 @@
       0.6,
       8.2
     ],
-    "angleMinDeg": 11,
-    "angleMaxDeg": 46
+    "angleMinDeg": 13,
+    "angleMaxDeg": 50
   },
   "enemyCastle": {
     "origin": [
@@ -47,7 +47,7 @@
           -2
         ],
         "size": [
-          10.4,
+          11.2,
           0.5,
           7
         ],
@@ -69,6 +69,23 @@
           1
         ],
         "importance": "structural",
+        "isStatic": true
+      },
+      {
+        "id": "wall-1",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          0,
+          1.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ],
+        "importance": "structural",
         "isStatic": false
       },
       {
@@ -76,7 +93,7 @@
         "type": "tower",
         "material": "stone",
         "position": [
-          -1.395,
+          -1.4849999999999999,
           0.5,
           -2
         ],
@@ -92,7 +109,7 @@
         "type": "tower",
         "material": "stone",
         "position": [
-          1.395,
+          1.4849999999999999,
           0.5,
           -2
         ],
@@ -109,7 +126,7 @@
         "material": "wood",
         "position": [
           0,
-          1.5,
+          2.5,
           -2
         ],
         "size": [
@@ -118,7 +135,7 @@
           0.85
         ],
         "importance": "critical",
-        "hitPoints": 88
+        "hitPoints": 104
       }
     ]
   }

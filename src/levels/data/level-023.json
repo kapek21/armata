@@ -1,24 +1,24 @@
 {
-  "id": "level-003",
-  "name": "Mur Podstawowy 3",
-  "chapter": 1,
-  "difficulty": 1,
-  "ammoLimit": 6,
-  "timeLimitSec": 98,
+  "id": "level-023",
+  "name": "Kamienne Bastiony 3",
+  "chapter": 3,
+  "difficulty": 3,
+  "ammoLimit": 5,
+  "timeLimitSec": 70,
   "starTimeSec": [
-    54,
-    37,
-    22
+    39,
+    27,
+    15
   ],
   "starShots": [
+    3,
     4,
-    5,
-    6
+    5
   ],
   "starScore": [
+    1145,
     945,
-    745,
-    495
+    695
   ],
   "killZoneY": -2,
   "cannon": {
@@ -27,8 +27,8 @@
       0.6,
       8.2
     ],
-    "angleMinDeg": 11,
-    "angleMaxDeg": 46
+    "angleMinDeg": 13,
+    "angleMaxDeg": 50
   },
   "enemyCastle": {
     "origin": [
@@ -47,7 +47,7 @@
           -2
         ],
         "size": [
-          10.4,
+          11.2,
           0.5,
           7
         ],
@@ -69,6 +69,23 @@
           1
         ],
         "importance": "structural",
+        "isStatic": true
+      },
+      {
+        "id": "wall-1",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          0,
+          1.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ],
+        "importance": "structural",
         "isStatic": false
       },
       {
@@ -77,7 +94,7 @@
         "material": "wood",
         "position": [
           0,
-          1.5,
+          2.5,
           -2
         ],
         "size": [
@@ -86,7 +103,7 @@
           0.85
         ],
         "importance": "critical",
-        "hitPoints": 88
+        "hitPoints": 104
       }
     ]
   }

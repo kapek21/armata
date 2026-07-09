@@ -1,24 +1,45 @@
 import * as THREE from 'three';
 import RAPIER from '@dimforge/rapier3d-compat';
-import type { AimState, GamePhase, LevelDefinition, QualityTier } from '../core/types.js';
-import {
-  BALL_COLOR,
-  CANNON_COLOR,
-  MATERIALS,
-  TARGET_COLOR,
-} from '../physics/materials.js';
+import type {
+  AimState,
+  CastleModuleType,
+  GamePhase,
+  LevelDefinition,
+  ModuleImportance,
+  PowerupType,
+  QualityTier,
+} from '../core/types.js';
+import { MATERIALS, CANNON_COLOR, BALL_COLOR } from '../physics/materials.js';
 import { pixelRatioForTier } from '../platform/quality-tier.js';
 import {
+  addCoins,
+  applyLevelLoss,
   applyLevelWin,
   consumeAimHint,
+  consumePowerup,
   loadProfile,
   saveProfile,
   shouldShowAimHint,
-  starsForShots,
   unlockNextLevel,
 } from '../meta/profile.js';
+import { coinsForWin } from '../meta/economy.js';
+import { saveWeeklyBest } from '../meta/leaderboard.js';
+import {
+  ballHitDamage,
+  computeRunScore,
+  hybridStars,
+  KEYSTONE_HIT_POINTS,
+} from '../meta/score.js';
 import { levelByIndex, levelCount } from '../levels/index.js';
+import { getKeystoneModule } from '../levels/normalize.js';
 import { useHudStore } from '../ui/hud-store.js';
+import { setupCastleScene, pulseKeystoneMaterial } from './castle-assets.js';
+import { createModuleMesh, getCastleMaterials } from './castle-renderer.js';
+import {
+  EXPLOSIVE_IMPULSE,
+  EXPLOSIVE_RADIUS,
+  IMPULSE_HEAVY_MULT,
+} from './powerups.js';
 import {
   aimArcColorFromPower,
   aimCannonBallistic,
@@ -38,10 +59,14 @@ import {
 
 interface BodyEntry {
   mesh: THREE.Mesh;
-  isTarget: boolean;
+  moduleId: string;
+  moduleType: CastleModuleType;
+  importance: ModuleImportance;
   isStatic: boolean;
-  targetId?: string;
+  isKeystone: boolean;
   cleared: boolean;
+  hitPoints: number;
+  maxHitPoints: number;
 }
 
 const SETTLE_SPEED = 0.2;
@@ -79,6 +104,19 @@ export class GameSession {
   private aimWorldTarget: THREE.Vector3 | null = null;
   private aimTargetMesh: THREE.Mesh | null = null;
   private clearedTargets = new Set<string>();
+  private keystoneDestroyed = false;
+  private timeLeftSec = 0;
+  private runScore = 0;
+  private keystoneHits = 0;
+  private secondaryDestroyed = 0;
+  private activePowerup: PowerupType | null = null;
+  private usedPowerupThisLevel = false;
+  private lastShotPower = 0.5;
+  private keystoneHp = 100;
+  private keystoneHpMax = 100;
+  private animTime = 0;
+  private ballHitCooldown = new Set<string>();
+  private lastExplosiveShot = false;
   private goalFrame!: GoalFrame;
   private viewportW = 0;
   private viewportH = 0;
@@ -92,31 +130,23 @@ export class GameSession {
   async init(host: HTMLElement, tier: QualityTier): Promise<void> {
     this.host = host;
     this.tier = tier;
-    this.scene.background = new THREE.Color(0x9ec4e8);
-    this.scene.fog = new THREE.Fog(0x9ec4e8, 22, 45);
+    setupCastleScene(this.scene, tier);
+    getCastleMaterials(tier);
 
     this.renderer = new THREE.WebGLRenderer({
       antialias: tier !== 'low',
       powerPreference: 'high-performance',
     });
     this.renderer.setPixelRatio(pixelRatioForTier(tier));
-    this.renderer.shadowMap.enabled = tier === 'high';
+    this.renderer.shadowMap.enabled = tier !== 'low';
+    this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    this.renderer.toneMappingExposure = 1.05;
     host.appendChild(this.renderer.domElement);
     const canvas = this.renderer.domElement;
     canvas.style.display = 'block';
     canvas.style.width = '100%';
     canvas.style.height = '100%';
     canvas.style.touchAction = 'none';
-
-    const hemi = new THREE.HemisphereLight(0xffffff, 0x556677, 1.1);
-    this.scene.add(hemi);
-    const sun = new THREE.DirectionalLight(0xffffff, 1.15);
-    sun.position.set(2, 14, 10);
-    if (tier === 'high') {
-      sun.castShadow = true;
-      sun.shadow.mapSize.set(1024, 1024);
-    }
-    this.scene.add(sun);
 
     await RAPIER.init();
     this.world = new RAPIER.World({ x: 0, y: -9.81, z: 0 });
@@ -194,6 +224,13 @@ export class GameSession {
     this.level = levelByIndex(index);
     this.ammoLeft = this.level.ammoLimit;
     this.shotsUsed = 0;
+    this.timeLeftSec = this.level.timeLimitSec;
+    this.runScore = 0;
+    this.keystoneHits = 0;
+    this.secondaryDestroyed = 0;
+    this.keystoneDestroyed = false;
+    this.usedPowerupThisLevel = false;
+    this.activePowerup = null;
     this.clearedTargets.clear();
     this.phase = 'aiming';
     this.removeBall();
@@ -203,20 +240,19 @@ export class GameSession {
     this.aimWorldTarget = null;
     this.aimTargetMesh = null;
 
+    const ks = getKeystoneModule(this.level);
+    this.keystoneHpMax = ks?.hitPoints ?? 100;
+    this.keystoneHp = this.keystoneHpMax;
+
     this.goalFrame = computeGoalFrame(this.level);
 
-    for (const block of this.level.blocks) {
-      const pos = applyWorldOffset(block.position, this.goalFrame.worldOffset);
-      this.spawnBox(pos, block.size, block.type, block.isStatic ?? false, false);
-    }
-    for (const target of this.level.targets) {
-      const pos = applyWorldOffset(target.position, this.goalFrame.worldOffset);
-      this.spawnBox(pos, target.size, 'wood', false, true, target.id);
+    for (const mod of this.level.enemyCastle.modules) {
+      const pos = applyWorldOffset(mod.position, this.goalFrame.worldOffset);
+      this.spawnModule(mod, pos);
     }
 
     this.applyCameraFrame();
     resetCannonAim(this.cannonMesh, this.level);
-
     this.syncHud('');
   }
 
@@ -244,29 +280,24 @@ export class GameSession {
     this.removeBall();
   }
 
-  private spawnBox(
+  private spawnModule(
+    mod: import('../core/types.js').CastleModule,
     pos: [number, number, number],
-    size: [number, number, number],
-    type: keyof typeof MATERIALS,
-    isStatic: boolean,
-    isTarget: boolean,
-    targetId?: string,
   ): void {
-    const mat = MATERIALS[type];
-    const [w, h, d] = size;
-    const mesh = new THREE.Mesh(
-      new THREE.BoxGeometry(w, h, d),
-      new THREE.MeshStandardMaterial({
-        color: isTarget ? TARGET_COLOR : mat.color,
-        roughness: 0.85,
-        metalness: type === 'metal' ? 0.6 : 0.05,
-      }),
+    const isKeystone = mod.type === 'keystone' || mod.importance === 'critical';
+    const isStatic = mod.isStatic ?? mod.type === 'foundation';
+    const matKey = mod.material in MATERIALS ? mod.material : 'stone';
+    const mat = MATERIALS[matKey as keyof typeof MATERIALS];
+    const hp = mod.hitPoints ?? (isKeystone ? 100 : 70);
+
+    const mesh = createModuleMesh(
+      { ...mod, position: pos },
+      this.tier,
     );
-    mesh.position.set(pos[0], pos[1], pos[2]);
-    mesh.castShadow = this.tier === 'high';
-    mesh.receiveShadow = this.tier === 'high';
+
     this.scene.add(mesh);
 
+    const [w, h, d] = mod.size;
     const desc = isStatic
       ? RAPIER.RigidBodyDesc.fixed()
       : RAPIER.RigidBodyDesc.dynamic().setCanSleep(true);
@@ -277,7 +308,18 @@ export class GameSession {
       .setRestitution(mat.restitution);
     this.world.createCollider(collider, body);
     mesh.userData.bodyHandle = body.handle;
-    this.entries.push({ mesh, isTarget, isStatic, targetId, cleared: false });
+
+    this.entries.push({
+      mesh,
+      moduleId: mod.id,
+      moduleType: mod.type,
+      importance: mod.importance,
+      isStatic,
+      isKeystone,
+      cleared: false,
+      hitPoints: hp,
+      maxHitPoints: hp,
+    });
   }
 
   private onLostPointerCapture = (e: PointerEvent): void => {
@@ -320,6 +362,20 @@ export class GameSession {
     return this.entries
       .filter((e) => !e.isStatic && !e.cleared && e.mesh.parent !== null)
       .map((e) => e.mesh);
+  }
+
+  selectPowerup(type: PowerupType): void {
+    const profile = loadProfile();
+    if ((profile.powerups[type] ?? 0) <= 0) return;
+    this.activePowerup = this.activePowerup === type ? null : type;
+    this.syncHud('');
+  }
+
+  grantBonusShot(): void {
+    if (this.phase !== 'lost') return;
+    this.ammoLeft += 1;
+    this.phase = 'aiming';
+    this.syncHud('Dodatkowy strzał!');
   }
 
   private currentDragPower(): number {
@@ -367,12 +423,14 @@ export class GameSession {
   }
 
   private canAimNow(): boolean {
+    if (this.timeLeftSec <= 0) return false;
     if (this.ammoLeft <= 0) return false;
     if (this.phase === 'aiming') return true;
     return this.phase === 'simulating' && !this.ballBody;
   }
 
   private canFireNow(): boolean {
+    if (this.timeLeftSec <= 0) return false;
     if (this.ammoLeft <= 0) return false;
     if (this.phase === 'aiming') return true;
     if (this.phase === 'simulating' && !this.ballBody) return this.canTakeNextShot();
@@ -447,12 +505,15 @@ export class GameSession {
     const dx = this.aim.originX - this.aim.currentX;
     const dy = this.aim.originY - this.aim.currentY;
     const len = Math.hypot(dx, dy);
-    if (len < MIN_DRAG_PX) {
-      this.aimLine.visible = false;
-      return;
+    const minLen = this.activePowerup === 'trajectory' ? 8 : MIN_DRAG_PX;
+    if (len < minLen) {
+      if (this.activePowerup !== 'trajectory') {
+        this.aimLine.visible = false;
+        return;
+      }
     }
 
-    const power = powerFromDrag(len, MAX_DRAG_PX);
+    const power = len < MIN_DRAG_PX ? 0.55 : powerFromDrag(len, MAX_DRAG_PX);
     this.applyBallisticAim(power);
     this.aimLineMaterial.color.setHex(aimArcColorFromPower(power));
     const origin = muzzleWorldPosition(this.cannonMesh);
@@ -466,8 +527,13 @@ export class GameSession {
   private fireShot(power: number): void {
     if (this.ammoLeft <= 0) return;
 
+    this.lastShotPower = power;
+    const wasExplosive = this.activePowerup === 'explosive';
+    if (this.activePowerup) this.usedPowerupThisLevel = true;
+
     const dir = barrelWorldDirection(this.cannonMesh);
     const spawn = muzzleWorldPosition(this.cannonMesh);
+    const heavy = this.activePowerup === 'heavy';
     const body = this.world.createRigidBody(
       RAPIER.RigidBodyDesc.dynamic()
         .setTranslation(spawn.x, spawn.y, spawn.z)
@@ -475,15 +541,24 @@ export class GameSession {
         .setLinearDamping(0.12)
         .setAngularDamping(0.25),
     );
-    this.world.createCollider(RAPIER.ColliderDesc.ball(0.35).setDensity(2.2).setRestitution(0.22), body);
-    const impulse = shotImpulse(power);
+    const density = heavy ? 3.8 : 2.2;
+    this.world.createCollider(
+      RAPIER.ColliderDesc.ball(BALL_RADIUS).setDensity(density).setRestitution(0.22),
+      body,
+    );
+    let impulse = shotImpulse(power);
+    if (heavy) impulse *= IMPULSE_HEAVY_MULT;
     body.applyImpulse({ x: dir.x * impulse, y: dir.y * impulse, z: dir.z * impulse }, true);
 
     const mesh = new THREE.Mesh(
-      new THREE.SphereGeometry(0.35, 12, 10),
-      new THREE.MeshStandardMaterial({ color: BALL_COLOR, roughness: 0.4 }),
+      new THREE.SphereGeometry(BALL_RADIUS, 14, 12),
+      new THREE.MeshStandardMaterial({
+        color: heavy ? 0x555555 : BALL_COLOR,
+        roughness: 0.35,
+        metalness: heavy ? 0.5 : 0.1,
+      }),
     );
-    mesh.castShadow = this.tier === 'high';
+    mesh.castShadow = this.tier !== 'low';
     this.scene.add(mesh);
     mesh.userData.bodyHandle = body.handle;
     this.ballBody = body;
@@ -491,6 +566,16 @@ export class GameSession {
     this.ballAgeMs = 0;
     this.ballStillMs = 0;
     this.postBallIdleMs = 0;
+    this.ballHitCooldown = new Set();
+    this.lastExplosiveShot = wasExplosive;
+
+    if (this.activePowerup) {
+      const profile = loadProfile();
+      const next = consumePowerup(profile, this.activePowerup);
+      saveProfile(next);
+      useHudStore.getState().reloadProfile();
+      this.activePowerup = null;
+    }
 
     this.ammoLeft -= 1;
     this.shotsUsed += 1;
@@ -519,6 +604,7 @@ export class GameSession {
     }
     this.ballAgeMs = 0;
     this.ballStillMs = 0;
+    this.lastExplosiveShot = false;
   }
 
   private removeBallAndStartCooldown(): void {
@@ -527,7 +613,24 @@ export class GameSession {
   }
 
   tick(dtMs: number): void {
-    if (this.phase === 'loading' || this.phase === 'menu') return;
+    if (this.phase === 'loading') return;
+
+    this.animTime += dtMs / 1000;
+    for (const entry of this.entries) {
+      if (!entry.isKeystone || entry.cleared) continue;
+      const mat = entry.mesh.material as THREE.MeshStandardMaterial;
+      if (mat.emissive) pulseKeystoneMaterial(mat, this.animTime);
+    }
+
+    if (this.phase !== 'menu') {
+      this.timeLeftSec = Math.max(0, this.timeLeftSec - dtMs / 1000);
+      if (this.timeLeftSec <= 0 && !this.keystoneDestroyed) {
+        this.handleLose('Czas minął!');
+        return;
+      }
+    }
+
+    if (this.phase === 'menu') return;
 
     this.world.integrationParameters.dt = Math.min(1 / 30, dtMs / 1000);
     this.world.step();
@@ -535,6 +638,7 @@ export class GameSession {
 
     if (this.ballBody && this.ballMesh) {
       this.ballAgeMs += dtMs;
+      this.checkBallHits();
       const t = this.ballBody.translation();
       const lv = this.ballBody.linvel();
       const speed = Math.hypot(lv.x, lv.y, lv.z);
@@ -549,9 +653,9 @@ export class GameSession {
       }
     }
 
-    this.checkTargets();
+    this.checkCastleModules();
 
-    if (this.clearedTargets.size >= this.level.targets.length) {
+    if (this.keystoneDestroyed) {
       this.handleWin();
       return;
     }
@@ -559,14 +663,18 @@ export class GameSession {
     if (this.phase === 'simulating' && !this.ballBody) {
       this.postBallIdleMs += dtMs;
       if (this.canTakeNextShot()) {
-        if (this.ammoLeft > 0) {
+        if (this.ammoLeft > 0 && this.timeLeftSec > 0) {
           this.phase = 'aiming';
           resetCannonAim(this.cannonMesh, this.level);
           this.syncHud('');
-        } else {
-          this.handleLose();
+        } else if (!this.keystoneDestroyed) {
+          this.handleLose(this.ammoLeft <= 0 ? 'Brak amunicji!' : 'Czas minął!');
         }
       }
+    }
+
+    if (this.phase === 'aiming' || this.phase === 'simulating') {
+      this.syncHud('');
     }
   }
 
@@ -603,36 +711,138 @@ export class GameSession {
     }
   }
 
-  private checkTargets(): void {
+  private checkBallHits(): void {
+    if (!this.ballBody || !this.ballMesh) return;
+    const t = this.ballBody.translation();
+    const ballPos = new THREE.Vector3(t.x, t.y, t.z);
+    const heavy = this.lastShotPower > 0.7;
+    const dmg = ballHitDamage(this.lastShotPower, heavy);
+
     for (const entry of this.entries) {
-      if (!entry.isTarget || entry.cleared || !entry.targetId) continue;
-      const y = entry.mesh.position.y;
-      if (y < this.level.killZoneY) {
-        entry.cleared = true;
-        this.clearedTargets.add(entry.targetId);
-        const body = this.world.getRigidBody(entry.mesh.userData.bodyHandle as number);
-        if (body) this.world.removeRigidBody(body);
-        this.scene.remove(entry.mesh);
+      if (entry.cleared || entry.isStatic) continue;
+      if (this.ballHitCooldown.has(entry.moduleId)) continue;
+
+      const box = new THREE.Box3().setFromObject(entry.mesh);
+      box.expandByScalar(BALL_RADIUS * 0.5);
+      if (!box.containsPoint(ballPos)) continue;
+
+      this.ballHitCooldown.add(entry.moduleId);
+      this.applyModuleDamage(entry, dmg);
+
+      if (this.lastExplosiveShot) {
+        this.applyExplosion(ballPos);
       }
     }
+  }
+
+  private applyExplosion(center: THREE.Vector3): void {
+    for (const entry of this.entries) {
+      if (entry.cleared || entry.isStatic) continue;
+      const dist = entry.mesh.position.distanceTo(center);
+      if (dist > EXPLOSIVE_RADIUS) continue;
+      const body = this.world.getRigidBody(entry.mesh.userData.bodyHandle as number);
+      if (!body) continue;
+      const dir = entry.mesh.position.clone().sub(center);
+      if (dir.lengthSq() < 0.01) dir.set(0, 1, 0);
+      dir.normalize();
+      const force = EXPLOSIVE_IMPULSE * (1 - dist / EXPLOSIVE_RADIUS);
+      body.applyImpulse({ x: dir.x * force, y: dir.y * force, z: dir.z * force }, true);
+    }
+  }
+
+  private applyModuleDamage(entry: BodyEntry, damage: number): void {
+    entry.hitPoints -= damage;
+    if (entry.isKeystone) {
+      this.keystoneHits += 1;
+      this.runScore += KEYSTONE_HIT_POINTS;
+      this.keystoneHp = Math.max(0, entry.hitPoints);
+      this.syncHud('Trafienie w klucz!');
+    }
+
+    if (entry.hitPoints <= 0) {
+      this.destroyModule(entry);
+    }
+  }
+
+  private destroyModule(entry: BodyEntry): void {
+    if (entry.cleared) return;
+    entry.cleared = true;
+    this.clearedTargets.add(entry.moduleId);
+
+    if (entry.isKeystone) {
+      this.runScore += 1000;
+      this.keystoneDestroyed = this.allKeystonesCleared();
+    } else if (entry.importance === 'structural') {
+      this.secondaryDestroyed += 1;
+      this.runScore += 50;
+    }
+
+    const body = this.world.getRigidBody(entry.mesh.userData.bodyHandle as number);
+    if (body) this.world.removeRigidBody(body);
+    this.scene.remove(entry.mesh);
+    entry.mesh.geometry.dispose();
+    (entry.mesh.material as THREE.Material).dispose();
+  }
+
+  private allKeystonesCleared(): boolean {
+    const keystones = this.entries.filter((e) => e.isKeystone);
+    return keystones.length > 0 && keystones.every((e) => e.cleared);
+  }
+
+  private checkCastleModules(): void {
+    for (const entry of this.entries) {
+      if (entry.cleared || !entry.isKeystone) continue;
+      const y = entry.mesh.position.y;
+      if (y < this.level.killZoneY) {
+        this.destroyModule(entry);
+      }
+    }
+    this.keystoneDestroyed = this.allKeystonesCleared();
   }
 
   private handleWin(): void {
     if (this.phase === 'won') return;
     this.phase = 'won';
-    const stars = starsForShots(this.shotsUsed, this.level.starShots);
+    const finalScore = computeRunScore({
+      keystoneHits: this.keystoneHits,
+      keystoneDestroyed: true,
+      secondaryDestroyed: this.secondaryDestroyed,
+      timeLeftSec: this.timeLeftSec,
+      shotsUsed: this.shotsUsed,
+      usedPowerup: this.usedPowerupThisLevel,
+    });
+    this.runScore = finalScore;
+    const stars = hybridStars(
+      this.timeLeftSec,
+      this.shotsUsed,
+      finalScore,
+      this.level,
+    );
     let profile = loadProfile();
-    profile = applyLevelWin(profile, this.level.id, stars, this.shotsUsed);
+    profile = applyLevelWin(
+      profile,
+      this.level.id,
+      stars,
+      this.shotsUsed,
+      Math.round(this.timeLeftSec),
+      finalScore,
+    );
+    profile = addCoins(profile, coinsForWin(stars, finalScore));
     profile = unlockNextLevel(profile, this.levelIndex, levelCount());
     saveProfile(profile);
+    saveWeeklyBest(finalScore);
     useHudStore.getState().reloadProfile();
-    this.syncHud('Poziom ukończony!');
+    this.syncHud('Zamek zdobyty!');
   }
 
-  private handleLose(): void {
-    if (this.phase === 'lost') return;
+  private handleLose(reason = 'Porażka'): void {
+    if (this.phase === 'lost' || this.phase === 'won') return;
     this.phase = 'lost';
-    this.syncHud('Brak amunicji — spróbuj ponownie');
+    let profile = loadProfile();
+    profile = applyLevelLoss(profile);
+    saveProfile(profile);
+    useHudStore.getState().reloadProfile();
+    this.syncHud(reason);
   }
 
   retry(): void {
@@ -666,19 +876,29 @@ export class GameSession {
   }
 
   private syncHud(message: string): void {
+    const stars =
+      this.phase === 'won'
+        ? hybridStars(this.timeLeftSec, this.shotsUsed, this.runScore, this.level)
+        : 0;
     useHudStore.getState().setSnapshot({
       phase: this.phase,
       levelId: this.level.id,
       levelName: this.level.name,
       levelIndex: this.levelIndex,
       levelCount: levelCount(),
+      chapter: this.level.chapter,
       ammoLeft: this.ammoLeft,
       ammoTotal: this.level.ammoLimit,
-      targetsLeft: this.level.targets.length - this.clearedTargets.size,
-      targetsTotal: this.level.targets.length,
-      starsEarned: starsForShots(this.shotsUsed, this.level.starShots),
+      timeLeftSec: Math.ceil(this.timeLeftSec),
+      timeLimitSec: this.level.timeLimitSec,
+      runScore: this.runScore,
+      keystoneHp: Math.max(0, Math.round(this.keystoneHp)),
+      keystoneHpMax: this.keystoneHpMax,
+      starsEarned: stars,
+      finalScore: this.runScore,
       message,
       unlockedLevels: loadProfile().unlockedLevels,
+      activePowerup: this.activePowerup,
     });
   }
 

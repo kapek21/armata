@@ -12,6 +12,7 @@ export const MATERIALS: Record<BlockType, MaterialDef> = {
   metal: { color: 0x8899aa, density: 1.4, friction: 0.45, restitution: 0.1 },
   glass: { color: 0x88ddff, density: 0.35, friction: 0.25, restitution: 0.05 },
   ground: { color: 0x3d4f3a, density: 0, friction: 0.9, restitution: 0.02 },
+  stone: { color: 0x7a7a82, density: 1.1, friction: 0.7, restitution: 0.08 },
 };
 
 export const TARGET_COLOR = 0xff3344;

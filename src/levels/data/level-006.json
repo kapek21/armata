@@ -1,14 +1,14 @@
 {
-  "id": "level-003",
-  "name": "Mur Podstawowy 3",
+  "id": "level-006",
+  "name": "Mur Podstawowy 6",
   "chapter": 1,
   "difficulty": 1,
   "ammoLimit": 6,
-  "timeLimitSec": 98,
+  "timeLimitSec": 92,
   "starTimeSec": [
-    54,
-    37,
-    22
+    51,
+    35,
+    20
   ],
   "starShots": [
     4,
@@ -16,9 +16,9 @@
     6
   ],
   "starScore": [
-    945,
-    745,
-    495
+    990,
+    790,
+    540
   ],
   "killZoneY": -2,
   "cannon": {
@@ -72,12 +72,29 @@
         "isStatic": false
       },
       {
+        "id": "wall-1",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          0,
+          1.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
         "id": "keystone",
         "type": "keystone",
         "material": "wood",
         "position": [
           0,
-          1.5,
+          2.5,
           -2
         ],
         "size": [

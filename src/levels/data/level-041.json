@@ -1,24 +1,24 @@
 {
-  "id": "level-001",
-  "name": "Mur Podstawowy 1",
-  "chapter": 1,
-  "difficulty": 1,
-  "ammoLimit": 6,
-  "timeLimitSec": 102,
+  "id": "level-041",
+  "name": "Cytadela 1",
+  "chapter": 5,
+  "difficulty": 5,
+  "ammoLimit": 4,
+  "timeLimitSec": 46,
   "starTimeSec": [
-    56,
-    39,
-    22
+    25,
+    17,
+    10
   ],
   "starShots": [
-    4,
-    5,
-    6
+    2,
+    3,
+    4
   ],
   "starScore": [
-    915,
-    715,
-    465
+    1315,
+    1115,
+    865
   ],
   "killZoneY": -2,
   "cannon": {
@@ -27,8 +27,8 @@
       0.6,
       8.2
     ],
-    "angleMinDeg": 11,
-    "angleMaxDeg": 46
+    "angleMinDeg": 15,
+    "angleMaxDeg": 54
   },
   "enemyCastle": {
     "origin": [
@@ -47,7 +47,7 @@
           -2
         ],
         "size": [
-          10.4,
+          12,
           0.5,
           7
         ],
@@ -69,6 +69,57 @@
           1
         ],
         "importance": "structural",
+        "isStatic": true
+      },
+      {
+        "id": "wall-1",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          0,
+          1.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "wall-2",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          0,
+          2.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "wall-3",
+        "type": "wall",
+        "material": "stone",
+        "position": [
+          0,
+          3.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ],
+        "importance": "structural",
         "isStatic": false
       },
       {
@@ -76,7 +127,7 @@
         "type": "tower",
         "material": "stone",
         "position": [
-          -1.395,
+          -1.575,
           0.5,
           -2
         ],
@@ -92,7 +143,7 @@
         "type": "tower",
         "material": "stone",
         "position": [
-          1.395,
+          1.575,
           0.5,
           -2
         ],
@@ -104,12 +155,29 @@
         "importance": "structural"
       },
       {
+        "id": "pillar",
+        "type": "wall",
+        "material": "metal",
+        "position": [
+          -0.6,
+          2.4,
+          -2
+        ],
+        "size": [
+          0.4,
+          1.8,
+          0.4
+        ],
+        "importance": "structural",
+        "isStatic": true
+      },
+      {
         "id": "keystone",
         "type": "keystone",
         "material": "wood",
         "position": [
           0,
-          1.5,
+          4.5,
           -2
         ],
         "size": [
@@ -118,7 +186,7 @@
           0.85
         ],
         "importance": "critical",
-        "hitPoints": 88
+        "hitPoints": 120
       }
     ]
   }
