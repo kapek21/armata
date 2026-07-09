@@ -4,7 +4,7 @@
   "chapter": 4,
   "difficulty": 4,
   "blueprint": "courtyard",
-  "ammoLimit": 4,
+  "ammoLimit": 6,
   "timeLimitSec": 54,
   "starTimeSec": [
     30,
@@ -12,9 +12,9 @@
     12
   ],
   "starShots": [
-    2,
-    3,
-    4
+    4,
+    5,
+    6
   ],
   "starScore": [
     1260,
@@ -226,37 +226,56 @@
         ]
       },
       {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "key-shelf",
-        "type": "wall",
-        "material": "wood",
-        "position": [
-          -1.35,
-          2.05,
-          -2.55
-        ],
-        "size": [
-          0.85,
-          0.2,
-          0.8
-        ]
-      },
-      {
         "importance": "critical",
         "isStatic": false,
         "id": "keystone",
         "type": "keystone",
         "material": "wood",
         "position": [
-          -1.35,
+          -2.4,
           2.53,
-          -2.55
+          -3.2
         ],
         "size": [
           0.76,
           0.76,
           0.76
+        ],
+        "hitPoints": 138
+      },
+      {
+        "importance": "critical",
+        "isStatic": false,
+        "id": "keystone-2",
+        "type": "keystone",
+        "material": "wood",
+        "position": [
+          -1.2,
+          2.37,
+          -2.5
+        ],
+        "size": [
+          0.74,
+          0.74,
+          0.74
+        ],
+        "hitPoints": 138
+      },
+      {
+        "importance": "critical",
+        "isStatic": false,
+        "id": "keystone-3",
+        "type": "keystone",
+        "material": "wood",
+        "position": [
+          -1.8,
+          2.37,
+          -2.2
+        ],
+        "size": [
+          0.74,
+          0.74,
+          0.74
         ],
         "hitPoints": 138
       }

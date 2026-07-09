@@ -46,7 +46,9 @@ export function GameChromeTop({ phase }: GameChromeTopProps): JSX.Element {
       </div>
       {phase !== 'won' && phase !== 'lost' && (
         <div className="mt-1 flex items-center gap-2 px-1">
-          <span className="text-[10px] text-white/45">Klucz:</span>
+          <span className="text-[10px] text-white/45">
+            {snap.keystoneTotal > 1 ? 'Klucze:' : 'Klucz:'}
+          </span>
           <div className="h-2 flex-1 overflow-hidden rounded-full bg-black/40 border border-red-900/40">
             <div
               className="h-full bg-gradient-to-r from-red-700 to-red-400 transition-all duration-200"
@@ -55,7 +57,13 @@ export function GameChromeTop({ phase }: GameChromeTopProps): JSX.Element {
               }}
             />
           </div>
-          <span className="text-[10px] text-red-300 tabular-nums">{snap.keystoneHp}</span>
+          {snap.keystoneTotal > 1 ? (
+            <span className="text-[10px] text-red-300 tabular-nums">
+              {snap.keystoneCleared}/{snap.keystoneTotal}
+            </span>
+          ) : (
+            <span className="text-[10px] text-red-300 tabular-nums">{snap.keystoneHp}</span>
+          )}
         </div>
       )}
     </header>

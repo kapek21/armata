@@ -105,6 +105,8 @@ export interface HudSnapshot {
   runScore: number;
   keystoneHp: number;
   keystoneHpMax: number;
+  keystoneTotal: number;
+  keystoneCleared: number;
   starsEarned: number;
   finalScore: number;
   message: string;
