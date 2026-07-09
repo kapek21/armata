@@ -93,12 +93,6 @@ function legacyToModules(level: LevelDefinition): CastleModule[] {
   return modules;
 }
 
-export function countKeystones(level: LevelDefinition): number {
-  return level.enemyCastle.modules.filter(
-    (m) => m.type === 'keystone' || m.importance === 'critical',
-  ).length;
-}
-
 export function getKeystoneModule(level: LevelDefinition): CastleModule | undefined {
   return level.enemyCastle.modules.find(
     (m) => m.type === 'keystone' || m.importance === 'critical',

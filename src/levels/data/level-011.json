@@ -4,7 +4,7 @@
   "chapter": 2,
   "difficulty": 2,
   "blueprint": "gatehouse",
-  "ammoLimit": 6,
+  "ammoLimit": 5,
   "timeLimitSec": 88,
   "starTimeSec": [
     48,
@@ -12,9 +12,9 @@
     19
   ],
   "starShots": [
+    3,
     4,
-    5,
-    6
+    5
   ],
   "starScore": [
     1015,
@@ -143,18 +143,18 @@
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "lintel",
+        "id": "lintel-glass",
         "type": "wall",
-        "material": "wood",
+        "material": "glass",
         "position": [
           0,
           1.55,
-          -2
+          -1.85
         ],
         "size": [
-          1.3,
-          0.7,
-          0.9
+          1.1,
+          0.5,
+          0.7
         ]
       },
       {
@@ -199,31 +199,13 @@
         "material": "wood",
         "position": [
           0,
-          2.29,
-          -2
+          2.19,
+          -1.85
         ],
         "size": [
           0.78,
           0.78,
           0.78
-        ],
-        "hitPoints": 101
-      },
-      {
-        "importance": "critical",
-        "isStatic": false,
-        "id": "keystone-2",
-        "type": "keystone",
-        "material": "wood",
-        "position": [
-          -1.8,
-          2.5700000000000003,
-          -2
-        ],
-        "size": [
-          0.74,
-          0.74,
-          0.74
         ],
         "hitPoints": 101
       }

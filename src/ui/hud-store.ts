@@ -20,8 +20,6 @@ const initial: HudSnapshot = {
   runScore: 0,
   keystoneHp: 100,
   keystoneHpMax: 100,
-  keystoneTotal: 1,
-  keystoneCleared: 0,
   starsEarned: 0,
   finalScore: 0,
   message: '',

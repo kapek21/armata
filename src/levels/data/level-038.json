@@ -4,7 +4,7 @@
   "chapter": 4,
   "difficulty": 4,
   "blueprint": "bastion",
-  "ammoLimit": 6,
+  "ammoLimit": 3,
   "timeLimitSec": 46,
   "starTimeSec": [
     25,
@@ -12,9 +12,9 @@
     10
   ],
   "starShots": [
-    4,
-    5,
-    6
+    1,
+    2,
+    3
   ],
   "starScore": [
     1320,
@@ -294,6 +294,23 @@
         ]
       },
       {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "key-platform",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          0,
+          2.15,
+          -2.55
+        ],
+        "size": [
+          0.9,
+          0.3,
+          0.85
+        ]
+      },
+      {
         "importance": "critical",
         "isStatic": false,
         "id": "keystone",
@@ -301,67 +318,13 @@
         "material": "wood",
         "position": [
           0,
-          2.375,
-          -2.35
+          2.675,
+          -2.55
         ],
         "size": [
           0.75,
           0.75,
           0.75
-        ],
-        "hitPoints": 150
-      },
-      {
-        "importance": "critical",
-        "isStatic": false,
-        "id": "keystone-2",
-        "type": "keystone",
-        "material": "wood",
-        "position": [
-          -1.5,
-          2.37,
-          -2
-        ],
-        "size": [
-          0.74,
-          0.74,
-          0.74
-        ],
-        "hitPoints": 150
-      },
-      {
-        "importance": "critical",
-        "isStatic": false,
-        "id": "keystone-3",
-        "type": "keystone",
-        "material": "wood",
-        "position": [
-          1.5,
-          2.37,
-          -2
-        ],
-        "size": [
-          0.74,
-          0.74,
-          0.74
-        ],
-        "hitPoints": 150
-      },
-      {
-        "importance": "critical",
-        "isStatic": false,
-        "id": "keystone-4",
-        "type": "keystone",
-        "material": "wood",
-        "position": [
-          1.2,
-          2.37,
-          -2.25
-        ],
-        "size": [
-          0.74,
-          0.74,
-          0.74
         ],
         "hitPoints": 150
       }
