@@ -1,8 +1,9 @@
 {
   "id": "level-033",
-  "name": "Oblężenie 3",
+  "name": "Oblężenie — Dziedziniec 3",
   "chapter": 4,
   "difficulty": 4,
+  "blueprint": "courtyard",
   "ammoLimit": 4,
   "timeLimitSec": 56,
   "starTimeSec": [
@@ -38,6 +39,8 @@
     ],
     "modules": [
       {
+        "importance": "structural",
+        "isStatic": true,
         "id": "found",
         "type": "foundation",
         "material": "ground",
@@ -47,97 +50,198 @@
           -2
         ],
         "size": [
-          11.6,
+          12,
           0.5,
-          7
-        ],
-        "importance": "structural",
-        "isStatic": true
+          8
+        ]
       },
       {
-        "id": "wall-0",
-        "type": "gate",
+        "importance": "structural",
+        "isStatic": false,
+        "id": "back-0",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          -1.5,
+          0.5,
+          -3.2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "side-0",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          -2.4,
+          0.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "back-1",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          -0.3999999999999999,
+          0.5,
+          -3.2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "side-1",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          -2.4,
+          0.5,
+          -1.45
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "back-2",
+        "type": "wall",
         "material": "stone",
         "position": [
-          0,
+          0.7000000000000002,
           0.5,
-          -2
+          -3.2
         ],
         "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "side-2",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          -2.4,
+          0.5,
+          -0.8999999999999999
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "corner-tower",
+        "type": "tower",
+        "material": "stone",
+        "position": [
+          -2.4,
+          1.55,
+          -3.2
+        ],
+        "size": [
+          1,
           1.2,
-          1,
           1
-        ],
-        "importance": "structural",
-        "isStatic": true
+        ]
       },
       {
-        "id": "wall-1",
+        "importance": "structural",
+        "isStatic": false,
+        "id": "inner-1",
         "type": "wall",
         "material": "wood",
         "position": [
-          0,
+          -1.2,
           1.5,
-          -2
+          -2.5
         ],
         "size": [
-          1,
-          1,
-          1
-        ],
-        "importance": "structural",
-        "isStatic": false
+          0.9,
+          0.9,
+          0.9
+        ]
       },
       {
-        "id": "wall-2",
+        "importance": "structural",
+        "isStatic": false,
+        "id": "inner-2",
         "type": "wall",
-        "material": "wood",
+        "material": "glass",
         "position": [
-          0,
-          2.5,
-          -2
+          -1.8,
+          1.5,
+          -2.2
         ],
         "size": [
-          1,
-          1,
-          1
-        ],
-        "importance": "structural",
-        "isStatic": false
+          0.8,
+          0.8,
+          0.8
+        ]
       },
       {
+        "importance": "structural",
+        "isStatic": true,
         "id": "pillar",
         "type": "wall",
         "material": "metal",
         "position": [
-          -0.6,
-          1.7999999999999998,
+          -0.5,
+          1.5,
           -2
         ],
         "size": [
-          0.4,
-          1.8,
-          0.4
-        ],
-        "importance": "structural",
-        "isStatic": true
+          0.35,
+          1.6,
+          0.35
+        ]
       },
       {
+        "importance": "critical",
+        "isStatic": false,
         "id": "keystone",
         "type": "keystone",
         "material": "wood",
         "position": [
-          0,
-          3.5,
-          -2
+          -1.35,
+          2.55,
+          -2.55
         ],
         "size": [
-          0.85,
-          0.85,
-          0.85
+          0.76,
+          0.76,
+          0.76
         ],
-        "importance": "critical",
-        "hitPoints": 112
+        "hitPoints": 135
       }
     ]
   }

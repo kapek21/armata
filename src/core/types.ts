@@ -50,11 +50,22 @@ export interface EnemyCastle {
   modules: CastleModule[];
 }
 
+export type CastleBlueprint =
+  | 'watchtower'
+  | 'gatehouse'
+  | 'curtain_wall'
+  | 'twin_towers'
+  | 'courtyard'
+  | 'bastion'
+  | 'citadel';
+
 export interface LevelDefinition {
   id: string;
   name: string;
   chapter: number;
   difficulty: number;
+  /** Szablon zamku z generatora poziomów */
+  blueprint?: CastleBlueprint;
   ammoLimit: number;
   timeLimitSec: number;
   starTimeSec: [number, number, number];

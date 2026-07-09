@@ -1,8 +1,9 @@
 {
   "id": "level-002",
-  "name": "Mur Podstawowy 2",
+  "name": "Folwark — Wieża strażnicza 2",
   "chapter": 1,
   "difficulty": 1,
+  "blueprint": "watchtower",
   "ammoLimit": 6,
   "timeLimitSec": 100,
   "starTimeSec": [
@@ -38,6 +39,8 @@
     ],
     "modules": [
       {
+        "importance": "structural",
+        "isStatic": true,
         "id": "found",
         "type": "foundation",
         "material": "ground",
@@ -47,46 +50,79 @@
           -2
         ],
         "size": [
-          10.4,
+          9.4,
           0.5,
           7
-        ],
-        "importance": "structural",
-        "isStatic": true
+        ]
       },
       {
-        "id": "wall-0",
+        "importance": "structural",
+        "isStatic": false,
+        "id": "core-0",
         "type": "gate",
-        "material": "stone",
+        "material": "wood",
         "position": [
           0,
           0.5,
           -2
         ],
         "size": [
-          1.2,
+          1,
           1,
           1
-        ],
-        "importance": "structural",
-        "isStatic": false
+        ]
       },
       {
-        "id": "keystone",
-        "type": "keystone",
-        "material": "wood",
+        "importance": "structural",
+        "isStatic": false,
+        "id": "core-1",
+        "type": "wall",
+        "material": "stone",
         "position": [
           0,
           1.5,
           -2
         ],
         "size": [
-          0.85,
-          0.85,
-          0.85
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "core-2",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          0,
+          2.5,
+          -2
         ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
         "importance": "critical",
-        "hitPoints": 88
+        "isStatic": false,
+        "id": "keystone",
+        "type": "keystone",
+        "material": "wood",
+        "position": [
+          0,
+          3.5,
+          -2
+        ],
+        "size": [
+          0.82,
+          0.82,
+          0.82
+        ],
+        "hitPoints": 90
       }
     ]
   }

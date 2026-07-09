@@ -1,8 +1,9 @@
 {
   "id": "level-043",
-  "name": "Cytadela 3",
+  "name": "Królewska cytadela — Bastion 3",
   "chapter": 5,
   "difficulty": 5,
+  "blueprint": "bastion",
   "ammoLimit": 4,
   "timeLimitSec": 42,
   "starTimeSec": [
@@ -38,6 +39,8 @@
     ],
     "modules": [
       {
+        "importance": "structural",
+        "isStatic": true,
         "id": "found",
         "type": "foundation",
         "material": "ground",
@@ -47,16 +50,118 @@
           -2
         ],
         "size": [
-          12,
+          13,
           0.5,
           7
-        ],
-        "importance": "structural",
-        "isStatic": true
+        ]
       },
       {
-        "id": "wall-0",
-        "type": "gate",
+        "importance": "structural",
+        "isStatic": true,
+        "id": "corner--2.8",
+        "type": "tower",
+        "material": "metal",
+        "position": [
+          -2.8,
+          0.55,
+          -2
+        ],
+        "size": [
+          0.7,
+          1.15,
+          0.7
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": true,
+        "id": "corner-2.8",
+        "type": "tower",
+        "material": "metal",
+        "position": [
+          2.8,
+          0.55,
+          -2
+        ],
+        "size": [
+          0.7,
+          1.15,
+          0.7
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": true,
+        "id": "corner--2.5",
+        "type": "tower",
+        "material": "metal",
+        "position": [
+          -2.5,
+          0.55,
+          -2
+        ],
+        "size": [
+          0.7,
+          1.15,
+          0.7
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": true,
+        "id": "corner-2.5",
+        "type": "tower",
+        "material": "metal",
+        "position": [
+          2.5,
+          0.55,
+          -2
+        ],
+        "size": [
+          0.7,
+          1.15,
+          0.7
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "ring--1.5-0",
+        "type": "wall",
+        "material": "stone",
+        "position": [
+          -1.5,
+          0.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "ring--1.5-1",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          -1.5,
+          1.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "ring-0-0",
+        "type": "wall",
         "material": "stone",
         "position": [
           0,
@@ -64,15 +169,15 @@
           -2
         ],
         "size": [
-          1.2,
+          1,
           1,
           1
-        ],
-        "importance": "structural",
-        "isStatic": true
+        ]
       },
       {
-        "id": "wall-1",
+        "importance": "structural",
+        "isStatic": false,
+        "id": "ring-0-1",
         "type": "wall",
         "material": "wood",
         "position": [
@@ -84,77 +189,127 @@
           1,
           1,
           1
-        ],
-        "importance": "structural",
-        "isStatic": false
+        ]
       },
       {
-        "id": "wall-2",
-        "type": "wall",
-        "material": "wood",
-        "position": [
-          0,
-          2.5,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ],
         "importance": "structural",
-        "isStatic": false
-      },
-      {
-        "id": "wall-3",
+        "isStatic": false,
+        "id": "ring-1.5-0",
         "type": "wall",
         "material": "stone",
         "position": [
-          0,
-          3.5,
+          1.5,
+          0.5,
           -2
         ],
         "size": [
           1,
           1,
           1
-        ],
-        "importance": "structural",
-        "isStatic": false
+        ]
       },
       {
-        "id": "pillar",
+        "importance": "structural",
+        "isStatic": false,
+        "id": "ring-1.5-1",
         "type": "wall",
-        "material": "metal",
+        "material": "wood",
         "position": [
-          -0.6,
-          2.4,
+          1.5,
+          1.5,
           -2
         ],
         "size": [
-          0.4,
-          1.8,
-          0.4
-        ],
-        "importance": "structural",
-        "isStatic": true
+          1,
+          1,
+          1
+        ]
       },
       {
+        "importance": "structural",
+        "isStatic": true,
+        "id": "gate",
+        "type": "gate",
+        "material": "stone",
+        "position": [
+          0,
+          0.55,
+          -1.8
+        ],
+        "size": [
+          1.4,
+          1.1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "window",
+        "type": "wall",
+        "material": "glass",
+        "position": [
+          1.2,
+          1.55,
+          -2.25
+        ],
+        "size": [
+          1.2,
+          0.45,
+          0.7
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "vault-l",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          -0.8,
+          2.5,
+          -2.4
+        ],
+        "size": [
+          0.8,
+          0.8,
+          0.8
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "vault-r",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          0.8,
+          2.5,
+          -2.4
+        ],
+        "size": [
+          0.8,
+          0.8,
+          0.8
+        ]
+      },
+      {
+        "importance": "critical",
+        "isStatic": false,
         "id": "keystone",
         "type": "keystone",
         "material": "wood",
         "position": [
           0,
-          4.5,
-          -2
+          3.35,
+          -2.55
         ],
         "size": [
-          0.85,
-          0.85,
-          0.85
+          0.75,
+          0.75,
+          0.75
         ],
-        "importance": "critical",
-        "hitPoints": 120
+        "hitPoints": 149
       }
     ]
   }

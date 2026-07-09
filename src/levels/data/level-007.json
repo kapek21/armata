@@ -1,8 +1,9 @@
 {
   "id": "level-007",
-  "name": "Mur Podstawowy 7",
+  "name": "Folwark — Brama warowna 7",
   "chapter": 1,
   "difficulty": 1,
+  "blueprint": "gatehouse",
   "ammoLimit": 5,
   "timeLimitSec": 90,
   "starTimeSec": [
@@ -38,6 +39,8 @@
     ],
     "modules": [
       {
+        "importance": "structural",
+        "isStatic": true,
         "id": "found",
         "type": "foundation",
         "material": "ground",
@@ -47,95 +50,164 @@
           -2
         ],
         "size": [
-          10.4,
+          12,
           0.5,
           7
-        ],
-        "importance": "structural",
-        "isStatic": true
+        ]
       },
       {
-        "id": "wall-0",
+        "importance": "structural",
+        "isStatic": true,
+        "id": "gate",
         "type": "gate",
         "material": "stone",
         "position": [
           0,
-          0.5,
+          0.55,
           -2
         ],
         "size": [
-          1.2,
-          1,
-          1
-        ],
-        "importance": "structural",
-        "isStatic": false
+          1.5,
+          1.15,
+          1.1
+        ]
       },
       {
-        "id": "wall-1",
+        "importance": "structural",
+        "isStatic": false,
+        "id": "wing-l",
         "type": "wall",
         "material": "wood",
         "position": [
-          0,
-          1.5,
+          -1.8,
+          0.5,
           -2
         ],
         "size": [
           1,
           1,
           1
-        ],
+        ]
+      },
+      {
         "importance": "structural",
-        "isStatic": false
-      },
-      {
-        "id": "side-l",
-        "type": "tower",
-        "material": "stone",
+        "isStatic": false,
+        "id": "wing-r",
+        "type": "wall",
+        "material": "wood",
         "position": [
-          -1.395,
+          1.8,
           0.5,
           -2
         ],
         "size": [
-          0.7,
-          1.2,
-          0.7
-        ],
-        "importance": "structural"
+          1,
+          1,
+          1
+        ]
       },
       {
-        "id": "side-r",
+        "importance": "structural",
+        "isStatic": false,
+        "id": "tower-l",
         "type": "tower",
         "material": "stone",
         "position": [
-          1.395,
-          0.5,
+          -1.8,
+          1.55,
           -2
         ],
         "size": [
-          0.7,
+          0.85,
           1.2,
-          0.7
-        ],
-        "importance": "structural"
+          0.85
+        ]
       },
       {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "tower-r",
+        "type": "tower",
+        "material": "stone",
+        "position": [
+          1.8,
+          1.55,
+          -2
+        ],
+        "size": [
+          0.85,
+          1.2,
+          0.85
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "lintel-glass",
+        "type": "wall",
+        "material": "glass",
+        "position": [
+          0,
+          1.55,
+          -1.85
+        ],
+        "size": [
+          1.1,
+          0.5,
+          0.7
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "inner-l",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          -0.9,
+          1.5,
+          -2.35
+        ],
+        "size": [
+          0.8,
+          1,
+          0.8
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "inner-r",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          0.9,
+          1.5,
+          -2.35
+        ],
+        "size": [
+          0.8,
+          1,
+          0.8
+        ]
+      },
+      {
+        "importance": "critical",
+        "isStatic": false,
         "id": "keystone",
         "type": "keystone",
         "material": "wood",
         "position": [
           0,
-          2.5,
-          -2
+          2.65,
+          -2.45
         ],
         "size": [
-          0.85,
-          0.85,
-          0.85
+          0.78,
+          0.78,
+          0.78
         ],
-        "importance": "critical",
-        "hitPoints": 88
+        "hitPoints": 105
       }
     ]
   }

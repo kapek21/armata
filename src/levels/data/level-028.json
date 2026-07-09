@@ -1,8 +1,9 @@
 {
   "id": "level-028",
-  "name": "Kamienne Bastiony 8",
+  "name": "Bastiony — Bliźniacze wieże 8",
   "chapter": 3,
   "difficulty": 3,
+  "blueprint": "twin_towers",
   "ammoLimit": 4,
   "timeLimitSec": 60,
   "starTimeSec": [
@@ -38,6 +39,8 @@
     ],
     "modules": [
       {
+        "importance": "structural",
+        "isStatic": true,
         "id": "found",
         "type": "foundation",
         "material": "ground",
@@ -47,113 +50,215 @@
           -2
         ],
         "size": [
-          11.2,
+          11,
           0.5,
           7
-        ],
-        "importance": "structural",
-        "isStatic": true
+        ]
       },
       {
-        "id": "wall-0",
-        "type": "gate",
+        "importance": "structural",
+        "isStatic": true,
+        "id": "tower-l-0",
+        "type": "tower",
         "material": "stone",
         "position": [
-          0,
+          -2.5,
           0.5,
           -2
         ],
         "size": [
-          1.2,
+          0.85,
           1,
-          1
-        ],
-        "importance": "structural",
-        "isStatic": true
+          0.85
+        ]
       },
       {
-        "id": "wall-1",
-        "type": "wall",
+        "importance": "structural",
+        "isStatic": false,
+        "id": "tower-l-1",
+        "type": "tower",
         "material": "wood",
         "position": [
-          0,
+          -2.5,
           1.5,
           -2
         ],
         "size": [
+          0.85,
           1,
-          1,
-          1
-        ],
-        "importance": "structural",
-        "isStatic": false
+          0.85
+        ]
       },
       {
-        "id": "wall-2",
-        "type": "wall",
+        "importance": "structural",
+        "isStatic": false,
+        "id": "tower-l-2",
+        "type": "tower",
         "material": "wood",
         "position": [
-          0,
+          -2.5,
           2.5,
           -2
         ],
         "size": [
+          0.85,
           1,
-          1,
-          1
-        ],
-        "importance": "structural",
-        "isStatic": false
+          0.85
+        ]
       },
       {
-        "id": "wall-3",
-        "type": "wall",
-        "material": "stone",
+        "importance": "structural",
+        "isStatic": false,
+        "id": "tower-l-3",
+        "type": "tower",
+        "material": "wood",
         "position": [
-          0,
+          -2.5,
           3.5,
           -2
         ],
         "size": [
+          0.85,
           1,
-          1,
-          1
-        ],
-        "importance": "structural",
-        "isStatic": false
+          0.85
+        ]
       },
       {
+        "importance": "structural",
+        "isStatic": true,
+        "id": "tower-r-0",
+        "type": "tower",
+        "material": "stone",
+        "position": [
+          2.5,
+          0.5,
+          -2
+        ],
+        "size": [
+          0.85,
+          1,
+          0.85
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "tower-r-1",
+        "type": "tower",
+        "material": "wood",
+        "position": [
+          2.5,
+          1.5,
+          -2
+        ],
+        "size": [
+          0.85,
+          1,
+          0.85
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "tower-r-2",
+        "type": "tower",
+        "material": "wood",
+        "position": [
+          2.5,
+          2.5,
+          -2
+        ],
+        "size": [
+          0.85,
+          1,
+          0.85
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "tower-r-3",
+        "type": "tower",
+        "material": "wood",
+        "position": [
+          2.5,
+          3.5,
+          -2
+        ],
+        "size": [
+          0.85,
+          1,
+          0.85
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
         "id": "bridge",
         "type": "wall",
         "material": "glass",
         "position": [
-          0.8,
-          2.4,
+          0,
+          4.3,
           -2
         ],
         "size": [
-          1.8,
+          4.25,
           0.35,
-          0.7
-        ],
-        "importance": "decorative"
+          0.75
+        ]
       },
       {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "tie-l",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          -1.375,
+          3.8,
+          -2
+        ],
+        "size": [
+          0.6,
+          0.6,
+          0.6
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "tie-r",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          1.375,
+          3.8,
+          -2
+        ],
+        "size": [
+          0.6,
+          0.6,
+          0.6
+        ]
+      },
+      {
+        "importance": "critical",
+        "isStatic": false,
         "id": "keystone",
         "type": "keystone",
         "material": "wood",
         "position": [
           0,
-          4.5,
+          5.05,
           -2
         ],
         "size": [
-          0.85,
-          0.85,
-          0.85
+          0.8,
+          0.8,
+          0.8
         ],
-        "importance": "critical",
-        "hitPoints": 104
+        "hitPoints": 136
       }
     ]
   }

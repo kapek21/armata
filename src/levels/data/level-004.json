@@ -1,8 +1,9 @@
 {
   "id": "level-004",
-  "name": "Mur Podstawowy 4",
+  "name": "Folwark — Wieża strażnicza 4",
   "chapter": 1,
   "difficulty": 1,
+  "blueprint": "watchtower",
   "ammoLimit": 6,
   "timeLimitSec": 96,
   "starTimeSec": [
@@ -38,6 +39,8 @@
     ],
     "modules": [
       {
+        "importance": "structural",
+        "isStatic": true,
         "id": "found",
         "type": "foundation",
         "material": "ground",
@@ -47,34 +50,34 @@
           -2
         ],
         "size": [
-          10.4,
+          9.8,
           0.5,
           7
-        ],
-        "importance": "structural",
-        "isStatic": true
+        ]
       },
       {
-        "id": "wall-0",
+        "importance": "structural",
+        "isStatic": false,
+        "id": "core-0",
         "type": "gate",
-        "material": "stone",
+        "material": "wood",
         "position": [
           0,
           0.5,
           -2
         ],
         "size": [
-          1.2,
+          1,
           1,
           1
-        ],
-        "importance": "structural",
-        "isStatic": false
+        ]
       },
       {
-        "id": "wall-1",
+        "importance": "structural",
+        "isStatic": false,
+        "id": "core-1",
         "type": "wall",
-        "material": "wood",
+        "material": "stone",
         "position": [
           0,
           1.5,
@@ -84,45 +87,13 @@
           1,
           1,
           1
-        ],
+        ]
+      },
+      {
         "importance": "structural",
-        "isStatic": false
-      },
-      {
-        "id": "side-l",
-        "type": "tower",
-        "material": "stone",
-        "position": [
-          -1.395,
-          0.5,
-          -2
-        ],
-        "size": [
-          0.7,
-          1.2,
-          0.7
-        ],
-        "importance": "structural"
-      },
-      {
-        "id": "side-r",
-        "type": "tower",
-        "material": "stone",
-        "position": [
-          1.395,
-          0.5,
-          -2
-        ],
-        "size": [
-          0.7,
-          1.2,
-          0.7
-        ],
-        "importance": "structural"
-      },
-      {
-        "id": "keystone",
-        "type": "keystone",
+        "isStatic": false,
+        "id": "core-2",
+        "type": "wall",
         "material": "wood",
         "position": [
           0,
@@ -130,12 +101,79 @@
           -2
         ],
         "size": [
-          0.85,
-          0.85,
-          0.85
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "core-3",
+        "type": "wall",
+        "material": "stone",
+        "position": [
+          0,
+          3.5,
+          -2
         ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "buttress-l",
+        "type": "tower",
+        "material": "wood",
+        "position": [
+          -1.3,
+          0.5,
+          -2
+        ],
+        "size": [
+          0.6,
+          1.4,
+          0.6
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "buttress-r",
+        "type": "tower",
+        "material": "wood",
+        "position": [
+          1.3,
+          0.5,
+          -2
+        ],
+        "size": [
+          0.6,
+          1.4,
+          0.6
+        ]
+      },
+      {
         "importance": "critical",
-        "hitPoints": 88
+        "isStatic": false,
+        "id": "keystone",
+        "type": "keystone",
+        "material": "wood",
+        "position": [
+          0,
+          4.5,
+          -2
+        ],
+        "size": [
+          0.82,
+          0.82,
+          0.82
+        ],
+        "hitPoints": 96
       }
     ]
   }
