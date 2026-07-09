@@ -69,6 +69,15 @@ export function applyWorldOffset(
   return [pos[0] + offset.x, pos[1] + offset.y, pos[2] + offset.z];
 }
 
+export function updateGameplayCameraAspect(
+  camera: THREE.PerspectiveCamera,
+  aspect: number,
+): void {
+  if (!Number.isFinite(aspect) || aspect <= 0) return;
+  camera.aspect = aspect;
+  camera.updateProjectionMatrix();
+}
+
 export function frameGameplayCamera(
   camera: THREE.PerspectiveCamera,
   cannonRoot: THREE.Object3D,

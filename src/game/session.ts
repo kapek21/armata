@@ -54,6 +54,7 @@ import {
   resetCannonAim,
   shotImpulse,
   simulateBallisticArc,
+  updateGameplayCameraAspect,
   type GoalFrame,
 } from './camera-frame.js';
 
@@ -265,7 +266,7 @@ export class GameSession {
     this.viewportW = w;
     this.viewportH = h;
     this.renderer.setSize(w, h, true);
-    this.applyCameraFrame();
+    updateGameplayCameraAspect(this.camera, w / h);
   }
 
   private clearLevel(): void {

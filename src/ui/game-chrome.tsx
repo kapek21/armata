@@ -86,18 +86,23 @@ export function GameChromeBottom({
 
   if (!snap.ready) return <></>;
 
+  const aimHint =
+    phase === 'aiming' && shouldShowAimHint(profile)
+      ? 'Traf czerwony moduł kluczowy zamku wroga'
+      : phase === 'aiming'
+        ? 'Dotknij moduł zamku → odsuń palec → puść'
+        : '';
+
   return (
     <footer className="game-chrome-bottom shrink-0 px-2 pb-2 safe-bottom">
-      {phase === 'aiming' && shouldShowAimHint(profile) && (
-        <p className="mb-1 text-center text-[10px] text-white/45">
-          Traf czerwony moduł kluczowy zamku wroga
-        </p>
-      )}
-      {phase === 'aiming' && !shouldShowAimHint(profile) && (
-        <p className="mb-1 text-center text-[10px] text-white/45">
-          Dotknij moduł zamku → odsuń palec → puść
-        </p>
-      )}
+      <p
+        className={`mb-1 min-h-[2.5rem] flex items-center justify-center text-center text-[10px] text-white/45 ${
+          aimHint ? '' : 'invisible'
+        }`}
+        aria-hidden={!aimHint}
+      >
+        {aimHint || '·'}
+      </p>
 
       <div className="flex flex-wrap items-center justify-center gap-2">
         {POWERUP_DEFS.map((p) => {
