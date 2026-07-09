@@ -4,7 +4,7 @@
   "chapter": 1,
   "difficulty": 1,
   "blueprint": "gatehouse",
-  "ammoLimit": 5,
+  "ammoLimit": 6,
   "timeLimitSec": 84,
   "starTimeSec": [
     46,
@@ -12,9 +12,9 @@
     18
   ],
   "starShots": [
-    3,
     4,
-    5
+    5,
+    6
   ],
   "starScore": [
     1050,
@@ -206,6 +206,24 @@
           0.78,
           0.78,
           0.78
+        ],
+        "hitPoints": 114
+      },
+      {
+        "importance": "critical",
+        "isStatic": false,
+        "id": "keystone-2",
+        "type": "keystone",
+        "material": "wood",
+        "position": [
+          -1.8,
+          2.5700000000000003,
+          -2
+        ],
+        "size": [
+          0.74,
+          0.74,
+          0.74
         ],
         "hitPoints": 114
       }

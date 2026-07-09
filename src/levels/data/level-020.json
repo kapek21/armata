@@ -4,7 +4,7 @@
   "chapter": 2,
   "difficulty": 2,
   "blueprint": "curtain_wall",
-  "ammoLimit": 4,
+  "ammoLimit": 6,
   "timeLimitSec": 70,
   "starTimeSec": [
     39,
@@ -12,9 +12,9 @@
     15
   ],
   "starShots": [
-    2,
-    3,
-    4
+    4,
+    5,
+    6
   ],
   "starScore": [
     1150,
@@ -359,6 +359,42 @@
           0.82,
           0.82,
           0.82
+        ],
+        "hitPoints": 128
+      },
+      {
+        "importance": "critical",
+        "isStatic": false,
+        "id": "keystone-2",
+        "type": "keystone",
+        "material": "wood",
+        "position": [
+          -7.1000000000000005,
+          2.5700000000000003,
+          -2
+        ],
+        "size": [
+          0.74,
+          0.74,
+          0.74
+        ],
+        "hitPoints": 128
+      },
+      {
+        "importance": "critical",
+        "isStatic": false,
+        "id": "keystone-3",
+        "type": "keystone",
+        "material": "wood",
+        "position": [
+          7.1000000000000005,
+          2.5700000000000003,
+          -2
+        ],
+        "size": [
+          0.74,
+          0.74,
+          0.74
         ],
         "hitPoints": 128
       }

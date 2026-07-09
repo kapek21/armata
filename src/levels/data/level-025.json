@@ -4,7 +4,7 @@
   "chapter": 3,
   "difficulty": 3,
   "blueprint": "twin_towers",
-  "ammoLimit": 5,
+  "ammoLimit": 7,
   "timeLimitSec": 66,
   "starTimeSec": [
     36,
@@ -12,9 +12,9 @@
     15
   ],
   "starShots": [
-    3,
-    4,
-    5
+    5,
+    6,
+    7
   ],
   "starScore": [
     1175,
@@ -223,6 +223,42 @@
           0.8,
           0.8,
           0.8
+        ],
+        "hitPoints": 127
+      },
+      {
+        "importance": "critical",
+        "isStatic": false,
+        "id": "keystone-2",
+        "type": "keystone",
+        "material": "wood",
+        "position": [
+          -2.5,
+          3.37,
+          -2
+        ],
+        "size": [
+          0.74,
+          0.74,
+          0.74
+        ],
+        "hitPoints": 127
+      },
+      {
+        "importance": "critical",
+        "isStatic": false,
+        "id": "keystone-3",
+        "type": "keystone",
+        "material": "wood",
+        "position": [
+          2.5,
+          3.37,
+          -2
+        ],
+        "size": [
+          0.74,
+          0.74,
+          0.74
         ],
         "hitPoints": 127
       }

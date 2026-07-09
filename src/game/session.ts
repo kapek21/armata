@@ -31,7 +31,7 @@ import {
   KEYSTONE_HIT_POINTS,
 } from '../meta/score.js';
 import { levelByIndex, levelCount } from '../levels/index.js';
-import { getKeystoneModule } from '../levels/normalize.js';
+import { countKeystones, getKeystoneModule } from '../levels/normalize.js';
 import { useHudStore } from '../ui/hud-store.js';
 import { setupCastleScene, pulseKeystoneMaterial } from './castle-assets.js';
 import { createModuleMesh, getCastleMaterials } from './castle-renderer.js';
@@ -80,6 +80,17 @@ const BALL_MAX_AGE_MS = 4000;
 const MIN_DRAG_PX = 24;
 const MAX_DRAG_PX = 140;
 
+const _hitClosest = new THREE.Vector3();
+
+function ballIntersectsBox(center: THREE.Vector3, radius: number, box: THREE.Box3): boolean {
+  _hitClosest.set(
+    THREE.MathUtils.clamp(center.x, box.min.x, box.max.x),
+    THREE.MathUtils.clamp(center.y, box.min.y, box.max.y),
+    THREE.MathUtils.clamp(center.z, box.min.z, box.max.z),
+  );
+  return _hitClosest.distanceToSquared(center) <= radius * radius;
+}
+
 export class GameSession {
   private readonly scene = new THREE.Scene();
   private readonly camera = new THREE.PerspectiveCamera(54, 1, 0.1, 120);
@@ -115,6 +126,7 @@ export class GameSession {
   private lastShotPower = 0.5;
   private keystoneHp = 100;
   private keystoneHpMax = 100;
+  private keystoneTotal = 1;
   private animTime = 0;
   private ballHitCooldown = new Set<string>();
   private lastExplosiveShot = false;
@@ -242,6 +254,7 @@ export class GameSession {
     this.aimTargetMesh = null;
 
     const ks = getKeystoneModule(this.level);
+    this.keystoneTotal = countKeystones(this.level);
     this.keystoneHpMax = ks?.hitPoints ?? 100;
     this.keystoneHp = this.keystoneHpMax;
 
@@ -724,8 +737,7 @@ export class GameSession {
       if (this.ballHitCooldown.has(entry.moduleId)) continue;
 
       const box = new THREE.Box3().setFromObject(entry.mesh);
-      box.expandByScalar(BALL_RADIUS * 0.5);
-      if (!box.containsPoint(ballPos)) continue;
+      if (!ballIntersectsBox(ballPos, BALL_RADIUS, box)) continue;
 
       this.ballHitCooldown.add(entry.moduleId);
       this.applyModuleDamage(entry, dmg);
@@ -756,7 +768,7 @@ export class GameSession {
     if (entry.isKeystone) {
       this.keystoneHits += 1;
       this.runScore += KEYSTONE_HIT_POINTS;
-      this.keystoneHp = Math.max(0, entry.hitPoints);
+      this.refreshKeystoneHud();
       this.syncHud('Trafienie w klucz!');
     }
 
@@ -773,6 +785,7 @@ export class GameSession {
     if (entry.isKeystone) {
       this.runScore += 1000;
       this.keystoneDestroyed = this.allKeystonesCleared();
+      this.refreshKeystoneHud();
     } else if (entry.importance === 'structural') {
       this.secondaryDestroyed += 1;
       this.runScore += 50;
@@ -783,6 +796,22 @@ export class GameSession {
     this.scene.remove(entry.mesh);
     entry.mesh.geometry.dispose();
     (entry.mesh.material as THREE.Material).dispose();
+  }
+
+  private refreshKeystoneHud(): void {
+    const active = this.entries.filter((e) => e.isKeystone && !e.cleared);
+    if (active.length === 0) {
+      this.keystoneHp = 0;
+      this.keystoneHpMax = 1;
+      return;
+    }
+    const weakest = active.reduce((a, b) => (a.hitPoints < b.hitPoints ? a : b));
+    this.keystoneHp = Math.max(0, weakest.hitPoints);
+    this.keystoneHpMax = weakest.maxHitPoints;
+  }
+
+  private keystoneClearedCount(): number {
+    return this.entries.filter((e) => e.isKeystone && e.cleared).length;
   }
 
   private allKeystonesCleared(): boolean {
@@ -895,6 +924,8 @@ export class GameSession {
       runScore: this.runScore,
       keystoneHp: Math.max(0, Math.round(this.keystoneHp)),
       keystoneHpMax: this.keystoneHpMax,
+      keystoneTotal: this.keystoneTotal,
+      keystoneCleared: this.keystoneClearedCount(),
       starsEarned: stars,
       finalScore: this.runScore,
       message,

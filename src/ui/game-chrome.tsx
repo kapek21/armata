@@ -49,7 +49,9 @@ export function GameChromeTop({ phase }: GameChromeTopProps): JSX.Element {
         className={`mt-1 flex min-h-[1.125rem] items-center gap-2 px-1 ${ended ? 'invisible' : ''}`}
         aria-hidden={ended}
       >
-        <span className="text-[10px] text-white/45">Klucz:</span>
+        <span className="text-[10px] text-white/45">
+          {snap.keystoneTotal > 1 ? 'Klucze:' : 'Klucz:'}
+        </span>
         <div className="h-2 flex-1 overflow-hidden rounded-full bg-black/40 border border-red-900/40">
           <div
             className="h-full bg-gradient-to-r from-red-700 to-red-400 transition-all duration-200"
@@ -58,7 +60,11 @@ export function GameChromeTop({ phase }: GameChromeTopProps): JSX.Element {
             }}
           />
         </div>
-        <span className="text-[10px] text-red-300 tabular-nums">{snap.keystoneHp}</span>
+        <span className="min-w-[2.25rem] text-right text-[10px] text-red-300 tabular-nums">
+          {snap.keystoneTotal > 1
+            ? `${snap.keystoneCleared}/${snap.keystoneTotal}`
+            : snap.keystoneHp}
+        </span>
       </div>
     </header>
   );
@@ -90,7 +96,9 @@ export function GameChromeBottom({
 
   const aimHint =
     phase === 'aiming' && shouldShowAimHint(profile)
-      ? 'Traf czerwony moduł kluczowy zamku wroga'
+      ? snap.keystoneTotal > 1
+        ? 'Zniszcz wszystkie czerwone moduły kluczowe zamku'
+        : 'Traf czerwony moduł kluczowy zamku wroga'
       : phase === 'aiming'
         ? 'Dotknij moduł zamku → odsuń palec → puść'
         : '';
