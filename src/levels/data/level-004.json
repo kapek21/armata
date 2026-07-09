@@ -126,35 +126,69 @@
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "buttress-l",
+        "id": "buttress-l-base",
         "type": "tower",
-        "material": "wood",
+        "material": "stone",
         "position": [
           -1.3,
           0.5,
           -2
         ],
         "size": [
-          0.6,
-          1.4,
-          0.6
+          1,
+          1,
+          1
         ]
       },
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "buttress-r",
-        "type": "tower",
+        "id": "buttress-l-upper",
+        "type": "wall",
         "material": "wood",
+        "position": [
+          -1.3,
+          1.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "buttress-r-base",
+        "type": "tower",
+        "material": "stone",
         "position": [
           1.3,
           0.5,
           -2
         ],
         "size": [
-          0.6,
-          1.4,
-          0.6
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "buttress-r-upper",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          1.3,
+          1.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
         ]
       },
       {

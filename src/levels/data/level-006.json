@@ -75,9 +75,9 @@
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "wing-l",
+        "id": "wing-l-base",
         "type": "wall",
-        "material": "wood",
+        "material": "stone",
         "position": [
           -1.8,
           0.5,
@@ -92,12 +92,46 @@
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "wing-r",
+        "id": "wing-l-upper",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          -1.8,
+          1.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "wing-r-base",
+        "type": "wall",
+        "material": "stone",
+        "position": [
+          1.8,
+          0.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "wing-r-upper",
         "type": "wall",
         "material": "wood",
         "position": [
           1.8,
-          0.5,
+          1.5,
           -2
         ],
         "size": [
@@ -169,9 +203,9 @@
           -2.35
         ],
         "size": [
-          0.8,
           1,
-          0.8
+          1,
+          1
         ]
       },
       {
@@ -186,9 +220,26 @@
           -2.35
         ],
         "size": [
-          0.8,
           1,
-          0.8
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "gate-deep",
+        "type": "wall",
+        "material": "stone",
+        "position": [
+          0,
+          0.5,
+          -2.35
+        ],
+        "size": [
+          1,
+          1,
+          1
         ]
       },
       {
@@ -199,8 +250,8 @@
         "material": "wood",
         "position": [
           0,
-          2.29,
-          -2
+          1.3900000000000001,
+          -2.7
         ],
         "size": [
           0.78,

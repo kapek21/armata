@@ -126,7 +126,7 @@
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "ring--1.5-0",
+        "id": "ring--1.5-base",
         "type": "wall",
         "material": "stone",
         "position": [
@@ -143,7 +143,7 @@
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "ring--1.5-1",
+        "id": "ring--1.5-upper",
         "type": "wall",
         "material": "wood",
         "position": [
@@ -160,7 +160,7 @@
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "ring-0-0",
+        "id": "ring-0-base",
         "type": "wall",
         "material": "stone",
         "position": [
@@ -177,9 +177,9 @@
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "ring-0-1",
+        "id": "ring-0-upper",
         "type": "wall",
-        "material": "wood",
+        "material": "glass",
         "position": [
           0,
           1.5,
@@ -194,7 +194,7 @@
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "ring-1.5-0",
+        "id": "ring-1.5-base",
         "type": "wall",
         "material": "stone",
         "position": [
@@ -211,7 +211,7 @@
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "ring-1.5-1",
+        "id": "ring-1.5-upper",
         "type": "wall",
         "material": "wood",
         "position": [
@@ -268,12 +268,12 @@
         "position": [
           -0.8,
           2.5,
-          -2.4
+          -2.35
         ],
         "size": [
-          0.8,
-          0.8,
-          0.8
+          1,
+          1,
+          1
         ]
       },
       {
@@ -285,12 +285,12 @@
         "position": [
           0.8,
           2.5,
-          -2.4
+          -2.35
         ],
         "size": [
-          0.8,
-          0.8,
-          0.8
+          1,
+          1,
+          1
         ]
       },
       {
@@ -301,8 +301,8 @@
         "material": "wood",
         "position": [
           0,
-          2.375,
-          -2.35
+          1.375,
+          -2
         ],
         "size": [
           0.75,
@@ -319,7 +319,7 @@
         "material": "wood",
         "position": [
           -1.5,
-          2.37,
+          1.37,
           -2
         ],
         "size": [
@@ -355,13 +355,13 @@
         "material": "wood",
         "position": [
           1.2,
-          2.37,
+          2.1350000000000002,
           -2.25
         ],
         "size": [
-          0.74,
-          0.74,
-          0.74
+          0.72,
+          0.72,
+          0.72
         ],
         "hitPoints": 147
       }

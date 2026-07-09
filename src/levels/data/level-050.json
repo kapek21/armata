@@ -84,9 +84,9 @@
           -2
         ],
         "size": [
-          0.9,
           1,
-          0.9
+          1,
+          1
         ]
       },
       {
@@ -101,9 +101,9 @@
           -2
         ],
         "size": [
-          0.9,
           1,
-          0.9
+          1,
+          1
         ]
       },
       {
@@ -118,9 +118,9 @@
           -2
         ],
         "size": [
-          0.9,
           1,
-          0.9
+          1,
+          1
         ]
       },
       {
@@ -135,9 +135,9 @@
           -2
         ],
         "size": [
-          0.9,
           1,
-          0.9
+          1,
+          1
         ]
       },
       {
@@ -152,9 +152,9 @@
           -2
         ],
         "size": [
-          0.9,
           1,
-          0.9
+          1,
+          1
         ]
       },
       {
@@ -169,9 +169,9 @@
           -2
         ],
         "size": [
-          0.9,
           1,
-          0.9
+          1,
+          1
         ]
       },
       {
@@ -186,9 +186,9 @@
           -2.15
         ],
         "size": [
-          1.2,
           1,
-          1.1
+          1,
+          1
         ]
       },
       {
@@ -220,9 +220,9 @@
           -2.35
         ],
         "size": [
-          0.75,
-          0.75,
-          0.75
+          1,
+          1,
+          1
         ]
       },
       {
@@ -237,9 +237,9 @@
           -2.35
         ],
         "size": [
-          0.75,
-          0.75,
-          0.75
+          1,
+          1,
+          1
         ]
       },
       {
@@ -260,22 +260,38 @@
         ]
       },
       {
-        "importance": "critical",
+        "importance": "structural",
         "isStatic": false,
-        "id": "keystone",
-        "type": "keystone",
-        "material": "wood",
+        "id": "boss-base-base",
+        "type": "tower",
+        "material": "stone",
         "position": [
-          0,
-          3.39,
-          -2.25
+          2.2,
+          0.5,
+          -2.2
         ],
         "size": [
-          0.78,
-          0.78,
-          0.78
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "boss-base-upper",
+        "type": "wall",
+        "material": "stone",
+        "position": [
+          2.2,
+          1.5,
+          -2.2
         ],
-        "hitPoints": 170
+        "size": [
+          1,
+          1,
+          1
+        ]
       },
       {
         "importance": "structural",
@@ -285,7 +301,7 @@
         "material": "stone",
         "position": [
           2.2,
-          1.5,
+          1.55,
           -2.2
         ],
         "size": [
@@ -297,12 +313,30 @@
       {
         "importance": "critical",
         "isStatic": false,
+        "id": "keystone",
+        "type": "keystone",
+        "material": "wood",
+        "position": [
+          -0.9,
+          3.39,
+          -2.35
+        ],
+        "size": [
+          0.78,
+          0.78,
+          0.78
+        ],
+        "hitPoints": 170
+      },
+      {
+        "importance": "critical",
+        "isStatic": false,
         "id": "keystone-2",
         "type": "keystone",
         "material": "wood",
         "position": [
           -2,
-          3.37,
+          2.37,
           -2
         ],
         "size": [

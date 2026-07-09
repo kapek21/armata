@@ -12,6 +12,10 @@ const outDir = join(__dir, '../src/levels/data');
 mkdirSync(outDir, { recursive: true });
 
 const Z = -2;
+/** Środki rzędów muru (wysokość bloku = 1). */
+const ROW = { low: 0.5, mid: 1.5, high: 2.5 };
+const DEEP_Z = -0.35;
+
 const CHAPTER_NAMES = [
   'Folwark',
   'Warownia',
@@ -105,85 +109,219 @@ function keystone(id, x, y, z, chapter, slot, size = 0.82) {
   });
 }
 
+/** Rola głównego klucza rotuje co poziom w rozdziale. */
+function primaryRole(slot) {
+  return ['peak', 'mid', 'deep', 'low'][slot % 4];
+}
+
+/** Y środka keystone na wierzchu bloku w danym rzędzie. */
+function onRow(rowY, size) {
+  return stackY(rowY, 1, size);
+}
+
+function brickAt(id, x, y, z, material, type = 'wall', extra = {}) {
+  return m({ id, type, material, position: [x, y, z], size: [1, 1, 1], ...extra });
+}
+
+/** Poziomy rząd klocków (np. mur kurtynowy). */
+function brickRow(id, xCenter, y, z, count, spacing, material, type = 'wall') {
+  const mods = [];
+  const half = (count - 1) / 2;
+  for (let i = 0; i < count; i++) {
+    const mat = Array.isArray(material) ? material[i % material.length] : material;
+    mods.push(brickAt(`${id}-${i}`, xCenter + (i - half) * spacing, y, z, mat, type));
+  }
+  return mods;
+}
+
+/** Segment 2-rzędowy: podstawa kamienna + piętro drewniane/szklane. */
+function tieredWall(id, x, z, upperMat = 'wood', baseType = 'wall') {
+  return [
+    brickAt(`${id}-base`, x, ROW.low, z, 'stone', baseType),
+    brickAt(`${id}-upper`, x, ROW.mid, z, upperMat),
+  ];
+}
+
 /** Kolumna klocków + keystone na szczycie (stabilna fizyka). */
 function keySpot(id, x, z, columns, chapter, slot, size = 0.74) {
   const mods = [];
   for (let c = 0; c < columns; c++) {
     mods.push(
-      m({
-        id: `${id}-col-${c}`,
-        type: 'tower',
-        material: c === 0 ? 'stone' : 'wood',
-        position: [x, 0.5 + c, z],
-        size: [1, 1, 1],
-      }),
+      brickAt(`${id}-col-${c}`, x, ROW.low + c, z, c === 0 ? 'stone' : 'wood', 'tower'),
     );
   }
-  const topY = 0.5 + columns - 1;
+  const topY = ROW.low + columns - 1;
   mods.push(keystone(id, x, stackY(topY, 1, size), z, chapter, slot, size));
   return mods;
 }
 
-/** Dodatkowe keystone'y wg poziomu (od 10). spots: { id?, x, z, y?, columns, size?, useExisting? } */
+/**
+ * Umieszcza keystone wg roli: peak | mid | low | deep | flank.
+ * anchor: { x, z, columns?, rowY?, towerTopY?, towerH?, supportY?, supportH?, zDeep?, flankX?, addDeepSupport? }
+ */
+function placeByRole(modules, id, role, anchor, chapter, slot, size = 0.74) {
+  const { x, z } = anchor;
+  const zDeep = anchor.zDeep ?? DEEP_Z;
+
+  switch (role) {
+    case 'peak': {
+      if (anchor.columns != null) {
+        const topY = ROW.low + anchor.columns - 1;
+        modules.push(keystone(id, x, stackY(topY, 1, size), z, chapter, slot, size));
+        break;
+      }
+      if (anchor.towerTopY != null) {
+        modules.push(
+          keystone(
+            id,
+            x,
+            stackY(anchor.towerTopY, anchor.towerH ?? 1.2, size),
+            z,
+            chapter,
+            slot,
+            size,
+          ),
+        );
+        break;
+      }
+      if (anchor.supportY != null) {
+        modules.push(
+          keystone(
+            id,
+            x,
+            stackY(anchor.supportY, anchor.supportH ?? 1, size),
+            z,
+            chapter,
+            slot,
+            size,
+          ),
+        );
+        break;
+      }
+      modules.push(keystone(id, x, onRow(anchor.rowY ?? ROW.high, size), z, chapter, slot, size));
+      break;
+    }
+    case 'mid':
+      modules.push(keystone(id, x, onRow(anchor.rowY ?? ROW.mid, size), z, chapter, slot, size));
+      break;
+    case 'low':
+      modules.push(keystone(id, x, onRow(ROW.low, size), z, chapter, slot, size));
+      break;
+    case 'deep': {
+      const rowY = anchor.rowY ?? ROW.low;
+      const dz = z + zDeep;
+      if (anchor.addDeepSupport !== false) {
+        const hasSupport = modules.some((mod) => {
+          const [mx, my, mz] = mod.position;
+          return Math.abs(mx - x) < 0.55 && Math.abs(my - rowY) < 0.55 && Math.abs(mz - dz) < 0.55;
+        });
+        if (!hasSupport) {
+          modules.push(brickAt(`${id}-deep-support`, x, rowY, dz, 'wood'));
+        }
+      }
+      modules.push(keystone(id, x, onRow(rowY, size), dz, chapter, slot, size));
+      break;
+    }
+    case 'flank':
+      modules.push(
+        keystone(
+          id,
+          anchor.flankX ?? x,
+          onRow(anchor.rowY ?? ROW.mid, size),
+          anchor.flankZ ?? z,
+          chapter,
+          slot,
+          size,
+        ),
+      );
+      break;
+    default:
+      modules.push(keystone(id, x, onRow(ROW.mid, size), z, chapter, slot, size));
+  }
+}
+
+/** Dodatkowe keystone'y wg poziomu (od 10). spots: { id?, role, x, z, ... } */
 function appendKeystones(modules, spots, chapter, slot, levelIndex) {
   const need = keystoneCount(levelIndex);
   for (let i = 1; i < need && i - 1 < spots.length; i++) {
     const s = spots[i - 1];
     const id = s.id ?? `keystone-${i + 1}`;
     const size = s.size ?? 0.74;
-    if (s.y != null) {
+    if (s.role) {
+      placeByRole(modules, id, s.role, s, chapter, slot, size);
+    } else if (s.y != null) {
       modules.push(keystone(id, s.x, s.y, s.z, chapter, slot, size));
     } else if (s.useExisting) {
-      const topY = 0.5 + s.columns - 1;
-      modules.push(keystone(id, s.x, stackY(topY, 1, size), s.z, chapter, slot, size));
-    } else {
+      placeByRole(modules, id, 'peak', { x: s.x, z: s.z, columns: s.columns }, chapter, slot, size);
+    } else if (s.columns) {
       modules.push(...keySpot(id, s.x, s.z, s.columns, chapter, slot, size));
     }
   }
 }
 
-/** Poziomy 1–5: prosta wieża + boczne podpory */
+/** Poziomy 1–5: wieża 2+ rzędów + boczne podpory */
 function watchtower(chapter, slot, levelIndex) {
-  const h = 2 + Math.floor(slot / 2) + (chapter > 1 ? 1 : 0);
+  const h = Math.max(2, 2 + Math.floor(slot / 2) + (chapter > 1 ? 1 : 0));
   const modules = [foundation(9 + slot * 0.2)];
+  const role = primaryRole(slot);
+  const ksSize = 0.82;
 
   for (let i = 0; i < h; i++) {
     modules.push(
-      m({
-        id: `core-${i}`,
-        type: i === 0 ? 'gate' : 'wall',
-        material: i % 2 === 0 ? 'wood' : 'stone',
-        position: [0, 0.5 + i, Z],
-        size: [1, 1, 1],
-      }),
+      brickAt(
+        `core-${i}`,
+        0,
+        ROW.low + i,
+        Z,
+        i % 2 === 0 ? 'wood' : 'stone',
+        i === 0 ? 'gate' : 'wall',
+      ),
     );
   }
 
   if (slot >= 3) {
-    modules.push(
-      m({
-        id: 'buttress-l',
-        type: 'tower',
-        material: 'wood',
-        position: [-1.3, 0.5, Z],
-        size: [0.6, 1.4, 0.6],
-      }),
-      m({
-        id: 'buttress-r',
-        type: 'tower',
-        material: 'wood',
-        position: [1.3, 0.5, Z],
-        size: [0.6, 1.4, 0.6],
-      }),
-    );
+    for (const side of [-1.3, 1.3]) {
+      const tag = side < 0 ? 'l' : 'r';
+      modules.push(
+        ...tieredWall(`buttress-${tag}`, side, Z, 'wood', 'tower'),
+      );
+    }
   }
 
-  modules.push(keystone('keystone', 0, stackY(0.5 + h - 1, 1, 0.82), Z, chapter, slot));
+  if (role === 'deep') {
+    modules.push(brickAt('core-deep', 0, ROW.low, Z + DEEP_Z, 'stone'));
+  }
+
+  placeByRole(modules, 'keystone', role, {
+    x: 0,
+    z: Z,
+    columns: role === 'peak' ? h : undefined,
+    rowY: role === 'mid' ? ROW.mid : role === 'low' ? ROW.low : ROW.low,
+    zDeep: DEEP_Z,
+    addDeepSupport: false,
+  }, chapter, slot, ksSize);
+
   appendKeystones(
     modules,
     [
-      { id: 'keystone-2', x: -1.3, z: Z, columns: 2, useExisting: slot >= 3 },
-      { id: 'keystone-3', x: 1.3, z: Z, columns: 2, useExisting: slot >= 3 },
+      {
+        id: 'keystone-2',
+        role: 'flank',
+        x: -1.3,
+        z: Z,
+        flankX: -1.3,
+        rowY: ROW.mid,
+        size: 0.74,
+      },
+      {
+        id: 'keystone-3',
+        role: slot % 2 === 0 ? 'low' : 'deep',
+        x: 1.3,
+        z: Z,
+        rowY: ROW.low,
+        zDeep: DEEP_Z,
+        size: 0.74,
+      },
     ],
     chapter,
     slot,
@@ -192,10 +330,12 @@ function watchtower(chapter, slot, levelIndex) {
   return modules;
 }
 
-/** Poziomy 6–12: statyczna brama, keystone za nią / wyżej */
+/** Poziomy 6–12: brama 2-rzędowa, klucz peak/mid/low/deep */
 function gatehouse(chapter, slot, levelIndex) {
   const modules = [foundation(12)];
   const gateStatic = chapter >= 2 || slot >= 5;
+  const role = primaryRole(slot);
+  const ksSize = 0.78;
 
   modules.push(
     m({
@@ -206,20 +346,8 @@ function gatehouse(chapter, slot, levelIndex) {
       size: [1.5, 1.15, 1.1],
       isStatic: gateStatic,
     }),
-    m({
-      id: 'wing-l',
-      type: 'wall',
-      material: 'wood',
-      position: [-1.8, 0.5, Z],
-      size: [1, 1, 1],
-    }),
-    m({
-      id: 'wing-r',
-      type: 'wall',
-      material: 'wood',
-      position: [1.8, 0.5, Z],
-      size: [1, 1, 1],
-    }),
+    ...tieredWall('wing-l', -1.8, Z, 'wood'),
+    ...tieredWall('wing-r', 1.8, Z, 'wood'),
     m({
       id: 'tower-l',
       type: 'tower',
@@ -234,9 +362,6 @@ function gatehouse(chapter, slot, levelIndex) {
       position: [1.8, 1.55, Z],
       size: [0.85, 1.2, 0.85],
     }),
-  );
-
-  modules.push(
     m({
       id: 'lintel',
       type: 'wall',
@@ -244,45 +369,57 @@ function gatehouse(chapter, slot, levelIndex) {
       position: [0, 1.55, Z],
       size: [1.3, 0.7, 0.9],
     }),
+    brickAt('inner-l', -0.9, ROW.mid, Z + DEEP_Z, 'wood'),
+    brickAt('inner-r', 0.9, ROW.mid, Z + DEEP_Z, 'wood'),
   );
 
-  const lintelY = 1.55;
-  const lintelH = 0.7;
-  const ksSize = 0.78;
+  if (role === 'deep') {
+    modules.push(brickAt('gate-deep', 0, ROW.low, Z + DEEP_Z, 'stone'));
+  }
+  if (role === 'mid') {
+    modules.push(brickAt('gate-mid', 0, ROW.mid, Z, 'wood'));
+  }
 
-  modules.push(
-    m({
-      id: 'inner-l',
-      type: 'wall',
-      material: 'wood',
-      position: [-0.9, 1.5, Z - 0.35],
-      size: [0.8, 1, 0.8],
-    }),
-    m({
-      id: 'inner-r',
-      type: 'wall',
-      material: 'wood',
-      position: [0.9, 1.5, Z - 0.35],
-      size: [0.8, 1, 0.8],
-    }),
-    keystone('keystone', 0, stackY(lintelY, lintelH, ksSize), Z, chapter, slot, ksSize),
-  );
+  const primaryX =
+    role === 'low'
+      ? slot % 2 === 0
+        ? -1.8
+        : 1.8
+      : role === 'mid'
+        ? 0
+        : role === 'deep'
+          ? 0
+          : 0;
+  const primaryZ = role === 'deep' ? Z + DEEP_Z : role === 'mid' && slot % 2 === 0 ? Z + DEEP_Z : Z;
+
+  placeByRole(modules, 'keystone', role, {
+    x: primaryX,
+    z: primaryZ,
+    supportY: role === 'peak' ? 1.55 : undefined,
+    supportH: role === 'peak' ? 0.7 : undefined,
+    rowY: role === 'mid' ? ROW.mid : ROW.low,
+    zDeep: DEEP_Z,
+    addDeepSupport: false,
+  }, chapter, slot, ksSize);
 
   appendKeystones(
     modules,
     [
       {
         id: 'keystone-2',
+        role: 'peak',
         x: -1.8,
-        y: stackY(1.55, 1.3, 0.74),
         z: Z,
+        towerTopY: 1.55,
+        towerH: 1.3,
         size: 0.74,
       },
       {
         id: 'keystone-3',
+        role: slot % 2 === 0 ? 'mid' : 'low',
         x: 1.8,
-        y: stackY(1.55, 1.3, 0.74),
         z: Z,
+        rowY: slot % 2 === 0 ? ROW.mid : ROW.low,
         size: 0.74,
       },
     ],
@@ -294,21 +431,17 @@ function gatehouse(chapter, slot, levelIndex) {
   return modules;
 }
 
-/** Poziomy 13–20: poziomy mur, keystone na skrzydle */
+/** Poziomy 13–20: mur 2-rzędowy, klucze peak/mid/low/deep/flank */
 function curtain_wall(chapter, slot, levelIndex) {
   const spread = 3 + Math.floor(slot / 3);
   const modules = [foundation(10 + spread * 2)];
+  const role = primaryRole(slot);
+  const keySide = slot % 2 === 0 ? 1 : -1;
+  const ksSize = 0.82;
 
   for (let x = -spread; x <= spread; x++) {
-    modules.push(
-      m({
-        id: `wall-${x}`,
-        type: 'wall',
-        material: Math.abs(x) === spread ? 'stone' : 'wood',
-        position: [x * 1.1, 0.5, Z],
-        size: [1, 1, 1],
-      }),
-    );
+    const upperMat = Math.abs(x) === 0 && slot % 3 === 0 ? 'glass' : 'wood';
+    modules.push(...tieredWall(`wall-${x}`, x * 1.1, Z, upperMat));
   }
 
   modules.push(
@@ -341,49 +474,52 @@ function curtain_wall(chapter, slot, levelIndex) {
     );
   }
 
-  const keySide = slot % 2 === 0 ? 1 : -1;
-  const ksSize = 0.82;
-  modules.push(
-    m({
-      id: 'keep-base',
-      type: 'wall',
-      material: 'wood',
-      position: [keySide * (spread * 0.75), 1.5, Z - 0.2],
-      size: [1, 1, 1],
-    }),
-    keystone(
-      'keystone',
-      keySide * (spread * 0.75),
-      stackY(1.5, 1, ksSize),
-      Z - 0.35,
-      chapter,
-      slot,
-      ksSize,
-    ),
-  );
+  const keyX = keySide * (spread * 0.75);
+  const keyZ = role === 'deep' ? Z + DEEP_Z : Z;
+
+  if (role === 'deep') {
+    modules.push(brickAt('keep-deep', keyX, ROW.low, keyZ, 'wood'));
+  }
+  if (role === 'peak') {
+    modules.push(brickAt('keep-peak', keyX, ROW.high, keyZ, 'stone'));
+  }
+
+  placeByRole(modules, 'keystone', role, {
+    x: keyX,
+    z: keyZ,
+    rowY: role === 'mid' ? ROW.mid : role === 'peak' ? ROW.high : ROW.low,
+    towerTopY: role === 'peak' ? undefined : undefined,
+    zDeep: DEEP_Z,
+    addDeepSupport: false,
+  }, chapter, slot, ksSize);
 
   appendKeystones(
     modules,
     [
       {
         id: 'keystone-2',
+        role: 'peak',
         x: -spread * 1.1 - 0.5,
-        y: stackY(1.55, 1.3, 0.74),
         z: Z,
+        towerTopY: 1.55,
+        towerH: 1.3,
         size: 0.74,
       },
       {
         id: 'keystone-3',
-        x: spread * 1.1 + 0.5,
-        y: stackY(1.55, 1.3, 0.74),
+        role: 'mid',
+        x: 0,
         z: Z,
+        rowY: ROW.mid,
         size: 0.74,
       },
       {
         id: 'keystone-4',
+        role: 'deep',
         x: -keySide * (spread * 0.75),
-        y: stackY(1.5, 1, 0.74),
-        z: Z - 0.2,
+        z: Z,
+        rowY: ROW.low,
+        zDeep: DEEP_Z,
         size: 0.74,
       },
     ],
@@ -395,31 +531,34 @@ function curtain_wall(chapter, slot, levelIndex) {
   return modules;
 }
 
-/** Poziomy 21–28: dwie wieże + most szklany z keystone */
+/** Poziomy 21–28: dwie wieże 2-rzędowe + most, klucze zróżnicowane */
 function twin_towers(chapter, slot, levelIndex) {
   const towerH = 2 + Math.floor(slot / 4);
   const gap = 2.2 + (slot % 3) * 0.15;
   const modules = [foundation(11)];
+  const role = primaryRole(slot);
+  const bridgeY = ROW.low + towerH - 0.2;
+  const bridgeH = 0.35;
+  const ksSize = 0.8;
 
   for (const side of [-1, 1]) {
     const tx = side * gap;
-    for (let i = 0; i < towerH; i++) {
+    modules.push(...tieredWall(`tower${side < 0 ? '-l' : '-r'}-base`, tx, Z, 'stone', 'tower'));
+    for (let i = 1; i < towerH; i++) {
       modules.push(
-        m({
-          id: `tower${side < 0 ? '-l' : '-r'}-${i}`,
-          type: 'tower',
-          material: i === 0 ? 'stone' : 'wood',
-          position: [tx, 0.5 + i, Z],
-          size: [0.85, 1, 0.85],
-          isStatic: i === 0 && chapter >= 3,
-        }),
+        brickAt(
+          `tower${side < 0 ? '-l' : '-r'}-${i}`,
+          tx,
+          ROW.low + i,
+          Z,
+          i % 2 === 0 ? 'wood' : 'stone',
+          'tower',
+          { isStatic: i === 0 && chapter >= 3 },
+        ),
       );
     }
   }
 
-  const bridgeY = 0.5 + towerH - 0.2;
-  const bridgeH = 0.35;
-  const ksSize = 0.8;
   modules.push(
     m({
       id: 'bridge',
@@ -428,28 +567,47 @@ function twin_towers(chapter, slot, levelIndex) {
       position: [0, bridgeY, Z],
       size: [gap * 1.7, bridgeH, 0.75],
     }),
-    m({
-      id: 'tie-l',
-      type: 'wall',
-      material: 'wood',
-      position: [-gap * 0.55, bridgeY - 0.5, Z],
-      size: [0.6, 0.6, 0.6],
-    }),
-    m({
-      id: 'tie-r',
-      type: 'wall',
-      material: 'wood',
-      position: [gap * 0.55, bridgeY - 0.5, Z],
-      size: [0.6, 0.6, 0.6],
-    }),
-    keystone('keystone', 0, stackY(bridgeY, bridgeH, ksSize), Z, chapter, slot, ksSize),
+    brickAt('tie-l', -gap * 0.55, bridgeY - 0.5, Z, 'wood'),
+    brickAt('tie-r', gap * 0.55, bridgeY - 0.5, Z, 'wood'),
   );
+
+  if (role === 'deep') {
+    modules.push(brickAt('bridge-deep', 0, ROW.low, Z + DEEP_Z, 'wood'));
+  }
+
+  const primaryX =
+    role === 'peak' ? 0 : role === 'mid' ? -gap : role === 'low' ? gap : 0;
+  const primaryZ = role === 'deep' ? Z + DEEP_Z : Z;
+
+  placeByRole(modules, 'keystone', role, {
+    x: primaryX,
+    z: primaryZ,
+    supportY: role === 'peak' ? bridgeY : undefined,
+    supportH: role === 'peak' ? bridgeH : undefined,
+    rowY: role === 'mid' || role === 'low' ? ROW.mid : ROW.low,
+    zDeep: DEEP_Z,
+    addDeepSupport: false,
+  }, chapter, slot, ksSize);
 
   appendKeystones(
     modules,
     [
-      { id: 'keystone-2', x: -gap, z: Z, columns: towerH, useExisting: true },
-      { id: 'keystone-3', x: gap, z: Z, columns: towerH, useExisting: true },
+      {
+        id: 'keystone-2',
+        role: 'peak',
+        x: -gap,
+        z: Z,
+        columns: towerH,
+        size: 0.74,
+      },
+      {
+        id: 'keystone-3',
+        role: slot % 2 === 0 ? 'mid' : 'low',
+        x: gap,
+        z: Z,
+        rowY: slot % 2 === 0 ? ROW.mid : ROW.low,
+        size: 0.74,
+      },
     ],
     chapter,
     slot,
@@ -459,27 +617,17 @@ function twin_towers(chapter, slot, levelIndex) {
   return modules;
 }
 
-/** Poziomy 29–36: układ L, keystone w narożniku dziedzińca */
+/** Poziomy 29–36: dziedziniec 2-rzędowy, klucze w narożniku / wewnątrz */
 function courtyard(chapter, slot, levelIndex) {
   const arm = 2 + Math.floor(slot / 3);
   const modules = [foundation(12, 8)];
+  const role = primaryRole(slot);
+  const ksSize = 0.76;
 
   for (let i = 0; i < arm; i++) {
     modules.push(
-      m({
-        id: `back-${i}`,
-        type: 'wall',
-        material: i === arm - 1 ? 'stone' : 'wood',
-        position: [-1.5 + i * 1.1, 0.5, Z - 1.2],
-        size: [1, 1, 1],
-      }),
-      m({
-        id: `side-${i}`,
-        type: 'wall',
-        material: 'wood',
-        position: [-2.4, 0.5, Z + i * 0.55],
-        size: [1, 1, 1],
-      }),
+      ...tieredWall(`back-${i}`, -1.5 + i * 1.1, Z - 1.2, i === arm - 1 ? 'stone' : 'wood'),
+      ...tieredWall(`side-${i}`, -2.4, Z + i * 0.55, 'wood'),
     );
   }
 
@@ -492,20 +640,8 @@ function courtyard(chapter, slot, levelIndex) {
       size: [1, 1.2, 1],
       isStatic: slot >= 6,
     }),
-    m({
-      id: 'inner-1',
-      type: 'wall',
-      material: 'wood',
-      position: [-1.2, 1.5, Z - 0.5],
-      size: [0.9, 0.9, 0.9],
-    }),
-    m({
-      id: 'inner-2',
-      type: 'wall',
-      material: 'glass',
-      position: [-1.8, 1.5, Z - 0.2],
-      size: [0.8, 0.8, 0.8],
-    }),
+    brickAt('inner-1', -1.2, ROW.mid, Z - 0.5, 'wood'),
+    brickAt('inner-2', -1.8, ROW.mid, Z - 0.2, 'glass'),
   );
 
   if (chapter >= 4) {
@@ -521,17 +657,51 @@ function courtyard(chapter, slot, levelIndex) {
     );
   }
 
-  const ksSize = 0.76;
-  modules.push(
-    keystone('keystone', -2.4, stackY(1.55, 1.2, ksSize), Z - 1.2, chapter, slot, ksSize),
-  );
+  if (role === 'deep') {
+    modules.push(brickAt('court-deep', -1.2, ROW.low, Z - 0.5 + DEEP_Z, 'wood'));
+  }
+  if (role === 'low') {
+    modules.push(brickAt('court-low', -1.8, ROW.low, Z - 0.2, 'wood'));
+  }
+
+  placeByRole(modules, 'keystone', role, {
+    x: role === 'peak' ? -2.4 : role === 'low' ? -1.8 : -1.2,
+    z: role === 'deep' ? Z - 0.5 + DEEP_Z : role === 'peak' ? Z - 1.2 : Z - 0.2,
+    towerTopY: role === 'peak' ? 1.55 : undefined,
+    towerH: role === 'peak' ? 1.2 : undefined,
+    rowY: role === 'mid' ? ROW.mid : ROW.low,
+    zDeep: DEEP_Z,
+    addDeepSupport: false,
+  }, chapter, slot, ksSize);
 
   appendKeystones(
     modules,
     [
-      { id: 'keystone-2', x: -1.2, z: Z - 0.5, columns: 2, useExisting: true, size: 0.74 },
-      { id: 'keystone-3', x: -1.8, z: Z - 0.2, columns: 2, useExisting: true, size: 0.74 },
-      { id: 'keystone-4', x: -0.5, y: stackY(1.5, 1.6, 0.72), z: Z, size: 0.72 },
+      {
+        id: 'keystone-2',
+        role: 'mid',
+        x: -1.2,
+        z: Z - 0.5,
+        rowY: ROW.mid,
+        size: 0.74,
+      },
+      {
+        id: 'keystone-3',
+        role: 'low',
+        x: -1.8,
+        z: Z - 0.2,
+        rowY: ROW.low,
+        size: 0.74,
+      },
+      {
+        id: 'keystone-4',
+        role: 'peak',
+        x: -0.5,
+        z: Z,
+        supportY: 1.5,
+        supportH: 1.6,
+        size: 0.72,
+      },
     ],
     chapter,
     slot,
@@ -541,9 +711,12 @@ function courtyard(chapter, slot, levelIndex) {
   return modules;
 }
 
-/** Poziomy 37–44: metalowe narożniki, warstwy, keystone głęboko */
+/** Poziomy 37–44: bastion 2-rzędowy, klucze na każdym poziomie */
 function bastion(chapter, slot, levelIndex) {
   const modules = [foundation(13)];
+  const role = primaryRole(slot);
+  const ksSize = 0.75;
+  const ksZ = Z + DEEP_Z;
 
   for (const [cx] of [[-2.8], [2.8], [-2.5], [2.5]]) {
     modules.push(
@@ -558,22 +731,10 @@ function bastion(chapter, slot, levelIndex) {
     );
   }
 
-  for (let x of [-1.5, 0, 1.5]) {
-    for (let y = 0; y < 2; y++) {
-      modules.push(
-        m({
-          id: `ring-${x}-${y}`,
-          type: 'wall',
-          material: y === 0 ? 'stone' : 'wood',
-          position: [x, 0.5 + y, Z],
-          size: [1, 1, 1],
-        }),
-      );
-    }
+  for (const x of [-1.5, 0, 1.5]) {
+    modules.push(...tieredWall(`ring-${x}`, x, Z, x === 0 ? 'glass' : 'wood'));
   }
 
-  const ksSize = 0.75;
-  const ksZ = Z - 0.35;
   modules.push(
     m({
       id: 'gate',
@@ -590,29 +751,62 @@ function bastion(chapter, slot, levelIndex) {
       position: [1.2, 1.55, Z - 0.25],
       size: [1.2, 0.45, 0.7],
     }),
-    m({
-      id: 'vault-l',
-      type: 'wall',
-      material: 'wood',
-      position: [-0.8, 2.5, Z - 0.4],
-      size: [0.8, 0.8, 0.8],
-    }),
-    m({
-      id: 'vault-r',
-      type: 'wall',
-      material: 'wood',
-      position: [0.8, 2.5, Z - 0.4],
-      size: [0.8, 0.8, 0.8],
-    }),
-    keystone('keystone', 0, stackY(1.5, 1, ksSize), ksZ, chapter, slot, ksSize),
+    brickAt('vault-l', -0.8, ROW.high, Z + DEEP_Z, 'wood'),
+    brickAt('vault-r', 0.8, ROW.high, Z + DEEP_Z, 'wood'),
   );
+
+  const primaryAnchor = {
+    x: 0,
+    z: Z,
+    rowY: role === 'mid' ? ROW.mid : role === 'low' ? ROW.low : ROW.mid,
+    zDeep: DEEP_Z,
+    supportY: role === 'peak' ? ROW.high : undefined,
+    supportH: role === 'peak' ? 0.8 : undefined,
+    addDeepSupport: false,
+  };
+  if (role === 'deep') {
+    primaryAnchor.x = 0;
+    primaryAnchor.z = Z;
+    primaryAnchor.rowY = ROW.mid;
+  }
+  if (role === 'peak') {
+    primaryAnchor.x = slot % 2 === 0 ? -0.8 : 0.8;
+    primaryAnchor.z = ksZ;
+    primaryAnchor.rowY = ROW.high;
+    delete primaryAnchor.supportY;
+    delete primaryAnchor.supportH;
+  }
+
+  placeByRole(modules, 'keystone', role, primaryAnchor, chapter, slot, ksSize);
 
   appendKeystones(
     modules,
     [
-      { id: 'keystone-2', x: -1.5, z: Z, columns: 2, useExisting: true },
-      { id: 'keystone-3', x: 1.5, z: Z, columns: 2, useExisting: true },
-      { id: 'keystone-4', x: 1.2, z: Z - 0.25, columns: 2, useExisting: true },
+      {
+        id: 'keystone-2',
+        role: 'low',
+        x: -1.5,
+        z: Z,
+        rowY: ROW.low,
+        size: 0.74,
+      },
+      {
+        id: 'keystone-3',
+        role: 'mid',
+        x: 1.5,
+        z: Z,
+        rowY: ROW.mid,
+        size: 0.74,
+      },
+      {
+        id: 'keystone-4',
+        role: 'peak',
+        x: 1.2,
+        z: Z - 0.25,
+        supportY: 1.55,
+        supportH: 0.45,
+        size: 0.72,
+      },
     ],
     chapter,
     slot,
@@ -622,9 +816,12 @@ function bastion(chapter, slot, levelIndex) {
   return modules;
 }
 
-/** Poziomy 45–50: wielowarstwowa cytadela, boss z 2 keystone */
+/** Poziomy 45–50: cytadela wielopiętrowa, 4 role kluczy */
 function citadel(chapter, slot, levelIndex) {
   const modules = [foundation(14, 8)];
+  const role = primaryRole(slot);
+  const ksSize = 0.78;
+  const ksZ = Z + DEEP_Z;
 
   modules.push(
     m({
@@ -640,50 +837,24 @@ function citadel(chapter, slot, levelIndex) {
   for (const side of [-1, 1]) {
     for (let i = 0; i < 3; i++) {
       modules.push(
-        m({
-          id: `flank-${side}-${i}`,
-          type: i === 0 ? 'tower' : 'wall',
-          material: i === 0 ? 'stone' : i === 1 ? 'wood' : 'glass',
-          position: [side * (2 + i * 0.3), 0.5 + i, Z],
-          size: [0.9, 1, 0.9],
-          isStatic: i === 0,
-        }),
+        brickAt(
+          `flank-${side}-${i}`,
+          side * (2 + i * 0.3),
+          ROW.low + i,
+          Z,
+          i === 0 ? 'stone' : i === 1 ? 'wood' : 'glass',
+          i === 0 ? 'tower' : 'wall',
+          { isStatic: i === 0 },
+        ),
       );
     }
   }
 
-  const ksSize = 0.78;
-  const ksZ = Z - 0.25;
   modules.push(
-    m({
-      id: 'keep-0',
-      type: 'wall',
-      material: 'stone',
-      position: [0, 1.5, Z - 0.15],
-      size: [1.2, 1, 1.1],
-      isStatic: true,
-    }),
-    m({
-      id: 'keep-1',
-      type: 'wall',
-      material: 'wood',
-      position: [0, 2.5, Z - 0.25],
-      size: [1, 1, 1],
-    }),
-    m({
-      id: 'keep-2',
-      type: 'wall',
-      material: 'wood',
-      position: [-0.9, 2.5, Z - 0.35],
-      size: [0.75, 0.75, 0.75],
-    }),
-    m({
-      id: 'keep-3',
-      type: 'wall',
-      material: 'wood',
-      position: [0.9, 2.5, Z - 0.35],
-      size: [0.75, 0.75, 0.75],
-    }),
+    brickAt('keep-0', 0, ROW.mid, Z - 0.15, 'stone', 'wall', { isStatic: true }),
+    brickAt('keep-1', 0, ROW.high, Z - 0.25, 'wood'),
+    brickAt('keep-2', -0.9, ROW.high, Z + DEEP_Z, 'wood'),
+    brickAt('keep-3', 0.9, ROW.high, Z + DEEP_Z, 'wood'),
     m({
       id: 'core-pillar',
       type: 'wall',
@@ -692,32 +863,75 @@ function citadel(chapter, slot, levelIndex) {
       size: [0.5, 1.2, 0.5],
       isStatic: true,
     }),
-    keystone('keystone', 0, stackY(2.5, 1, ksSize), ksZ, chapter, slot, ksSize),
   );
 
   if (levelIndex === 50) {
     modules.push(
+      ...tieredWall('boss-base', 2.2, Z - 0.2, 'stone', 'tower'),
       m({
         id: 'boss-tower',
         type: 'tower',
         material: 'stone',
-        position: [2.2, 1.5, Z - 0.2],
+        position: [2.2, 1.55, Z - 0.2],
         size: [0.9, 1.2, 0.9],
       }),
     );
   }
 
+  const primaryAnchor = {
+    x: 0,
+    z: ksZ,
+    rowY: ROW.high,
+    zDeep: DEEP_Z,
+    addDeepSupport: false,
+  };
+  if (role === 'peak') {
+    primaryAnchor.supportY = 3.5;
+    primaryAnchor.supportH = 1.2;
+    primaryAnchor.z = Z - 0.45;
+  } else if (role === 'mid') {
+    primaryAnchor.x = 0;
+    primaryAnchor.z = Z - 0.15;
+    primaryAnchor.rowY = ROW.mid;
+  } else if (role === 'low') {
+    primaryAnchor.x = -2;
+    primaryAnchor.z = Z;
+    primaryAnchor.rowY = ROW.low;
+  } else if (role === 'deep') {
+    primaryAnchor.x = -0.9;
+    primaryAnchor.z = Z;
+    primaryAnchor.rowY = ROW.high;
+  }
+
+  placeByRole(modules, 'keystone', role, primaryAnchor, chapter, slot, ksSize);
+
   appendKeystones(
     modules,
     [
-      { id: 'keystone-2', x: -2, z: Z, columns: 3, useExisting: true, size: 0.74 },
-      { id: 'keystone-3', x: 2, z: Z, columns: 3, useExisting: true, size: 0.74 },
+      {
+        id: 'keystone-2',
+        role: 'flank',
+        x: -2,
+        z: Z,
+        flankX: -2,
+        rowY: ROW.mid,
+        size: 0.74,
+      },
+      {
+        id: 'keystone-3',
+        role: 'peak',
+        x: 2,
+        z: Z,
+        columns: 3,
+        size: 0.74,
+      },
       {
         id: 'keystone-4',
-        x: levelIndex === 50 ? 2.2 : -2.6,
+        role: levelIndex === 50 ? 'mid' : 'deep',
+        x: levelIndex === 50 ? 2.2 : 2.6,
         z: levelIndex === 50 ? Z - 0.2 : Z,
-        columns: levelIndex === 50 ? 2 : 3,
-        useExisting: true,
+        rowY: levelIndex === 50 ? ROW.mid : ROW.low,
+        zDeep: DEEP_Z,
         size: 0.72,
       },
     ],
