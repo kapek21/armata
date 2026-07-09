@@ -15,11 +15,22 @@ export function materialForModule(
 ): THREE.MeshStandardMaterial {
   if (mod.type === 'keystone' || mod.importance === 'critical') return mats.keystone;
   const key = mod.material as BlockType;
-  if (key === 'stone' || key === 'ground') return mats.stone;
+  if (key === 'ground') return mats.ground;
+  if (key === 'stone') return mats.stone;
   if (key === 'wood') return mats.wood;
   if (key === 'metal') return mats.metal;
   if (key === 'glass') return mats.glass;
   return mats.stone;
+}
+
+function applyTextureRepeat(
+  mat: THREE.MeshStandardMaterial,
+  [w, h]: [number, number, number],
+): void {
+  if (!mat.map) return;
+  mat.map = mat.map.clone();
+  mat.map.repeat.set(Math.max(0.8, w * 1.1), Math.max(0.8, h * 1.1));
+  mat.map.needsUpdate = true;
 }
 
 export function createModuleMesh(
@@ -27,11 +38,11 @@ export function createModuleMesh(
   tier: QualityTier,
 ): THREE.Mesh {
   const mats = getCastleMaterials(tier);
+  const mat = materialForModule(mats, mod).clone();
+  applyTextureRepeat(mat, mod.size);
+
   const [w, h, d] = mod.size;
-  const mesh = new THREE.Mesh(
-    new THREE.BoxGeometry(w, h, d),
-    materialForModule(mats, mod).clone(),
-  );
+  const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
   mesh.position.set(...mod.position);
   mesh.castShadow = tier !== 'low';
   mesh.receiveShadow = tier !== 'low';
