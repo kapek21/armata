@@ -35,8 +35,9 @@ export function HelpDialog({ onClose }: HelpDialogProps): JSX.Element {
           <section>
             <h3 className="font-semibold text-amber-200">Cel</h3>
             <p className="mt-1 text-white/70">
-              Zniszcz <span className="text-red-300">wszystkie czerwone moduły kluczowe</span> w zamku
-              wroga, zanim skończy się <strong>czas</strong> lub <strong>amunicja</strong>.
+              Strzelasz z własnego zamku przez <strong>otwór strzelniczy</strong>. Zniszcz{' '}
+              <span className="text-red-300">czerwony moduł kluczowy</span> w zamku wroga, zanim
+              skończy się <strong>czas</strong> lub <strong>amunicja</strong>.
             </p>
           </section>
           <section>
@@ -50,8 +51,8 @@ export function HelpDialog({ onClose }: HelpDialogProps): JSX.Element {
           <section>
             <h3 className="font-semibold text-amber-200">Punkty i gwiazdki</h3>
             <p className="mt-1 text-white/70">
-              Trafienia w kluczowe moduły dają punkty. Wygrana dopiero po zniszczeniu wszystkich
-              czerwonych klocków. Gwiazdki za szybkość, oszczędność strzałów i wysoki wynik.
+              Trafienia w kluczowy moduł dają punkty. Wygrana przy zniszczeniu keystone. Gwiazdki
+              za szybkość, oszczędność strzałów i wysoki wynik.
             </p>
           </section>
           <section>

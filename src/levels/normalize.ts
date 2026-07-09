@@ -99,12 +99,6 @@ export function getKeystoneModule(level: LevelDefinition): CastleModule | undefi
   );
 }
 
-export function countKeystones(level: LevelDefinition): number {
-  return level.enemyCastle.modules.filter(
-    (m) => m.type === 'keystone' || m.importance === 'critical',
-  ).length;
-}
-
 export function isKeystone(entry: { moduleType: string; importance: string }): boolean {
   return entry.moduleType === 'keystone' || entry.importance === 'critical';
 }

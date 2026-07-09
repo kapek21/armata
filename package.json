@@ -8,8 +8,7 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --port 5186",
     "typecheck": "tsc --noEmit",
-    "generate-levels": "node scripts/generate-levels.mjs",
-    "validate-levels": "node scripts/simulate-level-stability.mjs"
+    "generate-levels": "node scripts/generate-levels.mjs"
   },
   "dependencies": {
     "@dimforge/rapier3d-compat": "^0.14.0",

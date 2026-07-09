@@ -4,7 +4,7 @@
   "chapter": 2,
   "difficulty": 2,
   "blueprint": "gatehouse",
-  "ammoLimit": 6,
+  "ammoLimit": 5,
   "timeLimitSec": 88,
   "starTimeSec": [
     48,
@@ -12,9 +12,9 @@
     19
   ],
   "starShots": [
+    3,
     4,
-    5,
-    6
+    5
   ],
   "starScore": [
     1015,
@@ -109,86 +109,52 @@
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "tower-l-0",
+        "id": "tower-l",
         "type": "tower",
         "material": "stone",
         "position": [
           -1.8,
-          0.5,
-          -2
-        ],
-        "size": [
-          0.95,
-          1,
-          0.95
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "tower-l-1",
-        "type": "tower",
-        "material": "stone",
-        "position": [
-          -1.8,
-          1.5,
-          -2
-        ],
-        "size": [
-          0.95,
-          1,
-          0.95
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "tower-r-0",
-        "type": "tower",
-        "material": "stone",
-        "position": [
-          1.8,
-          0.5,
-          -2
-        ],
-        "size": [
-          0.95,
-          1,
-          0.95
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "tower-r-1",
-        "type": "tower",
-        "material": "stone",
-        "position": [
-          1.8,
-          1.5,
-          -2
-        ],
-        "size": [
-          0.95,
-          1,
-          0.95
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "lintel",
-        "type": "wall",
-        "material": "wood",
-        "position": [
-          0,
           1.55,
           -2
         ],
         "size": [
-          1.5,
-          0.7,
-          1.1
+          0.85,
+          1.2,
+          0.85
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "tower-r",
+        "type": "tower",
+        "material": "stone",
+        "position": [
+          1.8,
+          1.55,
+          -2
+        ],
+        "size": [
+          0.85,
+          1.2,
+          0.85
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "lintel-glass",
+        "type": "wall",
+        "material": "glass",
+        "position": [
+          0,
+          1.55,
+          -1.85
+        ],
+        "size": [
+          1.1,
+          0.5,
+          0.7
         ]
       },
       {
@@ -233,31 +199,13 @@
         "material": "wood",
         "position": [
           0,
-          2.29,
-          -2
+          2.19,
+          -1.85
         ],
         "size": [
           0.78,
           0.78,
           0.78
-        ],
-        "hitPoints": 101
-      },
-      {
-        "importance": "critical",
-        "isStatic": false,
-        "id": "keystone-2",
-        "type": "keystone",
-        "material": "wood",
-        "position": [
-          -1.8,
-          2.37,
-          -2
-        ],
-        "size": [
-          0.74,
-          0.74,
-          0.74
         ],
         "hitPoints": 101
       }

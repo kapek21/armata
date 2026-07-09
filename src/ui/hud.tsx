@@ -1,6 +1,5 @@
 import { useHudStore } from './hud-store.js';
 import { levelByIndex, levelCount, chapterCount } from '../levels/index.js';
-import { countKeystones } from '../levels/normalize.js';
 import { shouldShowAimHint } from '../meta/profile.js';
 import { getWeeklyLeaderboard } from '../meta/leaderboard.js';
 import type { GamePhase } from '../core/types.js';
@@ -82,11 +81,6 @@ export function Hud({
                               onClick={() => onStartLevel(i)}
                             >
                               <span>{i + 1}. {lvl.name}</span>
-                              {countKeystones(lvl) > 1 && (
-                                <span className="ml-1 text-[10px] text-red-300">
-                                  🔴×{countKeystones(lvl)}
-                                </span>
-                              )}
                               {locked ? (
                                 <span className="float-right text-white/40">🔒</span>
                               ) : (
