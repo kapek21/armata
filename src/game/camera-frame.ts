@@ -145,8 +145,16 @@ export interface AimTargetPick {
   mesh: THREE.Object3D | null;
 }
 
+function moduleRootFromObject(mesh: THREE.Object3D): THREE.Object3D {
+  let node: THREE.Object3D = mesh;
+  while (node.parent && node.parent.userData.moduleId) {
+    node = node.parent;
+  }
+  return node.userData.moduleId ? node : mesh;
+}
+
 function meshAimPoint(mesh: THREE.Object3D): THREE.Vector3 {
-  _box.setFromObject(mesh);
+  _box.setFromObject(moduleRootFromObject(mesh));
   _box.getCenter(_center);
   return _center.clone();
 }
@@ -158,7 +166,7 @@ function screenDistToMesh(
   clientY: number,
   rect: DOMRect,
 ): number {
-  _box.setFromObject(mesh);
+  _box.setFromObject(moduleRootFromObject(mesh));
   _box.getCenter(_center);
   _center.project(camera);
   const sx = (_center.x * 0.5 + 0.5) * rect.width + rect.left;
@@ -183,15 +191,16 @@ export function pickAimTarget(
   _raycaster.setFromCamera(_ndc, camera);
 
   if (meshes.length > 0) {
-    const hits = _raycaster.intersectObjects(meshes, false);
+    const hits = _raycaster.intersectObjects(meshes, true);
     if (hits.length > 0) {
       let best = hits[0];
       let bestScreen = Infinity;
       for (const hit of hits) {
-        const d = screenDistToMesh(hit.object, camera, clientX, clientY, rect);
+        const root = moduleRootFromObject(hit.object);
+        const d = screenDistToMesh(root, camera, clientX, clientY, rect);
         if (d < bestScreen) {
           bestScreen = d;
-          best = hit;
+          best = { ...hit, object: root };
         }
       }
       return { point: meshAimPoint(best.object), mesh: best.object };

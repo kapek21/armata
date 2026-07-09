@@ -34,7 +34,7 @@ import { levelByIndex, levelCount } from '../levels/index.js';
 import { countKeystones, getKeystoneModule } from '../levels/normalize.js';
 import { useHudStore } from '../ui/hud-store.js';
 import { setupCastleScene, pulseKeystoneMaterial } from './castle-assets.js';
-import { createModuleMesh, getCastleMaterials } from './castle-renderer.js';
+import { createModuleMesh, disposeModuleVisual, getCastleMaterials, keystoneMaterialFromMesh } from './castle-renderer.js';
 import {
   EXPLOSIVE_IMPULSE,
   EXPLOSIVE_RADIUS,
@@ -59,7 +59,7 @@ import {
 } from './camera-frame.js';
 
 interface BodyEntry {
-  mesh: THREE.Mesh;
+  mesh: THREE.Object3D;
   moduleId: string;
   moduleType: CastleModuleType;
   importance: ModuleImportance;
@@ -114,7 +114,7 @@ export class GameSession {
   private aim: AimState = { active: false, originX: 0, originY: 0, currentX: 0, currentY: 0 };
   private activePointerId = -1;
   private aimWorldTarget: THREE.Vector3 | null = null;
-  private aimTargetMesh: THREE.Mesh | null = null;
+  private aimTargetMesh: THREE.Object3D | null = null;
   private clearedTargets = new Set<string>();
   private keystoneDestroyed = false;
   private timeLeftSec = 0;
@@ -285,8 +285,7 @@ export class GameSession {
   private clearLevel(): void {
     for (const entry of this.entries) {
       this.scene.remove(entry.mesh);
-      entry.mesh.geometry.dispose();
-      (entry.mesh.material as THREE.Material).dispose();
+      disposeModuleVisual(entry.mesh);
       const body = this.world.getRigidBody(entry.mesh.userData.bodyHandle as number);
       if (body) this.world.removeRigidBody(body);
     }
@@ -428,7 +427,7 @@ export class GameSession {
     const pick = pickAimTarget(this.camera, clientX, clientY, this.host, this.aimMeshes());
     if (pick) {
       this.aimWorldTarget = pick.point;
-      this.aimTargetMesh = pick.mesh as THREE.Mesh | null;
+      this.aimTargetMesh = pick.mesh;
       this.applyBallisticAim(0.55);
     } else {
       this.aimWorldTarget = null;
@@ -632,8 +631,8 @@ export class GameSession {
     this.animTime += dtMs / 1000;
     for (const entry of this.entries) {
       if (!entry.isKeystone || entry.cleared) continue;
-      const mat = entry.mesh.material as THREE.MeshStandardMaterial;
-      if (mat.emissive) pulseKeystoneMaterial(mat, this.animTime);
+      const mat = keystoneMaterialFromMesh(entry.mesh);
+      if (mat?.emissive) pulseKeystoneMaterial(mat, this.animTime);
     }
 
     if (this.phase !== 'menu') {
@@ -794,8 +793,7 @@ export class GameSession {
     const body = this.world.getRigidBody(entry.mesh.userData.bodyHandle as number);
     if (body) this.world.removeRigidBody(body);
     this.scene.remove(entry.mesh);
-    entry.mesh.geometry.dispose();
-    (entry.mesh.material as THREE.Material).dispose();
+    disposeModuleVisual(entry.mesh);
   }
 
   private refreshKeystoneHud(): void {
