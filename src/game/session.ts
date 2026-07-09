@@ -79,6 +79,17 @@ const BALL_MAX_AGE_MS = 4000;
 const MIN_DRAG_PX = 24;
 const MAX_DRAG_PX = 140;
 
+const _hitClosest = new THREE.Vector3();
+
+function ballIntersectsBox(center: THREE.Vector3, radius: number, box: THREE.Box3): boolean {
+  _hitClosest.set(
+    THREE.MathUtils.clamp(center.x, box.min.x, box.max.x),
+    THREE.MathUtils.clamp(center.y, box.min.y, box.max.y),
+    THREE.MathUtils.clamp(center.z, box.min.z, box.max.z),
+  );
+  return _hitClosest.distanceToSquared(center) <= radius * radius;
+}
+
 export class GameSession {
   private readonly scene = new THREE.Scene();
   private readonly camera = new THREE.PerspectiveCamera(54, 1, 0.1, 120);
@@ -726,8 +737,7 @@ export class GameSession {
       if (this.ballHitCooldown.has(entry.moduleId)) continue;
 
       const box = new THREE.Box3().setFromObject(entry.mesh);
-      box.expandByScalar(BALL_RADIUS * 0.5);
-      if (!box.containsPoint(ballPos)) continue;
+      if (!ballIntersectsBox(ballPos, BALL_RADIUS, box)) continue;
 
       this.ballHitCooldown.add(entry.moduleId);
       this.applyModuleDamage(entry, dmg);
