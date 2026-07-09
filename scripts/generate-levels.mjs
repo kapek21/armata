@@ -3,7 +3,7 @@
  * Generator 50 poziomów — szablony zamków modułowych.
  * watchtower → gatehouse → curtain_wall → twin_towers → courtyard → bastion → citadel
  */
-import { writeFileSync, mkdirSync } from 'fs';
+import { writeFileSync, mkdirSync, readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -58,6 +58,11 @@ function timing(chapter, slot) {
 
 function keystoneHp(chapter, slot) {
   return 70 + chapter * 14 + slot * 3;
+}
+
+/** Środek bloku stojącego na podporze (bez luzu — fizyka Rapier). */
+function stackY(supportCenterY, supportHeight, blockSize) {
+  return supportCenterY + supportHeight / 2 + blockSize / 2;
 }
 
 /** @param {object} p */
@@ -128,7 +133,7 @@ function watchtower(chapter, slot) {
     );
   }
 
-  modules.push(keystone('keystone', 0, 0.5 + h, Z, chapter, slot));
+  modules.push(keystone('keystone', 0, stackY(0.5 + h - 1, 1, 0.82), Z, chapter, slot));
   return modules;
 }
 
@@ -198,6 +203,12 @@ function gatehouse(chapter, slot) {
     );
   }
 
+  const lintelEven = slot % 2 === 0;
+  const lintelY = 1.55;
+  const lintelH = lintelEven ? 0.7 : 0.5;
+  const lintelZ = lintelEven ? Z : Z + 0.15;
+  const ksSize = 0.78;
+
   modules.push(
     m({
       id: 'inner-l',
@@ -213,7 +224,7 @@ function gatehouse(chapter, slot) {
       position: [0.9, 1.5, Z - 0.35],
       size: [0.8, 1, 0.8],
     }),
-    keystone('keystone', 0, 2.65, Z - 0.45, chapter, slot, 0.78),
+    keystone('keystone', 0, stackY(lintelY, lintelH, ksSize), lintelZ, chapter, slot, ksSize),
   );
 
   return modules;
@@ -267,6 +278,7 @@ function curtain_wall(chapter, slot) {
   }
 
   const keySide = slot % 2 === 0 ? 1 : -1;
+  const ksSize = 0.82;
   modules.push(
     m({
       id: 'keep-base',
@@ -278,10 +290,11 @@ function curtain_wall(chapter, slot) {
     keystone(
       'keystone',
       keySide * (spread * 0.75),
-      2.55,
+      stackY(1.5, 1, ksSize),
       Z - 0.35,
       chapter,
       slot,
+      ksSize,
     ),
   );
 
@@ -311,13 +324,15 @@ function twin_towers(chapter, slot) {
   }
 
   const bridgeY = 0.5 + towerH - 0.2;
+  const bridgeH = 0.35;
+  const ksSize = 0.8;
   modules.push(
     m({
       id: 'bridge',
       type: 'wall',
       material: 'glass',
       position: [0, bridgeY, Z],
-      size: [gap * 1.7, 0.35, 0.75],
+      size: [gap * 1.7, bridgeH, 0.75],
     }),
     m({
       id: 'tie-l',
@@ -333,7 +348,7 @@ function twin_towers(chapter, slot) {
       position: [gap * 0.55, bridgeY - 0.5, Z],
       size: [0.6, 0.6, 0.6],
     }),
-    keystone('keystone', 0, bridgeY + 0.75, Z, chapter, slot, 0.8),
+    keystone('keystone', 0, stackY(bridgeY, bridgeH, ksSize), Z, chapter, slot, ksSize),
   );
 
   return modules;
@@ -401,7 +416,20 @@ function courtyard(chapter, slot) {
     );
   }
 
-  modules.push(keystone('keystone', -1.35, 2.55, Z - 0.55, chapter, slot, 0.76));
+  const ksSize = 0.76;
+  const ksZ = Z - 0.55;
+  const shelfH = 0.2;
+  const shelfY = stackY(1.5, 0.9, shelfH);
+  modules.push(
+    m({
+      id: 'key-shelf',
+      type: 'wall',
+      material: 'wood',
+      position: [-1.35, shelfY, ksZ],
+      size: [0.85, shelfH, 0.8],
+    }),
+    keystone('keystone', -1.35, stackY(shelfY, shelfH, ksSize), ksZ, chapter, slot, ksSize),
+  );
   return modules;
 }
 
@@ -436,6 +464,9 @@ function bastion(chapter, slot) {
     }
   }
 
+  const ksSize = 0.75;
+  const ksZ = Z - 0.55;
+  const ringTop = stackY(1.5, 1, 0.3);
   modules.push(
     m({
       id: 'gate',
@@ -466,7 +497,14 @@ function bastion(chapter, slot) {
       position: [0.8, 2.5, Z - 0.4],
       size: [0.8, 0.8, 0.8],
     }),
-    keystone('keystone', 0, 3.35, Z - 0.55, chapter, slot, 0.75),
+    m({
+      id: 'key-platform',
+      type: 'wall',
+      material: 'wood',
+      position: [0, ringTop, ksZ],
+      size: [0.9, 0.3, 0.85],
+    }),
+    keystone('keystone', 0, stackY(ringTop, 0.3, ksSize), ksZ, chapter, slot, ksSize),
   );
 
   return modules;
@@ -502,6 +540,10 @@ function citadel(chapter, slot, levelIndex) {
     }
   }
 
+  const ksSize = 0.78;
+  const ksZ = Z - 0.5;
+  const crownY = 3.95;
+  const crownH = 0.2;
   modules.push(
     m({
       id: 'keep-0',
@@ -532,6 +574,20 @@ function citadel(chapter, slot, levelIndex) {
       size: [0.75, 0.75, 0.75],
     }),
     m({
+      id: 'key-stem',
+      type: 'wall',
+      material: 'wood',
+      position: [0, 3.25, Z - 0.42],
+      size: [0.45, 1.3, 0.45],
+    }),
+    m({
+      id: 'key-crown',
+      type: 'wall',
+      material: 'wood',
+      position: [0, crownY, ksZ],
+      size: [0.85, crownH, 0.8],
+    }),
+    m({
       id: 'core-pillar',
       type: 'wall',
       material: 'metal',
@@ -539,12 +595,12 @@ function citadel(chapter, slot, levelIndex) {
       size: [0.5, 1.2, 0.5],
       isStatic: true,
     }),
-    keystone('keystone', 0, 4.35, Z - 0.5, chapter, slot, 0.78),
+    keystone('keystone', 0, stackY(crownY, crownH, ksSize), ksZ, chapter, slot, ksSize),
   );
 
   if (levelIndex === 50) {
+    const ks2Size = 0.72;
     modules.push(
-      keystone('keystone-2', 2.2, 3.2, Z - 0.4, chapter, slot, 0.72),
       m({
         id: 'boss-tower',
         type: 'tower',
@@ -552,6 +608,15 @@ function citadel(chapter, slot, levelIndex) {
         position: [2.2, 1.5, Z - 0.2],
         size: [0.9, 1.2, 0.9],
       }),
+      keystone(
+        'keystone-2',
+        2.2,
+        stackY(1.5, 1.2, ks2Size),
+        Z - 0.4,
+        chapter,
+        slot,
+        ks2Size,
+      ),
     );
   }
 
@@ -603,4 +668,59 @@ for (let i = 1; i <= 50; i++) {
   writeFileSync(path, JSON.stringify(level, null, 2) + '\n');
 }
 
+function isKeystone(mod) {
+  return mod.type === 'keystone' || mod.importance === 'critical';
+}
+
+function aabb(pos, size) {
+  const [x, y, z] = pos;
+  const [w, h, d] = size;
+  return {
+    minX: x - w / 2,
+    maxX: x + w / 2,
+    minY: y - h / 2,
+    maxY: y + h / 2,
+    minZ: z - d / 2,
+    maxZ: z + d / 2,
+  };
+}
+
+function overlap1d(a0, a1, b0, b1) {
+  return a0 <= b1 && b0 <= a1;
+}
+
+let floatWarnings = 0;
+for (let i = 1; i <= 50; i++) {
+  const path = join(outDir, `level-${String(i).padStart(3, '0')}.json`);
+  const level = JSON.parse(readFileSync(path, 'utf8'));
+  const mods = level.enemyCastle.modules;
+  for (const ks of mods.filter(isKeystone)) {
+    const kb = aabb(ks.position, ks.size);
+    let supportTop = -999;
+    for (const m of mods) {
+      if (m.id === ks.id) continue;
+      const b = aabb(m.position, m.size);
+      if (
+        overlap1d(kb.minX, kb.maxX, b.minX, b.maxX) &&
+        overlap1d(kb.minZ, kb.maxZ, b.minZ, b.maxZ) &&
+        b.maxY <= kb.minY + 0.05 &&
+        b.maxY > supportTop
+      ) {
+        supportTop = b.maxY;
+      }
+    }
+    const gap = kb.minY - supportTop;
+    if (supportTop === -999 || gap > 0.06) {
+      console.warn(
+        `WARN ${level.id} ${ks.id}: luz ${gap.toFixed(2)} pod keystone (supportTop=${supportTop})`,
+      );
+      floatWarnings += 1;
+    }
+  }
+}
+
 console.log('Wygenerowano 50 poziomów (szablony zamków) →', outDir);
+if (floatWarnings > 0) {
+  console.warn(`Ostrzeżenia: ${floatWarnings} keystone(ów) bez pewnej podpory`);
+  process.exitCode = 1;
+}

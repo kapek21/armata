@@ -226,6 +226,23 @@
         ]
       },
       {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "key-shelf",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          -1.35,
+          2.05,
+          -2.55
+        ],
+        "size": [
+          0.85,
+          0.2,
+          0.8
+        ]
+      },
+      {
         "importance": "critical",
         "isStatic": false,
         "id": "keystone",
@@ -233,7 +250,7 @@
         "material": "wood",
         "position": [
           -1.35,
-          2.55,
+          2.53,
           -2.55
         ],
         "size": [
