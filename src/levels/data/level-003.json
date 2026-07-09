@@ -58,11 +58,45 @@
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "core-0",
-        "type": "gate",
-        "material": "wood",
+        "id": "row-base-0",
+        "type": "wall",
+        "material": "stone",
+        "position": [
+          -1.05,
+          0.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "row-base-1",
+        "type": "wall",
+        "material": "stone",
         "position": [
           0,
+          0.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "row-base-2",
+        "type": "wall",
+        "material": "stone",
+        "position": [
+          1.05,
           0.5,
           -2
         ],
@@ -93,7 +127,7 @@
         "importance": "structural",
         "isStatic": false,
         "id": "core-2",
-        "type": "wall",
+        "type": "tower",
         "material": "wood",
         "position": [
           0,
@@ -109,35 +143,69 @@
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "buttress-l",
+        "id": "buttress-l-0",
         "type": "tower",
         "material": "wood",
         "position": [
-          -1.3,
+          -1.35,
           0.5,
           -2
         ],
         "size": [
-          0.6,
-          1.4,
-          0.6
+          0.95,
+          1,
+          0.95
         ]
       },
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "buttress-r",
+        "id": "buttress-l-1",
         "type": "tower",
         "material": "wood",
         "position": [
-          1.3,
+          -1.35,
+          1.5,
+          -2
+        ],
+        "size": [
+          0.95,
+          1,
+          0.95
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "buttress-r-0",
+        "type": "tower",
+        "material": "wood",
+        "position": [
+          1.35,
           0.5,
           -2
         ],
         "size": [
-          0.6,
-          1.4,
-          0.6
+          0.95,
+          1,
+          0.95
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "buttress-r-1",
+        "type": "tower",
+        "material": "wood",
+        "position": [
+          1.35,
+          1.5,
+          -2
+        ],
+        "size": [
+          0.95,
+          1,
+          0.95
         ]
       },
       {

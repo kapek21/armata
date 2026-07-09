@@ -46,16 +46,25 @@ export function GameChromeTop({ phase }: GameChromeTopProps): JSX.Element {
       </div>
       {phase !== 'won' && phase !== 'lost' && (
         <div className="mt-1 flex items-center gap-2 px-1">
-          <span className="text-[10px] text-white/45">Klucz:</span>
-          <div className="h-2 flex-1 overflow-hidden rounded-full bg-black/40 border border-red-900/40">
-            <div
-              className="h-full bg-gradient-to-r from-red-700 to-red-400 transition-all duration-200"
-              style={{
-                width: `${snap.keystoneHpMax > 0 ? (snap.keystoneHp / snap.keystoneHpMax) * 100 : 0}%`,
-              }}
-            />
-          </div>
-          <span className="text-[10px] text-red-300 tabular-nums">{snap.keystoneHp}</span>
+          <span className="text-[10px] text-white/45 whitespace-nowrap">
+            Klucze {snap.keystoneCleared}/{snap.keystoneTotal}
+          </span>
+          {snap.keystoneTotal > snap.keystoneCleared && snap.keystoneHpMax > 0 && (
+            <>
+              <div className="h-2 flex-1 overflow-hidden rounded-full bg-black/40 border border-red-900/40">
+                <div
+                  className="h-full bg-gradient-to-r from-red-700 to-red-400 transition-all duration-200"
+                  style={{
+                    width: `${(snap.keystoneHp / snap.keystoneHpMax) * 100}%`,
+                  }}
+                />
+              </div>
+              <span className="text-[10px] text-red-300 tabular-nums">{snap.keystoneHp}</span>
+            </>
+          )}
+          {snap.keystoneCleared >= snap.keystoneTotal && snap.keystoneTotal > 0 && (
+            <span className="text-[10px] text-emerald-300">✓</span>
+          )}
         </div>
       )}
     </header>
@@ -90,7 +99,7 @@ export function GameChromeBottom({
     <footer className="game-chrome-bottom shrink-0 px-2 pb-2 safe-bottom">
       {phase === 'aiming' && shouldShowAimHint(profile) && (
         <p className="mb-1 text-center text-[10px] text-white/45">
-          Traf czerwony moduł kluczowy zamku wroga
+          Traf wszystkie czerwone moduły kluczowe ({snap.keystoneTotal})
         </p>
       )}
       {phase === 'aiming' && !shouldShowAimHint(profile) && (

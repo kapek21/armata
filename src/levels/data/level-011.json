@@ -4,7 +4,7 @@
   "chapter": 2,
   "difficulty": 2,
   "blueprint": "gatehouse",
-  "ammoLimit": 5,
+  "ammoLimit": 6,
   "timeLimitSec": 88,
   "starTimeSec": [
     48,
@@ -12,9 +12,9 @@
     19
   ],
   "starShots": [
-    3,
     4,
-    5
+    5,
+    6
   ],
   "starScore": [
     1015,
@@ -109,52 +109,86 @@
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "tower-l",
+        "id": "tower-l-0",
         "type": "tower",
         "material": "stone",
         "position": [
           -1.8,
-          1.55,
+          0.5,
           -2
         ],
         "size": [
-          0.85,
-          1.2,
-          0.85
+          0.95,
+          1,
+          0.95
         ]
       },
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "tower-r",
+        "id": "tower-l-1",
+        "type": "tower",
+        "material": "stone",
+        "position": [
+          -1.8,
+          1.5,
+          -2
+        ],
+        "size": [
+          0.95,
+          1,
+          0.95
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "tower-r-0",
         "type": "tower",
         "material": "stone",
         "position": [
           1.8,
-          1.55,
+          0.5,
           -2
         ],
         "size": [
-          0.85,
-          1.2,
-          0.85
+          0.95,
+          1,
+          0.95
         ]
       },
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "lintel-glass",
+        "id": "tower-r-1",
+        "type": "tower",
+        "material": "stone",
+        "position": [
+          1.8,
+          1.5,
+          -2
+        ],
+        "size": [
+          0.95,
+          1,
+          0.95
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "lintel",
         "type": "wall",
-        "material": "glass",
+        "material": "wood",
         "position": [
           0,
           1.55,
-          -1.85
+          -2
         ],
         "size": [
-          1.1,
-          0.5,
-          0.7
+          1.5,
+          0.7,
+          1.1
         ]
       },
       {
@@ -199,13 +233,31 @@
         "material": "wood",
         "position": [
           0,
-          2.19,
-          -1.85
+          2.29,
+          -2
         ],
         "size": [
           0.78,
           0.78,
           0.78
+        ],
+        "hitPoints": 101
+      },
+      {
+        "importance": "critical",
+        "isStatic": false,
+        "id": "keystone-2",
+        "type": "keystone",
+        "material": "wood",
+        "position": [
+          -1.8,
+          2.37,
+          -2
+        ],
+        "size": [
+          0.74,
+          0.74,
+          0.74
         ],
         "hitPoints": 101
       }

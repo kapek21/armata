@@ -4,7 +4,7 @@
   "chapter": 5,
   "difficulty": 5,
   "blueprint": "bastion",
-  "ammoLimit": 4,
+  "ammoLimit": 7,
   "timeLimitSec": 44,
   "starTimeSec": [
     24,
@@ -12,9 +12,9 @@
     10
   ],
   "starShots": [
-    2,
-    3,
-    4
+    5,
+    6,
+    7
   ],
   "starScore": [
     1330,
@@ -227,6 +227,91 @@
       },
       {
         "importance": "structural",
+        "isStatic": false,
+        "id": "battle-front-0",
+        "type": "wall",
+        "material": "stone",
+        "position": [
+          -1.4,
+          2.55,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "battle-front-1",
+        "type": "wall",
+        "material": "stone",
+        "position": [
+          -0.7,
+          2.55,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "battle-front-2",
+        "type": "wall",
+        "material": "stone",
+        "position": [
+          0,
+          2.55,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "battle-front-3",
+        "type": "wall",
+        "material": "stone",
+        "position": [
+          0.7,
+          2.55,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "battle-front-4",
+        "type": "wall",
+        "material": "stone",
+        "position": [
+          1.4,
+          2.55,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
         "isStatic": true,
         "id": "gate",
         "type": "gate",
@@ -294,23 +379,6 @@
         ]
       },
       {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "key-platform",
-        "type": "wall",
-        "material": "wood",
-        "position": [
-          0,
-          2.15,
-          -2.55
-        ],
-        "size": [
-          0.9,
-          0.3,
-          0.85
-        ]
-      },
-      {
         "importance": "critical",
         "isStatic": false,
         "id": "keystone",
@@ -318,13 +386,118 @@
         "material": "wood",
         "position": [
           0,
-          2.675,
-          -2.55
+          2.375,
+          -2
         ],
         "size": [
           0.75,
           0.75,
           0.75
+        ],
+        "hitPoints": 146
+      },
+      {
+        "importance": "critical",
+        "isStatic": false,
+        "id": "keystone-2",
+        "type": "keystone",
+        "material": "wood",
+        "position": [
+          -1.5,
+          2.36,
+          -2
+        ],
+        "size": [
+          0.72,
+          0.72,
+          0.72
+        ],
+        "hitPoints": 146
+      },
+      {
+        "importance": "critical",
+        "isStatic": false,
+        "id": "keystone-3",
+        "type": "keystone",
+        "material": "wood",
+        "position": [
+          1.5,
+          2.36,
+          -2
+        ],
+        "size": [
+          0.72,
+          0.72,
+          0.72
+        ],
+        "hitPoints": 146
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "keystone-4-col-0",
+        "type": "tower",
+        "material": "stone",
+        "position": [
+          -0.8,
+          0.5,
+          -2.4
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "keystone-4-col-1",
+        "type": "tower",
+        "material": "wood",
+        "position": [
+          -0.8,
+          1.5,
+          -2.4
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "keystone-4-col-2",
+        "type": "tower",
+        "material": "wood",
+        "position": [
+          -0.8,
+          2.5,
+          -2.4
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "critical",
+        "isStatic": false,
+        "id": "keystone-4",
+        "type": "keystone",
+        "material": "wood",
+        "position": [
+          -0.8,
+          3.35,
+          -2.4
+        ],
+        "size": [
+          0.7,
+          0.7,
+          0.7
         ],
         "hitPoints": 146
       }

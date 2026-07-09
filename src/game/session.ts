@@ -31,10 +31,10 @@ import {
   KEYSTONE_HIT_POINTS,
 } from '../meta/score.js';
 import { levelByIndex, levelCount } from '../levels/index.js';
-import { getKeystoneModule } from '../levels/normalize.js';
+import { getKeystoneModule, countKeystones } from '../levels/normalize.js';
 import { useHudStore } from '../ui/hud-store.js';
 import { setupCastleScene, pulseKeystoneMaterial } from './castle-assets.js';
-import { createModuleMesh, getCastleMaterials } from './castle-renderer.js';
+import { createModuleMesh, disposeModuleMesh, getCastleMaterials, keystoneMaterialFromMesh, moduleRootFromPick } from './castle-renderer.js';
 import {
   EXPLOSIVE_IMPULSE,
   EXPLOSIVE_RADIUS,
@@ -58,7 +58,7 @@ import {
 } from './camera-frame.js';
 
 interface BodyEntry {
-  mesh: THREE.Mesh;
+  mesh: THREE.Object3D;
   moduleId: string;
   moduleType: CastleModuleType;
   importance: ModuleImportance;
@@ -102,7 +102,8 @@ export class GameSession {
   private aim: AimState = { active: false, originX: 0, originY: 0, currentX: 0, currentY: 0 };
   private activePointerId = -1;
   private aimWorldTarget: THREE.Vector3 | null = null;
-  private aimTargetMesh: THREE.Mesh | null = null;
+  private aimTargetMesh: THREE.Object3D | null = null;
+  private aimTargetModuleId: string | null = null;
   private clearedTargets = new Set<string>();
   private keystoneDestroyed = false;
   private timeLeftSec = 0;
@@ -114,6 +115,8 @@ export class GameSession {
   private lastShotPower = 0.5;
   private keystoneHp = 100;
   private keystoneHpMax = 100;
+  private keystoneTotal = 1;
+  private keystoneCleared = 0;
   private animTime = 0;
   private ballHitCooldown = new Set<string>();
   private lastExplosiveShot = false;
@@ -239,8 +242,11 @@ export class GameSession {
     this.aim.active = false;
     this.aimWorldTarget = null;
     this.aimTargetMesh = null;
+    this.aimTargetModuleId = null;
 
     const ks = getKeystoneModule(this.level);
+    this.keystoneTotal = countKeystones(this.level);
+    this.keystoneCleared = 0;
     this.keystoneHpMax = ks?.hitPoints ?? 100;
     this.keystoneHp = this.keystoneHpMax;
 
@@ -271,8 +277,7 @@ export class GameSession {
   private clearLevel(): void {
     for (const entry of this.entries) {
       this.scene.remove(entry.mesh);
-      entry.mesh.geometry.dispose();
-      (entry.mesh.material as THREE.Material).dispose();
+      disposeModuleMesh(entry.mesh);
       const body = this.world.getRigidBody(entry.mesh.userData.bodyHandle as number);
       if (body) this.world.removeRigidBody(body);
     }
@@ -286,6 +291,7 @@ export class GameSession {
   ): void {
     const isKeystone = mod.type === 'keystone' || mod.importance === 'critical';
     const isStatic = mod.isStatic ?? mod.type === 'foundation';
+    const isFixed = isStatic || isKeystone;
     const matKey = mod.material in MATERIALS ? mod.material : 'stone';
     const mat = MATERIALS[matKey as keyof typeof MATERIALS];
     const hp = mod.hitPoints ?? (isKeystone ? 100 : 70);
@@ -298,12 +304,12 @@ export class GameSession {
     this.scene.add(mesh);
 
     const [w, h, d] = mod.size;
-    const desc = isStatic
+    const desc = isFixed
       ? RAPIER.RigidBodyDesc.fixed()
       : RAPIER.RigidBodyDesc.dynamic().setCanSleep(true);
     const body = this.world.createRigidBody(desc.setTranslation(pos[0], pos[1], pos[2]));
     const collider = RAPIER.ColliderDesc.cuboid(w / 2, h / 2, d / 2)
-      .setDensity(isStatic ? 0 : mat.density)
+      .setDensity(isFixed ? 0 : mat.density)
       .setFriction(mat.friction)
       .setRestitution(mat.restitution);
     this.world.createCollider(collider, body);
@@ -359,9 +365,32 @@ export class GameSession {
   }
 
   private aimMeshes(): THREE.Object3D[] {
-    return this.entries
-      .filter((e) => !e.isStatic && !e.cleared && e.mesh.parent !== null)
-      .map((e) => e.mesh);
+    const meshes: THREE.Object3D[] = [];
+    for (const entry of this.entries) {
+      if ((entry.isStatic && !entry.isKeystone) || entry.cleared || entry.mesh.parent === null) continue;
+      entry.mesh.traverse((child) => {
+        if (child instanceof THREE.Mesh) meshes.push(child);
+      });
+    }
+    return meshes;
+  }
+
+  private entryForMesh(mesh: THREE.Object3D | null): BodyEntry | undefined {
+    if (!mesh) return undefined;
+    const root = moduleRootFromPick(mesh);
+    const id = root.userData.moduleId as string | undefined;
+    return this.entries.find((e) => e.moduleId === id);
+  }
+
+  private refreshActiveKeystoneHp(): void {
+    const active = this.entries.find((e) => e.isKeystone && !e.cleared);
+    if (!active) {
+      this.keystoneHp = 0;
+      this.keystoneHpMax = 0;
+      return;
+    }
+    this.keystoneHp = Math.max(0, Math.round(active.hitPoints));
+    this.keystoneHpMax = active.maxHitPoints;
   }
 
   selectPowerup(type: PowerupType): void {
@@ -388,7 +417,7 @@ export class GameSession {
     const margin = BALL_RADIUS * 0.85;
     const boxes: THREE.Box3[] = [];
     for (const entry of this.entries) {
-      if (entry.isStatic || entry.cleared || entry.mesh === this.aimTargetMesh || entry.mesh.parent === null) {
+      if ((entry.isStatic && !entry.isKeystone) || entry.cleared || entry.moduleId === this.aimTargetModuleId || entry.mesh.parent === null) {
         continue;
       }
       const box = new THREE.Box3().setFromObject(entry.mesh);
@@ -399,8 +428,11 @@ export class GameSession {
   }
 
   private refreshAimTargetPoint(): void {
-    if (!this.aimTargetMesh || !this.aimWorldTarget) return;
-    const box = new THREE.Box3().setFromObject(this.aimTargetMesh);
+    if (!this.aimWorldTarget) return;
+    const entry = this.entryForMesh(this.aimTargetMesh);
+    const target = entry?.mesh ?? this.aimTargetMesh;
+    if (!target) return;
+    const box = new THREE.Box3().setFromObject(target);
     box.getCenter(this.aimWorldTarget);
   }
 
@@ -412,13 +444,16 @@ export class GameSession {
 
   private lockAimTarget(clientX: number, clientY: number): void {
     const pick = pickAimTarget(this.camera, clientX, clientY, this.host, this.aimMeshes());
-    if (pick) {
+    if (pick?.mesh) {
       this.aimWorldTarget = pick.point;
-      this.aimTargetMesh = pick.mesh as THREE.Mesh | null;
+      const root = moduleRootFromPick(pick.mesh);
+      this.aimTargetMesh = root;
+      this.aimTargetModuleId = root.userData.moduleId as string;
       this.applyBallisticAim(0.55);
     } else {
       this.aimWorldTarget = null;
       this.aimTargetMesh = null;
+      this.aimTargetModuleId = null;
     }
   }
 
@@ -474,6 +509,7 @@ export class GameSession {
     this.aim.active = false;
     this.aimWorldTarget = null;
     this.aimTargetMesh = null;
+    this.aimTargetModuleId = null;
     this.aimLine.visible = false;
   }
 
@@ -499,6 +535,7 @@ export class GameSession {
     }
     this.aimWorldTarget = null;
     this.aimTargetMesh = null;
+    this.aimTargetModuleId = null;
   }
 
   private updateAimVisual(): void {
@@ -618,8 +655,8 @@ export class GameSession {
     this.animTime += dtMs / 1000;
     for (const entry of this.entries) {
       if (!entry.isKeystone || entry.cleared) continue;
-      const mat = entry.mesh.material as THREE.MeshStandardMaterial;
-      if (mat.emissive) pulseKeystoneMaterial(mat, this.animTime);
+      const mat = keystoneMaterialFromMesh(entry.mesh);
+      if (mat?.emissive) pulseKeystoneMaterial(mat, this.animTime);
     }
 
     if (this.phase !== 'menu') {
@@ -719,7 +756,7 @@ export class GameSession {
     const dmg = ballHitDamage(this.lastShotPower, heavy);
 
     for (const entry of this.entries) {
-      if (entry.cleared || entry.isStatic) continue;
+      if (entry.cleared || (entry.isStatic && !entry.isKeystone)) continue;
       if (this.ballHitCooldown.has(entry.moduleId)) continue;
 
       const box = new THREE.Box3().setFromObject(entry.mesh);
@@ -737,7 +774,7 @@ export class GameSession {
 
   private applyExplosion(center: THREE.Vector3): void {
     for (const entry of this.entries) {
-      if (entry.cleared || entry.isStatic) continue;
+      if (entry.cleared || (entry.isStatic && !entry.isKeystone)) continue;
       const dist = entry.mesh.position.distanceTo(center);
       if (dist > EXPLOSIVE_RADIUS) continue;
       const body = this.world.getRigidBody(entry.mesh.userData.bodyHandle as number);
@@ -755,7 +792,7 @@ export class GameSession {
     if (entry.isKeystone) {
       this.keystoneHits += 1;
       this.runScore += KEYSTONE_HIT_POINTS;
-      this.keystoneHp = Math.max(0, entry.hitPoints);
+      this.refreshActiveKeystoneHp();
       this.syncHud('Trafienie w klucz!');
     }
 
@@ -771,7 +808,10 @@ export class GameSession {
 
     if (entry.isKeystone) {
       this.runScore += 1000;
+      this.keystoneCleared = this.entries.filter((e) => e.isKeystone && e.cleared).length;
       this.keystoneDestroyed = this.allKeystonesCleared();
+      this.refreshActiveKeystoneHp();
+      this.syncHud(this.keystoneDestroyed ? 'Wszystkie klucze zniszczone!' : 'Klucz zniszczony!');
     } else if (entry.importance === 'structural') {
       this.secondaryDestroyed += 1;
       this.runScore += 50;
@@ -780,8 +820,7 @@ export class GameSession {
     const body = this.world.getRigidBody(entry.mesh.userData.bodyHandle as number);
     if (body) this.world.removeRigidBody(body);
     this.scene.remove(entry.mesh);
-    entry.mesh.geometry.dispose();
-    (entry.mesh.material as THREE.Material).dispose();
+    disposeModuleMesh(entry.mesh);
   }
 
   private allKeystonesCleared(): boolean {
@@ -894,6 +933,8 @@ export class GameSession {
       runScore: this.runScore,
       keystoneHp: Math.max(0, Math.round(this.keystoneHp)),
       keystoneHpMax: this.keystoneHpMax,
+      keystoneTotal: this.keystoneTotal,
+      keystoneCleared: this.keystoneCleared,
       starsEarned: stars,
       finalScore: this.runScore,
       message,

@@ -58,9 +58,26 @@
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "core-0",
-        "type": "gate",
-        "material": "wood",
+        "id": "row-base-0",
+        "type": "wall",
+        "material": "stone",
+        "position": [
+          -1.05,
+          0.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "row-base-1",
+        "type": "wall",
+        "material": "stone",
         "position": [
           0,
           0.5,
@@ -75,8 +92,25 @@
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "core-1",
+        "id": "row-base-2",
         "type": "wall",
+        "material": "stone",
+        "position": [
+          1.05,
+          0.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "core-1",
+        "type": "tower",
         "material": "stone",
         "position": [
           0,
