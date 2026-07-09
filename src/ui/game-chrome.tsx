@@ -13,6 +13,7 @@ export function GameChromeTop({ phase }: GameChromeTopProps): JSX.Element {
 
   const urgent = snap.timeLeftSec <= 10;
   const warn = snap.timeLeftSec <= 25;
+  const ended = phase === 'won' || phase === 'lost';
 
   return (
     <header className="game-chrome-top shrink-0 px-2 pt-2 safe-top">
@@ -44,20 +45,21 @@ export function GameChromeTop({ phase }: GameChromeTopProps): JSX.Element {
           </div>
         </div>
       </div>
-      {phase !== 'won' && phase !== 'lost' && (
-        <div className="mt-1 flex items-center gap-2 px-1">
-          <span className="text-[10px] text-white/45">Klucz:</span>
-          <div className="h-2 flex-1 overflow-hidden rounded-full bg-black/40 border border-red-900/40">
-            <div
-              className="h-full bg-gradient-to-r from-red-700 to-red-400 transition-all duration-200"
-              style={{
-                width: `${snap.keystoneHpMax > 0 ? (snap.keystoneHp / snap.keystoneHpMax) * 100 : 0}%`,
-              }}
-            />
-          </div>
-          <span className="text-[10px] text-red-300 tabular-nums">{snap.keystoneHp}</span>
+      <div
+        className={`mt-1 flex min-h-[1.125rem] items-center gap-2 px-1 ${ended ? 'invisible' : ''}`}
+        aria-hidden={ended}
+      >
+        <span className="text-[10px] text-white/45">Klucz:</span>
+        <div className="h-2 flex-1 overflow-hidden rounded-full bg-black/40 border border-red-900/40">
+          <div
+            className="h-full bg-gradient-to-r from-red-700 to-red-400 transition-all duration-200"
+            style={{
+              width: `${snap.keystoneHpMax > 0 ? (snap.keystoneHp / snap.keystoneHpMax) * 100 : 0}%`,
+            }}
+          />
         </div>
-      )}
+        <span className="text-[10px] text-red-300 tabular-nums">{snap.keystoneHp}</span>
+      </div>
     </header>
   );
 }
@@ -93,6 +95,10 @@ export function GameChromeBottom({
         ? 'Dotknij moduł zamku → odsuń palec → puść'
         : '';
 
+  const showBonusShot = phase === 'lost' && !profile.adsRemoved;
+  const showRetry = phase === 'won' || phase === 'lost';
+  const showNext = phase === 'won' && snap.levelIndex + 1 < snap.levelCount;
+
   return (
     <footer className="game-chrome-bottom shrink-0 px-2 pb-2 safe-bottom">
       <p
@@ -123,24 +129,24 @@ export function GameChromeBottom({
         })}
       </div>
 
-      <div className="mt-2 flex justify-center gap-2">
+      <div className="mt-2 flex min-h-[6.75rem] flex-wrap content-center items-center justify-center gap-2">
         <button type="button" className="btn-secondary min-h-11" onClick={onMenu}>
           Menu
         </button>
         <button type="button" className="btn-secondary min-h-11 min-w-11" aria-label="Pomoc" onClick={onHelp}>
           ?
         </button>
-        {phase === 'lost' && !profile.adsRemoved && (
+        {showBonusShot && (
           <button type="button" className="btn-secondary min-h-11 text-xs" onClick={onBonusShot}>
             +1 strzał ▶
           </button>
         )}
-        {(phase === 'won' || phase === 'lost') && (
+        {showRetry && (
           <button type="button" className="btn-primary min-h-11" onClick={onRetry}>
             Retry
           </button>
         )}
-        {phase === 'won' && snap.levelIndex + 1 < snap.levelCount && (
+        {showNext && (
           <button type="button" className="btn-primary min-h-11" onClick={onNext}>
             Dalej
           </button>
