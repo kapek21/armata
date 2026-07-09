@@ -1,5 +1,7 @@
 const KEY = 'armata-profile-v1';
 
+export const AIM_HINT_SHOTS = 3;
+
 export interface LevelResult {
   stars: number;
   bestShots: number;
@@ -8,10 +10,11 @@ export interface LevelResult {
 export interface Profile {
   unlockedLevels: number;
   levels: Record<string, LevelResult>;
+  aimHintsRemaining?: number;
 }
 
 function defaultProfile(): Profile {
-  return { unlockedLevels: 1, levels: {} };
+  return { unlockedLevels: 1, levels: {}, aimHintsRemaining: AIM_HINT_SHOTS };
 }
 
 export function loadProfile(): Profile {
@@ -19,9 +22,13 @@ export function loadProfile(): Profile {
     const raw = localStorage.getItem(KEY);
     if (!raw) return defaultProfile();
     const parsed = JSON.parse(raw) as Profile;
+    const levels = parsed.levels ?? {};
+    const playedBefore = Object.keys(levels).length > 0;
     return {
       unlockedLevels: Math.max(1, parsed.unlockedLevels ?? 1),
-      levels: parsed.levels ?? {},
+      levels,
+      aimHintsRemaining:
+        parsed.aimHintsRemaining ?? (playedBefore ? 0 : AIM_HINT_SHOTS),
     };
   } catch {
     return defaultProfile();
@@ -56,4 +63,14 @@ export function starsForShots(used: number, thresholds: [number, number, number]
   if (used <= thresholds[1]) return 2;
   if (used <= thresholds[2]) return 1;
   return 0;
+}
+
+export function shouldShowAimHint(profile: Profile): boolean {
+  return (profile.aimHintsRemaining ?? 0) > 0;
+}
+
+export function consumeAimHint(profile: Profile): Profile {
+  const left = profile.aimHintsRemaining ?? 0;
+  if (left <= 0) return profile;
+  return { ...profile, aimHintsRemaining: left - 1 };
 }

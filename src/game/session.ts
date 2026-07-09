@@ -10,8 +10,10 @@ import {
 import { pixelRatioForTier } from '../platform/quality-tier.js';
 import {
   applyLevelWin,
+  consumeAimHint,
   loadProfile,
   saveProfile,
+  shouldShowAimHint,
   starsForShots,
   unlockNextLevel,
 } from '../meta/profile.js';
@@ -492,6 +494,14 @@ export class GameSession {
 
     this.ammoLeft -= 1;
     this.shotsUsed += 1;
+
+    let profile = loadProfile();
+    if (shouldShowAimHint(profile)) {
+      profile = consumeAimHint(profile);
+      saveProfile(profile);
+      useHudStore.getState().reloadProfile();
+    }
+
     this.phase = 'simulating';
     this.syncHud('Strzał!');
   }

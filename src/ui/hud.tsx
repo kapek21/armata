@@ -1,6 +1,9 @@
+import { useState } from 'react';
 import { useHudStore } from './hud-store.js';
 import { levelByIndex, levelCount } from '../levels/index.js';
+import { shouldShowAimHint } from '../meta/profile.js';
 import type { GamePhase } from '../core/types.js';
+import { HelpDialog } from './help-dialog.js';
 
 interface HudProps {
   phase: GamePhase;
@@ -14,65 +17,76 @@ interface HudProps {
 export function Hud({ phase, onRetry, onNext, onMenu, onCloseMenu, onStartLevel }: HudProps): JSX.Element {
   const snap = useHudStore((s) => s.snapshot);
   const profile = useHudStore((s) => s.profile);
+  const [helpOpen, setHelpOpen] = useState(false);
+
+  const showAimHint = phase === 'aiming' && shouldShowAimHint(profile);
+  const helpOverlay = helpOpen ? <HelpDialog onClose={() => setHelpOpen(false)} /> : null;
 
   if (phase === 'menu') {
     return (
-      <div
-        className="pointer-events-auto absolute inset-0 z-20 flex items-center justify-center bg-black/50 p-4 safe-top safe-bottom"
-        onClick={onCloseMenu}
-        role="presentation"
-      >
+      <>
         <div
-          className="panel relative w-full max-w-sm p-5"
-          onClick={(e) => e.stopPropagation()}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="menu-title"
+          className="pointer-events-auto absolute inset-0 z-20 flex items-center justify-center bg-black/50 p-4 safe-top safe-bottom"
+          onClick={onCloseMenu}
+          role="presentation"
         >
-          <button
-            type="button"
-            className="btn-secondary absolute right-3 top-3 min-h-11 min-w-11 px-0 text-lg leading-none"
-            aria-label="Zamknij menu"
-            onClick={onCloseMenu}
+          <div
+            className="panel relative w-full max-w-sm p-5"
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="menu-title"
           >
-            ×
-          </button>
-          <h1 id="menu-title" className="font-display text-center text-xl text-amber-300 pr-10">
-            ARMATA
-          </h1>
-          <p className="mt-1 text-center text-xs text-white/60">Physics puzzler — przewróć cele</p>
-          <ul className="mt-4 flex flex-col gap-2">
-            {Array.from({ length: levelCount() }, (_, i) => {
-              const lvl = levelByIndex(i);
-              const locked = i >= profile.unlockedLevels;
-              const best = profile.levels[lvl.id]?.stars ?? 0;
-              return (
-                <li key={lvl.id}>
-                  <button
-                    type="button"
-                    disabled={locked}
-                    className="btn-secondary w-full text-left disabled:opacity-40"
-                    onClick={() => onStartLevel(i)}
-                  >
-                    <span className="font-semibold">{i + 1}. {lvl.name}</span>
-                    {locked ? (
-                      <span className="float-right text-white/40">🔒</span>
-                    ) : (
-                      <span className="float-right text-amber-300">{'★'.repeat(best) || '—'}</span>
-                    )}
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-          <button type="button" className="btn-primary mt-4 w-full" onClick={onCloseMenu}>
-            Wróć do gry
-          </button>
-          <p className="mt-3 text-center text-[11px] text-white/45">
-            Przeciągnij palcem, puść — strzał
-          </p>
+            <button
+              type="button"
+              className="btn-secondary absolute right-3 top-3 min-h-11 min-w-11 px-0 text-lg leading-none"
+              aria-label="Zamknij menu"
+              onClick={onCloseMenu}
+            >
+              ×
+            </button>
+            <h1 id="menu-title" className="font-display text-center text-xl text-amber-300 pr-10">
+              ARMATA
+            </h1>
+            <p className="mt-1 text-center text-xs text-white/60">Physics puzzler — przewróć cele</p>
+            <ul className="mt-4 flex flex-col gap-2">
+              {Array.from({ length: levelCount() }, (_, i) => {
+                const lvl = levelByIndex(i);
+                const locked = i >= profile.unlockedLevels;
+                const best = profile.levels[lvl.id]?.stars ?? 0;
+                return (
+                  <li key={lvl.id}>
+                    <button
+                      type="button"
+                      disabled={locked}
+                      className="btn-secondary w-full text-left disabled:opacity-40"
+                      onClick={() => onStartLevel(i)}
+                    >
+                      <span className="font-semibold">{i + 1}. {lvl.name}</span>
+                      {locked ? (
+                        <span className="float-right text-white/40">🔒</span>
+                      ) : (
+                        <span className="float-right text-amber-300">{'★'.repeat(best) || '—'}</span>
+                      )}
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+            <button
+              type="button"
+              className="btn-secondary mt-4 w-full"
+              onClick={() => setHelpOpen(true)}
+            >
+              Jak grać
+            </button>
+            <button type="button" className="btn-primary mt-2 w-full" onClick={onCloseMenu}>
+              Wróć do gry
+            </button>
+          </div>
         </div>
-      </div>
+        {helpOverlay}
+      </>
     );
   }
 
@@ -109,6 +123,14 @@ export function Hud({ phase, onRetry, onNext, onMenu, onCloseMenu, onStartLevel 
         <button type="button" className="pointer-events-auto btn-secondary" onClick={onMenu}>
           Menu
         </button>
+        <button
+          type="button"
+          className="pointer-events-auto btn-secondary min-w-11 px-3"
+          aria-label="Jak grać"
+          onClick={() => setHelpOpen(true)}
+        >
+          ?
+        </button>
         {(phase === 'won' || phase === 'lost') && (
           <button type="button" className="pointer-events-auto btn-primary" onClick={onRetry}>
             Retry
@@ -135,11 +157,13 @@ export function Hud({ phase, onRetry, onNext, onMenu, onCloseMenu, onStartLevel 
         </div>
       )}
 
-      {phase === 'aiming' && (
+      {showAimHint && (
         <div className="pointer-events-none absolute inset-x-0 bottom-16 z-10 flex justify-center safe-bottom">
           <p className="text-[11px] text-white/50">Dotknij klocek, odsuń palec i puść</p>
         </div>
       )}
+
+      {helpOverlay}
     </>
   );
 }
