@@ -189,16 +189,19 @@ function keystonePenetrates(modules, ks, resolvedKeystones = []) {
 function snapKeystoneToBestSupport(modules, ks, resolvedKeystones = []) {
   const [x, , z] = ks.position;
   const size = ks.size[0];
+  const intendedY = ks.position[1];
   const candidates = [];
 
   for (const mod of modules) {
     if (mod.id === ks.id || isKeystoneMod(mod)) continue;
     if (!xzOnSupportFootprint(x, z, mod, size)) continue;
     const top = mod.position[1] + mod.size[1] / 2;
-    candidates.push({ mod, top });
+    const restY = stackY(mod.position[1], mod.size[1], size);
+    candidates.push({ mod, top, restY });
   }
 
-  candidates.sort((a, b) => b.top - a.top);
+  // Najbliższa podpora do zamierzonej wysokości (rola), nie zawsze szczyt wieży.
+  candidates.sort((a, b) => Math.abs(a.restY - intendedY) - Math.abs(b.restY - intendedY));
   for (const { mod } of candidates) {
     ks.position[1] = stackY(mod.position[1], mod.size[1], size);
     if (!keystonePenetrates(modules, ks, resolvedKeystones)) return true;
@@ -277,8 +280,11 @@ function finalizeKeystones(modules) {
   }
 }
 
-/** Rola głównego klucza — mieszany hash (peak/mid/deep/low) na wszystkich 50 poziomach. */
+/** Rola głównego klucza — tutorial 1–5 ma stały układ, reszta hash peak/mid/deep/low. */
 function primaryRole(levelIndex, slot) {
+  if (levelIndex <= 5) {
+    return ['low', 'mid', 'peak', 'deep', 'flank'][slot - 1];
+  }
   const chapter = Math.ceil(levelIndex / 10);
   return ['peak', 'mid', 'deep', 'low'][(levelIndex * 7 + slot * 11 + chapter) % 4];
 }
@@ -457,7 +463,11 @@ function watchtower(chapter, slot, levelIndex) {
   const ksSize = 0.82;
   const extras = extraRoles(levelIndex, slot, 2, role);
 
-  for (let i = 0; i < h; i++) {
+  // low/mid: skróć kolumnę, żeby cel na niższym rzędzie nie nachodził na wyższe piętra.
+  const coreRows =
+    role === 'low' ? 1 : role === 'mid' ? 2 : role === 'peak' ? h : h;
+
+  for (let i = 0; i < coreRows; i++) {
     modules.push(
       brickAt(
         `core-${i}`,
@@ -480,17 +490,28 @@ function watchtower(chapter, slot, levelIndex) {
   }
 
   if (role === 'deep') {
-    modules.push(brickAt('core-deep', 0, ROW.low, Z + DEEP_Z, 'stone'));
+    const deepZ = DEEP_Z * 3;
+    modules.push(brickAt('core-deep', 0, ROW.low, Z + deepZ, 'stone'));
+    placeByRole(modules, 'keystone', role, {
+      x: 0,
+      z: Z,
+      rowY: ROW.low,
+      zDeep: deepZ,
+      addDeepSupport: false,
+    }, chapter, slot, ksSize);
+  } else {
+    const flankSide = slot % 2 === 0 ? 1.3 : -1.3;
+    placeByRole(modules, 'keystone', role, {
+      x: 0,
+      z: Z,
+      columns: role === 'peak' ? coreRows : undefined,
+      rowY: role === 'mid' ? ROW.mid : role === 'low' ? ROW.low : ROW.low,
+      flankX: role === 'flank' ? flankSide : undefined,
+      flankZ: Z,
+      zDeep: DEEP_Z,
+      addDeepSupport: false,
+    }, chapter, slot, ksSize);
   }
-
-  placeByRole(modules, 'keystone', role, {
-    x: 0,
-    z: Z,
-    columns: role === 'peak' ? h : undefined,
-    rowY: role === 'mid' ? ROW.mid : role === 'low' ? ROW.low : ROW.low,
-    zDeep: DEEP_Z,
-    addDeepSupport: false,
-  }, chapter, slot, ksSize);
 
   appendKeystones(
     modules,

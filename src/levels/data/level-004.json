@@ -192,6 +192,23 @@
         ]
       },
       {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "core-deep",
+        "type": "wall",
+        "material": "stone",
+        "position": [
+          0,
+          0.5,
+          -3.05
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
         "importance": "critical",
         "isStatic": false,
         "id": "keystone",
@@ -199,8 +216,8 @@
         "material": "wood",
         "position": [
           0,
-          4.41,
-          -2
+          1.41,
+          -3.05
         ],
         "size": [
           0.82,

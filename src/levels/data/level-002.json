@@ -90,23 +90,6 @@
         ]
       },
       {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "core-2",
-        "type": "wall",
-        "material": "wood",
-        "position": [
-          0,
-          2.5,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
         "importance": "critical",
         "isStatic": false,
         "id": "keystone",
@@ -114,7 +97,7 @@
         "material": "wood",
         "position": [
           0,
-          3.41,
+          2.41,
           -2
         ],
         "size": [
