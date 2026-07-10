@@ -613,34 +613,6 @@ function applyCannonFadeToGroup(
   });
 }
 
-function ensureCannonGhostOutline(cannonRoot: THREE.Object3D, show: boolean, fadeT: number): void {
-  let outline = cannonRoot.getObjectByName('cannon-ghost-outline') as THREE.LineSegments | null;
-  if (!show) {
-    if (outline) outline.visible = false;
-    return;
-  }
-
-  if (!outline) {
-    const edges = new THREE.EdgesGeometry(new THREE.BoxGeometry(1.85, 1.05, 1.45), 18);
-    const mat = new THREE.LineBasicMaterial({
-      color: 0xc4a060,
-      transparent: true,
-      opacity: 0.32,
-      depthTest: true,
-      toneMapped: true,
-    });
-    outline = new THREE.LineSegments(edges, mat);
-    outline.name = 'cannon-ghost-outline';
-    outline.position.set(0, 0.52, 0.02);
-    outline.renderOrder = 1;
-    cannonRoot.add(outline);
-  }
-
-  outline.visible = true;
-  const lineMat = outline.material as THREE.LineBasicMaterial;
-  lineMat.opacity = THREE.MathUtils.lerp(0.22, 0.38, fadeT);
-}
-
 /** Półprzezroczysta podstawa/lufa tylko gdy obręcz jest ukryta (ten sam próg pitch). */
 export function applyCannonVisualForPitch(cannonRoot: THREE.Object3D): void {
   const pitchPivot = cannonRoot.getObjectByName('pitch-pivot');
@@ -661,7 +633,6 @@ export function applyCannonVisualForPitch(cannonRoot: THREE.Object3D): void {
     for (const id of ['wheel-l', 'wheel-r']) {
       restoreCannonMeshMaterials(cannonRoot.getObjectByName(id) ?? null);
     }
-    ensureCannonGhostOutline(cannonRoot, false, 0);
 
     const muzzle = cannonRoot.getObjectByName('cannon-muzzle');
     if (muzzle) muzzle.visible = true;
@@ -678,7 +649,6 @@ export function applyCannonVisualForPitch(cannonRoot: THREE.Object3D): void {
   for (const id of ['wheel-l', 'wheel-r']) {
     applyCannonFadeToGroup(cannonRoot.getObjectByName(id) ?? null, fadeT, 'wheel');
   }
-  ensureCannonGhostOutline(cannonRoot, true, fadeT);
 
   const muzzle = cannonRoot.getObjectByName('cannon-muzzle');
   if (muzzle) muzzle.visible = false;
