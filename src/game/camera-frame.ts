@@ -562,6 +562,11 @@ export function applyCannonVisualForPitch(cannonRoot: THREE.Object3D): void {
     if (!hideMuzzle) setCannonMeshOpacity(muzzle, 1);
   }
 
+  for (let i = 0; i < 3; i++) {
+    const ring = cannonRoot.getObjectByName(`barrel-ring-${i}`);
+    if (ring) ring.visible = !hideMuzzle;
+  }
+
   const wheels = ['wheel-l', 'wheel-r'];
   for (const id of wheels) {
     const w = cannonRoot.getObjectByName(id);

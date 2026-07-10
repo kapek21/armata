@@ -276,7 +276,7 @@ function buildBarrelAssembly(mats: CannonMaterials, tier: QualityTier, castShado
 
   const ringZ = [-0.35, -0.82, -1.28];
   for (let i = 0; i < ringZ.length; i++) {
-    addMesh(
+    const ring = addMesh(
       barrelGroup,
       new THREE.TorusGeometry(0.22 + (i === 1 ? 0.02 : 0), 0.035, 8, tier === 'low' ? 12 : 18),
       i === 0 ? mats.brass : mats.ironDark,
@@ -284,6 +284,7 @@ function buildBarrelAssembly(mats: CannonMaterials, tier: QualityTier, castShado
       [Math.PI / 2, 0, 0],
       castShadow,
     );
+    ring.name = `barrel-ring-${i}`;
   }
 
   addMesh(
