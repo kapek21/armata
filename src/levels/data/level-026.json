@@ -250,7 +250,7 @@
         "material": "wood",
         "position": [
           2.2,
-          1.4,
+          3.4,
           -2
         ],
         "size": [
@@ -268,7 +268,7 @@
         "material": "wood",
         "position": [
           -2.2,
-          2.37,
+          3.37,
           -2
         ],
         "size": [
@@ -286,8 +286,8 @@
         "material": "wood",
         "position": [
           2.2,
-          1.37,
-          -2
+          0.37,
+          -2.7
         ],
         "size": [
           0.74,

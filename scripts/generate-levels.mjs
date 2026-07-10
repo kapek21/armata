@@ -109,6 +109,174 @@ function keystone(id, x, y, z, chapter, slot, size = 0.82) {
   });
 }
 
+function modAabb(mod) {
+  const [x, y, z] = mod.position;
+  const [w, h, d] = mod.size;
+  return {
+    minX: x - w / 2,
+    maxX: x + w / 2,
+    minY: y - h / 2,
+    maxY: y + h / 2,
+    minZ: z - d / 2,
+    maxZ: z + d / 2,
+  };
+}
+
+function aabbOverlap(a, b, gap = 0.02) {
+  return (
+    a.minX < b.maxX - gap &&
+    a.maxX > b.minX + gap &&
+    a.minY < b.maxY - gap &&
+    a.maxY > b.minY + gap &&
+    a.minZ < b.maxZ - gap &&
+    a.maxZ > b.minZ + gap
+  );
+}
+
+function isKeystoneMod(mod) {
+  return mod.type === 'keystone' || mod.importance === 'critical';
+}
+
+/** Keystone spoczywa na górnej ściance podpory (styk bez penetracji). */
+function isRestingOn(ksBox, supportBox) {
+  const xz =
+    ksBox.minX < supportBox.maxX &&
+    ksBox.maxX > supportBox.minX &&
+    ksBox.minZ < supportBox.maxZ &&
+    ksBox.maxZ > supportBox.minZ;
+  const onTop = Math.abs(ksBox.minY - supportBox.maxY) < 0.045;
+  return xz && onTop && ksBox.minY >= supportBox.maxY - 0.05;
+}
+
+function xzOnSupportFootprint(ksX, ksZ, mod, size) {
+  const b = modAabb(mod);
+  const margin = 0.04;
+  return (
+    ksX >= b.minX - margin &&
+    ksX <= b.maxX + margin &&
+    ksZ >= b.minZ - margin &&
+    ksZ <= b.maxZ + margin
+  );
+}
+
+function pointInAabb([px, py, pz], box) {
+  return px >= box.minX && px <= box.maxX && py >= box.minY && py <= box.maxY && pz >= box.minZ && pz <= box.maxZ;
+}
+
+function keystonePenetrates(modules, ks, resolvedKeystones = []) {
+  const kb = modAabb(ks);
+  const ksCenter = ks.position;
+
+  const checkMod = (mod) => {
+    if (mod.id === ks.id || mod.isStatic) return false;
+    const b = modAabb(mod);
+    if (!aabbOverlap(kb, b)) return false;
+    if (isRestingOn(kb, b)) return false;
+    if (pointInAabb(ksCenter, b) || pointInAabb(mod.position, kb)) return true;
+    return false;
+  };
+
+  for (const mod of modules) {
+    if (checkMod(mod)) return true;
+  }
+  for (const other of resolvedKeystones) {
+    if (other.id === ks.id) return false;
+    if (checkMod(other)) return true;
+  }
+  return false;
+}
+
+function snapKeystoneToBestSupport(modules, ks, resolvedKeystones = []) {
+  const [x, , z] = ks.position;
+  const size = ks.size[0];
+  const candidates = [];
+
+  for (const mod of modules) {
+    if (mod.id === ks.id || isKeystoneMod(mod)) continue;
+    if (!xzOnSupportFootprint(x, z, mod, size)) continue;
+    const top = mod.position[1] + mod.size[1] / 2;
+    candidates.push({ mod, top });
+  }
+
+  candidates.sort((a, b) => b.top - a.top);
+  for (const { mod } of candidates) {
+    ks.position[1] = stackY(mod.position[1], mod.size[1], size);
+    if (!keystonePenetrates(modules, ks, resolvedKeystones)) return true;
+  }
+
+  if (candidates.length > 0) {
+    const { mod } = candidates[0];
+    ks.position[1] = stackY(mod.position[1], mod.size[1], size);
+    return true;
+  }
+  return false;
+}
+
+/** Rozdziela cele, które startują w tym samym punkcie XZ. */
+function separateKeystoneAnchors(ksList) {
+  const seen = new Map();
+  for (const ks of ksList) {
+    const key = `${ks.position[0].toFixed(2)}:${ks.position[2].toFixed(2)}`;
+    const count = seen.get(key) ?? 0;
+    seen.set(key, count + 1);
+    if (count === 0) continue;
+    ks.position[2] += DEEP_Z * count;
+    if (count > 1) ks.position[0] += 0.5 * (count % 2 === 0 ? 1 : -1);
+  }
+}
+
+/**
+ * Po złożeniu zamku: dopasuj Y keystone do podpory, usuń penetracje (bez zmiany roli / strefy XZ).
+ */
+function finalizeKeystones(modules) {
+  const ksList = modules.filter(isKeystoneMod);
+  separateKeystoneAnchors(ksList);
+
+  const resolved = [];
+  for (const ks of ksList) {
+    snapKeystoneToBestSupport(modules, ks, resolved);
+
+    if (!keystonePenetrates(modules, ks, resolved)) {
+      resolved.push(ks);
+      continue;
+    }
+
+    const [ox, , oz] = ks.position;
+    const nudges = [
+      [0, DEEP_Z],
+      [0, -DEEP_Z],
+      [0.55, 0],
+      [-0.55, 0],
+      [0.55, DEEP_Z],
+      [-0.55, DEEP_Z],
+      [0, DEEP_Z * 2],
+    ];
+
+    let fixed = false;
+    for (const [dx, dz] of nudges) {
+      ks.position[0] = ox + dx;
+      ks.position[2] = oz + dz;
+      snapKeystoneToBestSupport(modules, ks, resolved);
+      if (!keystonePenetrates(modules, ks, resolved)) {
+        fixed = true;
+        break;
+      }
+    }
+
+    if (!fixed) {
+      ks.position[0] = ox;
+      ks.position[2] = oz;
+      const padId = `${ks.id}-pad`;
+      if (!modules.some((mod) => mod.id === padId)) {
+        modules.push(brickAt(padId, ox, ROW.low, oz, 'wood'));
+      }
+      snapKeystoneToBestSupport(modules, ks, resolved);
+    }
+
+    resolved.push(ks);
+  }
+}
+
 /** Rola głównego klucza — mieszany hash (peak/mid/deep/low) na wszystkich 50 poziomach. */
 function primaryRole(levelIndex, slot) {
   const chapter = Math.ceil(levelIndex / 10);
@@ -1017,6 +1185,7 @@ for (let i = 1; i <= 50; i++) {
   const t = timing(chapter, slot, i);
   const build = BUILDERS[bp.id];
   const modules = build(chapter, slot, i);
+  finalizeKeystones(modules);
 
   const level = {
     id: `level-${String(i).padStart(3, '0')}`,
@@ -1049,34 +1218,30 @@ function isKeystone(mod) {
   return mod.type === 'keystone' || mod.importance === 'critical';
 }
 
-function aabb(pos, size) {
-  const [x, y, z] = pos;
-  const [w, h, d] = size;
-  return {
-    minX: x - w / 2,
-    maxX: x + w / 2,
-    minY: y - h / 2,
-    maxY: y + h / 2,
-    minZ: z - d / 2,
-    maxZ: z + d / 2,
-  };
-}
-
 function overlap1d(a0, a1, b0, b1) {
   return a0 <= b1 && b0 <= a1;
 }
 
+function keystoneRestsCleanly(modules, ks) {
+  return !keystonePenetrates(
+    modules,
+    ks,
+    modules.filter((m) => isKeystoneMod(m) && m.id !== ks.id),
+  );
+}
+
 let floatWarnings = 0;
+let overlapWarnings = 0;
 for (let i = 1; i <= 50; i++) {
   const path = join(outDir, `level-${String(i).padStart(3, '0')}.json`);
   const level = JSON.parse(readFileSync(path, 'utf8'));
   const mods = level.enemyCastle.modules;
   for (const ks of mods.filter(isKeystone)) {
-    const kb = aabb(ks.position, ks.size);
+    const kb = modAabb(ks);
     let supportTop = -999;
     for (const m of mods) {
       if (m.id === ks.id) continue;
-      const b = aabb(m.position, m.size);
+      const b = modAabb(m);
       if (
         overlap1d(kb.minX, kb.maxX, b.minX, b.maxX) &&
         overlap1d(kb.minZ, kb.maxZ, b.minZ, b.maxZ) &&
@@ -1093,11 +1258,18 @@ for (let i = 1; i <= 50; i++) {
       );
       floatWarnings += 1;
     }
+    if (!keystoneRestsCleanly(mods, ks)) {
+      console.warn(`WARN ${level.id} ${ks.id}: penetracja po finalize`);
+      overlapWarnings += 1;
+    }
   }
 }
 
 console.log('Wygenerowano 50 poziomów (szablony zamków) →', outDir);
 if (floatWarnings > 0) {
   console.warn(`Ostrzeżenia: ${floatWarnings} keystone(ów) bez pewnej podpory`);
+}
+if (overlapWarnings > 0) {
+  console.warn(`Ostrzeżenia: ${overlapWarnings} nachodzących keystone(ów)`);
   process.exitCode = 1;
 }

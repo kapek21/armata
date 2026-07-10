@@ -87,6 +87,7 @@ interface BodyEntry {
 
 const SETTLE_SPEED = 0.2;
 const SETTLE_ANG = 0.3;
+const LEVEL_SETTLE_MS = 1200;
 const POST_BALL_READY_MS = 350;
 const POST_BALL_FORCE_MS = 2000;
 const BALL_STILL_MS = 200;
@@ -137,6 +138,7 @@ export class GameSession {
   private campaignAnchorLevel = 0;
   private levelStartCampaignTime = 0;
   private lastCampaignLevelIndex = -1;
+  private levelSettleMs = 0;
   private runScore = 0;
   private keystoneHits = 0;
   private secondaryDestroyed = 0;
@@ -250,6 +252,8 @@ export class GameSession {
 
     this.applyCameraFrame();
     resetCannonAim(this.cannonMesh, this.level);
+    this.levelSettleMs = 0;
+    this.settlePhysicsOnLoad();
     useHudStore.getState().reloadProfile();
     this.syncHud('');
   }
@@ -743,6 +747,10 @@ export class GameSession {
 
     if (this.phase === 'menu') return;
 
+    if (this.phase === 'aiming' || this.phase === 'simulating') {
+      this.levelSettleMs += dtMs;
+    }
+
     this.world.integrationParameters.dt = Math.min(1 / 30, dtMs / 1000);
     this.world.step();
     this.syncMeshes();
@@ -787,6 +795,34 @@ export class GameSession {
     if (this.phase === 'aiming' || this.phase === 'simulating') {
       this.syncHud('');
     }
+  }
+
+  private settlePhysicsOnLoad(): void {
+    const dt = 1 / 60;
+    this.world.integrationParameters.dt = dt;
+    for (let i = 0; i < 120; i++) {
+      this.world.step();
+      this.syncMeshes();
+    }
+  }
+
+  private areDynamicBodiesSettled(): boolean {
+    let moving = false;
+    this.world.forEachRigidBody((body) => {
+      if (body.isFixed() || !body.isEnabled() || body.isSleeping()) return;
+      const lv = body.linvel();
+      const av = body.angvel();
+      if (Math.hypot(lv.x, lv.y, lv.z) > SETTLE_SPEED || Math.hypot(av.x, av.y, av.z) > SETTLE_ANG) {
+        moving = true;
+      }
+    });
+    return !moving;
+  }
+
+  private canCheckKeystoneKillZone(): boolean {
+    if (this.shotsUsed > 0) return true;
+    if (this.levelSettleMs < LEVEL_SETTLE_MS) return false;
+    return this.areDynamicBodiesSettled();
   }
 
   private canTakeNextShot(): boolean {
@@ -924,6 +960,7 @@ export class GameSession {
   }
 
   private checkCastleModules(): void {
+    if (!this.canCheckKeystoneKillZone()) return;
     for (const entry of this.entries) {
       if (entry.cleared || !entry.isKeystone) continue;
       const y = entry.mesh.position.y;
