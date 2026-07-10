@@ -66,7 +66,6 @@ export function buildKeystoneAssembly(
 
   const trim = mats.keystoneGold.clone();
   trim.emissiveIntensity = 0.1;
-  const faceZ = d / 2 + 0.015;
   const trimH = Math.min(0.06, h * 0.08);
 
   const pushGlow = (
@@ -80,10 +79,26 @@ export function buildKeystoneAssembly(
 
   pushGlow(new THREE.BoxGeometry(w * 0.96, trimH, d * 0.12), trim, [0, h / 2 - trimH * 0.6, d * 0.04]);
 
-  const shieldW = Math.min(w, h) * 0.44;
-  const shieldH = shieldW * 1.12;
+  const inset = 0.015;
   const shieldMat = mats.keystoneShield.clone();
-  pushGlow(new THREE.PlaneGeometry(shieldW, shieldH), shieldMat, [0, 0, faceZ]);
+  const placeShield = (
+    faceW: number,
+    faceH: number,
+    pos: [number, number, number],
+    rot: [number, number, number],
+  ): void => {
+    const shieldW = Math.min(faceW, faceH) * 0.44;
+    const shieldH = shieldW * 1.12;
+    pushGlow(new THREE.PlaneGeometry(shieldW, shieldH), shieldMat, pos, rot);
+  };
+
+  // Tarcza na każdej ścianie — widoczna po przewróceniu klocka.
+  placeShield(w, h, [0, 0, d / 2 + inset], [0, 0, 0]);
+  placeShield(w, h, [0, 0, -d / 2 - inset], [0, Math.PI, 0]);
+  placeShield(d, h, [w / 2 + inset, 0, 0], [0, -Math.PI / 2, 0]);
+  placeShield(d, h, [-w / 2 - inset, 0, 0], [0, Math.PI / 2, 0]);
+  placeShield(w, d, [0, h / 2 + inset, 0], [-Math.PI / 2, 0, 0]);
+  placeShield(w, d, [0, -h / 2 - inset, 0], [Math.PI / 2, 0, 0]);
 }
 
 export function addBattleScars(
