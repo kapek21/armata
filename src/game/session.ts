@@ -398,11 +398,18 @@ export class GameSession {
     });
   }
 
+  private aimDragLength(): number {
+    const dx = this.aim.originX - this.aim.currentX;
+    const dy = this.aim.originY - this.aim.currentY;
+    return Math.hypot(dx, dy);
+  }
+
   private onLostPointerCapture = (e: PointerEvent): void => {
     if (e.pointerId !== this.activePointerId || !this.aim.active) return;
     this.activePointerId = -1;
     this.aim.active = false;
     this.aimLine.visible = false;
+    resetCannonAim(this.cannonMesh, this.level);
   };
 
   private attachInput(): void {
@@ -523,7 +530,6 @@ export class GameSession {
     if (pick) {
       this.aimWorldTarget = pick.point;
       this.aimTargetMesh = pick.mesh;
-      this.applyBallisticAim(0.55);
     } else {
       this.aimWorldTarget = null;
       this.aimTargetMesh = null;
@@ -569,7 +575,7 @@ export class GameSession {
     e.preventDefault();
     this.aim.currentX = e.clientX;
     this.aim.currentY = e.clientY;
-    if (this.aimWorldTarget) {
+    if (this.aimWorldTarget && this.aimDragLength() >= MIN_DRAG_PX) {
       this.applyBallisticAim();
     }
     this.updateAimVisual();
@@ -583,6 +589,7 @@ export class GameSession {
     this.aimWorldTarget = null;
     this.aimTargetMesh = null;
     this.aimLine.visible = false;
+    resetCannonAim(this.cannonMesh, this.level);
   }
 
   private handlePointerUp(e: PointerEvent): void {
@@ -590,35 +597,35 @@ export class GameSession {
 
     this.aim.currentX = e.clientX;
     this.aim.currentY = e.clientY;
-    const dx = this.aim.originX - this.aim.currentX;
-    const dy = this.aim.originY - this.aim.currentY;
-    const len = Math.hypot(dx, dy);
+    const len = this.aimDragLength();
 
     this.releasePointer(e);
     this.activePointerId = -1;
     this.aim.active = false;
     this.aimLine.visible = false;
 
-    if (len >= MIN_DRAG_PX && this.aimWorldTarget && this.canFireNow()) {
+    const fired =
+      len >= MIN_DRAG_PX && this.aimWorldTarget != null && this.canFireNow();
+    if (fired) {
       const power = this.ballisticPowerForShot(powerFromDrag(len, MAX_DRAG_PX));
       this.refreshAimTargetPoint();
       aimCannonBallistic(
         this.cannonMesh,
-        this.aimWorldTarget,
+        this.aimWorldTarget!,
         power,
         this.aimObstaclesForBallistic(),
         this.arcPreferenceFromDrag(),
       );
       this.fireShot(power);
+    } else {
+      resetCannonAim(this.cannonMesh, this.level);
     }
     this.aimWorldTarget = null;
     this.aimTargetMesh = null;
   }
 
   private updateAimVisual(): void {
-    const dx = this.aim.originX - this.aim.currentX;
-    const dy = this.aim.originY - this.aim.currentY;
-    const len = Math.hypot(dx, dy);
+    const len = this.aimDragLength();
     const minLen = this.activePowerup === 'trajectory' ? 8 : MIN_DRAG_PX;
     if (len < minLen) {
       if (this.activePowerup !== 'trajectory') {
@@ -628,7 +635,9 @@ export class GameSession {
     }
 
     const power = len < MIN_DRAG_PX ? 0.55 : powerFromDrag(len, MAX_DRAG_PX);
-    this.applyBallisticAim(power);
+    if (this.aimWorldTarget && len >= MIN_DRAG_PX) {
+      this.applyBallisticAim(power);
+    }
     this.aimLineMaterial.color.setHex(aimArcColorFromPower(power));
     const origin = muzzleWorldPosition(this.cannonMesh);
     const arc = simulateBallisticArc(origin, power, this.cannonMesh);
