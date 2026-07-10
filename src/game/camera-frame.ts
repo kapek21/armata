@@ -254,14 +254,55 @@ function selectBallisticPitch(
   target: THREE.Vector3,
 ): number {
   if (obstacles.length === 0) {
-    return pitchLow >= direct * 0.85 ? pitchLow : pitchHigh;
+    const flat = pitchLow >= direct * 0.85 ? pitchLow : pitchHigh;
+    return Math.min(flat, MAX_AIM_PITCH_RAD);
   }
   const lowBlocked = arcHitsObstacle(muzzle, yaw, pitchLow, speed, obstacles, target);
   const highBlocked = arcHitsObstacle(muzzle, yaw, pitchHigh, speed, obstacles, target);
-  if (lowBlocked && !highBlocked) return pitchHigh;
+  if (lowBlocked && !highBlocked) return Math.min(pitchHigh, MAX_AIM_PITCH_RAD);
   if (!lowBlocked && highBlocked) return pitchLow;
-  if (lowBlocked && highBlocked) return pitchHigh;
-  return pitchLow >= direct * 0.85 ? pitchLow : pitchHigh;
+  // Oba zablokowane — płaski kąt zamiast „mortyru” w górę.
+  if (lowBlocked && highBlocked) return pitchLow;
+  const chosen = pitchLow >= direct * 0.85 ? pitchLow : pitchHigh;
+  return Math.min(chosen, MAX_AIM_PITCH_RAD);
+}
+
+export const MAX_AIM_PITCH_RAD = (56 * Math.PI) / 180;
+export const MIN_AIM_PITCH_RAD = (5 * Math.PI) / 180;
+
+export function clampBallisticTarget(target: THREE.Vector3, muzzle: THREE.Vector3): THREE.Vector3 {
+  const dx = target.x - muzzle.x;
+  const dz = target.z - muzzle.z;
+  let dh = Math.hypot(dx, dz);
+  if (dh < 2) {
+    const push = 2 / Math.max(dh, 0.05);
+    target.x = muzzle.x + dx * push;
+    target.z = muzzle.z + dz * push;
+    dh = 2;
+  }
+  const dy = target.y - muzzle.y;
+  if (dy > dh * 1.1) {
+    target.y = muzzle.y + dh * 0.75;
+  }
+  return target;
+}
+
+/** Korekta współrzędnych dotyku — dolna strefa (armata) mapowana na pole celu. */
+export function sanitizeAimClientCoords(
+  clientX: number,
+  clientY: number,
+  host: HTMLElement,
+): { x: number; y: number } {
+  const rect = host.getBoundingClientRect();
+  if (rect.width <= 0 || rect.height <= 0) return { x: clientX, y: clientY };
+  const relY = (clientY - rect.top) / rect.height;
+  if (relY > 0.68) {
+    return {
+      x: rect.left + rect.width * 0.5,
+      y: rect.top + rect.height * 0.38,
+    };
+  }
+  return { x: clientX, y: clientY };
 }
 
 export function shotImpulse(power: number): number {
@@ -280,6 +321,7 @@ export function aimCannonBallistic(
   obstacles: THREE.Box3[] = [],
 ): boolean {
   const muzzle = restMuzzleWorld(cannonRoot);
+  clampBallisticTarget(target, muzzle);
   const dx = target.x - muzzle.x;
   const dy = target.y - muzzle.y;
   const dz = target.z - muzzle.z;
@@ -294,7 +336,7 @@ export function aimCannonBallistic(
 
   let pitchWorld: number;
   if (disc < 0) {
-    pitchWorld = Math.atan2(dy + 1.2, dh);
+    pitchWorld = Math.atan2(Math.max(dy, 0), dh);
   } else {
     const sqrtDisc = Math.sqrt(disc);
     const pitchLow = Math.atan((v2 - sqrtDisc) / (g * dh));
@@ -312,7 +354,7 @@ export function aimCannonBallistic(
     );
   }
 
-  pitchWorld = THREE.MathUtils.clamp(pitchWorld, (4 * Math.PI) / 180, (72 * Math.PI) / 180);
+  pitchWorld = THREE.MathUtils.clamp(pitchWorld, MIN_AIM_PITCH_RAD, MAX_AIM_PITCH_RAD);
   const yaw = THREE.MathUtils.clamp(yawWorld, (-42 * Math.PI) / 180, (42 * Math.PI) / 180);
 
   applyCannonAim(cannonRoot, pitchWorld, yaw);
@@ -450,13 +492,20 @@ export function applyCannonAim(cannonRoot: THREE.Object3D, pitchRad: number, yaw
 }
 
 function setCannonMeshOpacity(mesh: THREE.Object3D | null, opacity: number): void {
-  if (!mesh || !(mesh as THREE.Mesh).isMesh) return;
-  const mat = (mesh as THREE.Mesh).material as THREE.MeshStandardMaterial;
-  const isTransparent = opacity < 0.995;
-  mat.opacity = opacity;
-  mat.transparent = isTransparent;
-  mat.depthWrite = !isTransparent;
-  mat.needsUpdate = true;
+  if (!mesh) return;
+  mesh.traverse((child) => {
+    if (!(child as THREE.Mesh).isMesh) return;
+    const m = child as THREE.Mesh;
+    const materials = Array.isArray(m.material) ? m.material : [m.material];
+    for (const mat of materials) {
+      if (!(mat instanceof THREE.MeshStandardMaterial)) continue;
+      const isTransparent = opacity < 0.995;
+      mat.opacity = opacity;
+      mat.transparent = isTransparent;
+      mat.depthWrite = !isTransparent;
+      mat.needsUpdate = true;
+    }
+  });
 }
 
 /** Półprzezroczysta podstawa/lufa tylko gdy obręcz jest ukryta (ten sam próg pitch). */
@@ -479,6 +528,12 @@ export function applyCannonVisualForPitch(cannonRoot: THREE.Object3D): void {
   if (muzzle) {
     muzzle.visible = !hideMuzzle;
     if (!hideMuzzle) setCannonMeshOpacity(muzzle, 1);
+  }
+
+  const wheels = ['wheel-l', 'wheel-r'];
+  for (const id of wheels) {
+    const w = cannonRoot.getObjectByName(id);
+    if (w) setCannonMeshOpacity(w, opacity);
   }
 }
 

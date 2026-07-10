@@ -1,9 +1,11 @@
 import { useHudStore } from './hud-store.js';
 import { levelByIndex, levelCount, chapterCount } from '../levels/index.js';
 import { countKeystones } from '../levels/normalize.js';
-import { shouldShowAimHint } from '../meta/profile.js';
+import { POWERUP_DEFS } from '../game/powerups.js';
+import { POWERUP_COST } from '../meta/economy.js';
+import { buyPowerup, saveProfile, shouldShowAimHint } from '../meta/profile.js';
 import { getWeeklyLeaderboard } from '../meta/leaderboard.js';
-import type { GamePhase } from '../core/types.js';
+import type { GamePhase, PowerupType } from '../core/types.js';
 import { HelpDialog } from './help-dialog.js';
 
 interface HudProps {
@@ -26,7 +28,15 @@ export function Hud({
 }: HudProps): JSX.Element {
   const snap = useHudStore((s) => s.snapshot);
   const profile = useHudStore((s) => s.profile);
+  const setProfile = useHudStore((s) => s.setProfile);
   const showAimHint = phase === 'aiming' && shouldShowAimHint(profile);
+
+  const buyPowerupItem = (type: PowerupType): void => {
+    const next = buyPowerup(profile, type);
+    if (!next) return;
+    saveProfile(next);
+    setProfile(next);
+  };
 
   const helpOverlay = helpOpen ? <HelpDialog onClose={onCloseHelp} /> : null;
   const weekly = getWeeklyLeaderboard(profile.levels[snap.levelId]?.bestScore ?? snap.runScore);
@@ -59,6 +69,36 @@ export function Hud({
             </h1>
             <p className="mt-1 text-center text-xs text-white/60">Oblężenie zamku — traf kluczowy moduł</p>
             <p className="mt-1 text-center text-xs text-amber-200/80">🪙 {profile.coins} monet</p>
+
+            <div className="mt-3 rounded-lg border border-white/10 bg-black/25 p-2">
+              <p className="mb-2 text-center text-[11px] font-semibold uppercase tracking-wide text-amber-200/90">
+                Sklep power-upów
+              </p>
+              <div className="flex flex-wrap justify-center gap-2">
+                {POWERUP_DEFS.map((p) => {
+                  const owned = profile.powerups[p.id] ?? 0;
+                  const cost = POWERUP_COST[p.id];
+                  const canBuy = profile.coins >= cost;
+                  return (
+                    <button
+                      key={p.id}
+                      type="button"
+                      disabled={!canBuy}
+                      className="btn-secondary min-h-11 px-2 text-xs disabled:opacity-35"
+                      onClick={() => buyPowerupItem(p.id)}
+                      title={p.description}
+                    >
+                      <span className="block text-base">{p.icon}</span>
+                      <span className="block text-[10px] text-white/55">masz {owned}</span>
+                      <span className="block text-[10px] text-amber-200">🪙 {cost}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="mt-2 text-center text-[10px] text-white/45">
+                Wygrana z 2★ lub 3★ też daje losowy power-up
+              </p>
+            </div>
 
             <div className="mt-3 flex-1 overflow-y-auto">
               {Array.from({ length: chapterCount() }, (_, ch) => ch + 1).map((chapter) => (

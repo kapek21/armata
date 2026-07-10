@@ -1,6 +1,7 @@
 import { useHudStore } from './hud-store.js';
 import type { GamePhase } from '../core/types.js';
 import { POWERUP_DEFS } from '../game/powerups.js';
+import { POWERUP_COST } from '../meta/economy.js';
 import { shouldShowAimHint } from '../meta/profile.js';
 
 interface GameChromeTopProps {
@@ -106,6 +107,10 @@ export function GameChromeBottom({
   const showBonusShot = phase === 'lost' && !profile.adsRemoved;
   const showRetry = phase === 'won' || phase === 'lost';
   const showNext = phase === 'won' && snap.levelIndex + 1 < snap.levelCount;
+  const totalPowerups =
+    (profile.powerups.heavy ?? 0) +
+    (profile.powerups.explosive ?? 0) +
+    (profile.powerups.trajectory ?? 0);
 
   return (
     <footer className="game-chrome-bottom shrink-0 px-2 pb-2 safe-bottom">
@@ -127,15 +132,27 @@ export function GameChromeBottom({
               key={p.id}
               type="button"
               disabled={phase !== 'aiming' && phase !== 'simulating' || count <= 0}
-              className={`btn-secondary min-h-11 px-2 text-xs ${active ? 'ring-2 ring-amber-400' : ''} disabled:opacity-35`}
+              className={`btn-secondary flex min-h-11 min-w-[4.5rem] flex-col items-center justify-center px-2 py-1 text-xs ${
+                active ? 'ring-2 ring-amber-400' : ''
+              } ${count <= 0 ? 'opacity-40' : ''}`}
               onClick={() => onSelectPowerup(p.id)}
-              title={p.description}
+              title={
+                count > 0
+                  ? p.description
+                  : `${p.description} — kup w menu za ${POWERUP_COST[p.id]} monet`
+              }
             >
-              {p.icon} {count}
+              <span className="text-base leading-none">{p.icon}</span>
+              <span className="mt-0.5 text-[10px] tabular-nums">{count}</span>
             </button>
           );
         })}
       </div>
+      {totalPowerups <= 0 && phase !== 'menu' && (
+        <p className="mt-1 text-center text-[10px] text-amber-200/70">
+          Brak power-upów — wygraj z 2★ lub kup w menu
+        </p>
+      )}
 
       <div className="mt-2 flex min-h-[6.75rem] flex-wrap content-center items-center justify-center gap-2">
         <button type="button" className="btn-secondary min-h-11" onClick={onMenu}>

@@ -9,12 +9,14 @@ import type {
   PowerupType,
   QualityTier,
 } from '../core/types.js';
-import { MATERIALS, CANNON_COLOR, BALL_COLOR } from '../physics/materials.js';
+import { createCannonMesh, disposeCannonMaterials } from './cannon-renderer.js';
+import { MATERIALS, BALL_COLOR } from '../physics/materials.js';
 import { pixelRatioForTier } from '../platform/quality-tier.js';
 import {
   addCoins,
   applyLevelLoss,
   applyLevelWin,
+  applyWinPowerupRewards,
   consumeAimHint,
   consumePowerup,
   loadProfile,
@@ -39,6 +41,7 @@ import {
   EXPLOSIVE_IMPULSE,
   EXPLOSIVE_RADIUS,
   IMPULSE_HEAVY_MULT,
+  powerupLabel,
 } from './powerups.js';
 import {
   aimArcColorFromPower,
@@ -52,6 +55,7 @@ import {
   pickAimTarget,
   powerFromDrag,
   resetCannonAim,
+  sanitizeAimClientCoords,
   shotImpulse,
   simulateBallisticArc,
   updateGameplayCameraAspect,
@@ -77,8 +81,8 @@ const POST_BALL_FORCE_MS = 2000;
 const BALL_STILL_MS = 200;
 const BALL_STILL_SPEED = 0.1;
 const BALL_MAX_AGE_MS = 4000;
-const MIN_DRAG_PX = 24;
-const MAX_DRAG_PX = 140;
+const MIN_DRAG_PX = 18;
+const MAX_DRAG_PX = 160;
 
 const _hitClosest = new THREE.Vector3();
 
@@ -169,50 +173,13 @@ export class GameSession {
     this.loadLevel(0);
     this.resize();
     this.attachInput();
+    useHudStore.getState().reloadProfile();
     useHudStore.getState().setSnapshot({ phase: 'aiming', ready: true });
     this.phase = 'aiming';
   }
 
   private buildCannon(): void {
-    this.cannonMesh = new THREE.Group();
-    this.cannonMesh.name = 'cannon-root';
-
-    const base = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.88, 1.05, 0.58, 14),
-      new THREE.MeshStandardMaterial({ color: CANNON_COLOR, roughness: 0.75 }),
-    );
-    base.name = 'cannon-base';
-    base.position.y = 0.26;
-    base.castShadow = this.tier === 'high';
-
-    const yawMount = new THREE.Group();
-    yawMount.name = 'yaw-pivot';
-    yawMount.position.y = 0.48;
-
-    const pitchPivot = new THREE.Group();
-    pitchPivot.name = 'pitch-pivot';
-
-    const barrel = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.18, 0.24, 1.6, 12),
-      new THREE.MeshStandardMaterial({ color: 0x2a2a2a, roughness: 0.55, metalness: 0.35 }),
-    );
-    barrel.name = 'cannon-barrel';
-    barrel.rotation.x = Math.PI / 2;
-    barrel.position.set(0, 0, -0.82);
-    barrel.castShadow = this.tier === 'high';
-
-    const muzzleRing = new THREE.Mesh(
-      new THREE.TorusGeometry(0.21, 0.045, 8, 16),
-      new THREE.MeshStandardMaterial({ color: 0x555555, metalness: 0.5 }),
-    );
-    muzzleRing.name = 'cannon-muzzle';
-    muzzleRing.rotation.x = Math.PI / 2;
-    // Wyrównane z końcem lufy (−0.82 − 1.6/2); balistyka nadal używa z = −1.58.
-    muzzleRing.position.set(0, 0, -1.62);
-
-    pitchPivot.add(barrel, muzzleRing);
-    yawMount.add(pitchPivot);
-    this.cannonMesh.add(base, yawMount);
+    this.cannonMesh = createCannonMesh(this.tier);
     this.scene.add(this.cannonMesh);
   }
 
@@ -267,6 +234,7 @@ export class GameSession {
 
     this.applyCameraFrame();
     resetCannonAim(this.cannonMesh, this.level);
+    useHudStore.getState().reloadProfile();
     this.syncHud('');
   }
 
@@ -391,10 +359,17 @@ export class GameSession {
     this.syncHud('Dodatkowy strzał!');
   }
 
-  private currentDragPower(): number {
+  private aimObstaclesForBallistic(): THREE.Box3[] {
+    if (this.activePowerup !== 'trajectory') return [];
+    return this.aimObstacleBoxes();
+  }
+
+  private previewDragPower(): number {
     const dx = this.aim.originX - this.aim.currentX;
     const dy = this.aim.originY - this.aim.currentY;
-    return Math.max(0.3, powerFromDrag(Math.hypot(dx, dy), MAX_DRAG_PX));
+    const len = Math.hypot(dx, dy);
+    if (len < MIN_DRAG_PX) return 0.62;
+    return Math.max(0.38, powerFromDrag(len, MAX_DRAG_PX));
   }
 
   private aimObstacleBoxes(): THREE.Box3[] {
@@ -417,14 +392,15 @@ export class GameSession {
     box.getCenter(this.aimWorldTarget);
   }
 
-  private applyBallisticAim(power = this.currentDragPower()): void {
+  private applyBallisticAim(power = this.previewDragPower()): void {
     if (!this.aimWorldTarget) return;
     this.refreshAimTargetPoint();
-    aimCannonBallistic(this.cannonMesh, this.aimWorldTarget, power, this.aimObstacleBoxes());
+    aimCannonBallistic(this.cannonMesh, this.aimWorldTarget, power, this.aimObstaclesForBallistic());
   }
 
   private lockAimTarget(clientX: number, clientY: number): void {
-    const pick = pickAimTarget(this.camera, clientX, clientY, this.host, this.aimMeshes());
+    const pickCoords = sanitizeAimClientCoords(clientX, clientY, this.host);
+    const pick = pickAimTarget(this.camera, pickCoords.x, pickCoords.y, this.host, this.aimMeshes());
     if (pick) {
       this.aimWorldTarget = pick.point;
       this.aimTargetMesh = pick.mesh;
@@ -507,7 +483,7 @@ export class GameSession {
     if (len >= MIN_DRAG_PX && this.aimWorldTarget && this.canFireNow()) {
       const power = powerFromDrag(len, MAX_DRAG_PX);
       this.refreshAimTargetPoint();
-      aimCannonBallistic(this.cannonMesh, this.aimWorldTarget, power, this.aimObstacleBoxes());
+      aimCannonBallistic(this.cannonMesh, this.aimWorldTarget, power, this.aimObstaclesForBallistic());
       this.fireShot(power);
     }
     this.aimWorldTarget = null;
@@ -856,11 +832,16 @@ export class GameSession {
       finalScore,
     );
     profile = addCoins(profile, coinsForWin(stars, finalScore));
-    profile = unlockNextLevel(profile, this.levelIndex, levelCount());
+    const { profile: withPowerups, rewards } = applyWinPowerupRewards(profile, stars);
+    profile = unlockNextLevel(withPowerups, this.levelIndex, levelCount());
     saveProfile(profile);
     saveWeeklyBest(finalScore);
     useHudStore.getState().reloadProfile();
-    this.syncHud('Zamek zdobyty!');
+    const rewardNote =
+      rewards.length > 0
+        ? ` +${rewards.map((r) => powerupLabel(r)).join(', ')}`
+        : '';
+    this.syncHud(`Zamek zdobyty!${rewardNote}`);
   }
 
   private handleLose(reason = 'Porażka'): void {
@@ -952,6 +933,7 @@ export class GameSession {
     this.detachInput();
     this.clearLevel();
     this.removeBall();
+    disposeCannonMaterials();
     this.renderer.dispose();
     this.renderer.domElement.remove();
     this.world.free();

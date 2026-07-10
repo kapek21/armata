@@ -1,7 +1,14 @@
 const KEY = 'armata-profile-v2';
 
 import type { PowerupType } from '../core/types.js';
-import { defaultEconomy } from './economy.js';
+import {
+  defaultEconomy,
+  EMPTY_INVENTORY_REFILL,
+  POWERUP_COST,
+  powerupRewardsForWin,
+  powerupTotal,
+  STARTER_POWERUPS,
+} from './economy.js';
 
 export const AIM_HINT_SHOTS = 3;
 
@@ -29,10 +36,32 @@ function defaultProfile(): Profile {
     levels: {},
     aimHintsRemaining: AIM_HINT_SHOTS,
     coins: eco.coins,
-    powerups: { ...eco.powerups },
+    powerups: { ...STARTER_POWERUPS },
     adsRemoved: false,
     winStreak: 0,
   };
+}
+
+function normalizePowerups(
+  raw: Partial<Record<PowerupType, number>> | undefined,
+  playedBefore: boolean,
+): Record<PowerupType, number> {
+  const types: PowerupType[] = ['heavy', 'explosive', 'trajectory'];
+  const fallback = playedBefore ? EMPTY_INVENTORY_REFILL : STARTER_POWERUPS;
+  const out = {} as Record<PowerupType, number>;
+
+  for (const type of types) {
+    const value = raw?.[type];
+    out[type] =
+      typeof value === 'number' && Number.isFinite(value)
+        ? Math.max(0, Math.floor(value))
+        : fallback[type];
+  }
+
+  if (powerupTotal(out) === 0) {
+    return { ...fallback };
+  }
+  return out;
 }
 
 export function loadProfile(): Profile {
@@ -43,16 +72,21 @@ export function loadProfile(): Profile {
     const levels = parsed.levels ?? {};
     const playedBefore = Object.keys(levels).length > 0;
     const eco = defaultEconomy();
-    return {
+    const powerups = normalizePowerups(parsed.powerups, playedBefore);
+    const profile: Profile = {
       unlockedLevels: Math.max(1, parsed.unlockedLevels ?? 1),
       levels: migrateLevelResults(levels),
       aimHintsRemaining:
         parsed.aimHintsRemaining ?? (playedBefore ? 0 : AIM_HINT_SHOTS),
-      coins: parsed.coins ?? eco.coins,
-      powerups: { ...eco.powerups, ...parsed.powerups },
+      coins: typeof parsed.coins === 'number' ? Math.max(0, parsed.coins) : eco.coins,
+      powerups,
       adsRemoved: parsed.adsRemoved ?? false,
       winStreak: parsed.winStreak ?? 0,
     };
+    if (parsed.powerups && powerupTotal(parsed.powerups) === 0 && powerupTotal(powerups) > 0) {
+      saveProfile(profile);
+    }
+    return profile;
   } catch {
     return defaultProfile();
   }
@@ -149,4 +183,32 @@ export function addCoins(profile: Profile, amount: number): Profile {
 export function spendCoins(profile: Profile, amount: number): Profile | null {
   if (profile.coins < amount) return null;
   return { ...profile, coins: profile.coins - amount };
+}
+
+export function grantPowerup(profile: Profile, type: PowerupType, amount = 1): Profile {
+  return {
+    ...profile,
+    powerups: {
+      ...profile.powerups,
+      [type]: (profile.powerups[type] ?? 0) + amount,
+    },
+  };
+}
+
+export function applyWinPowerupRewards(
+  profile: Profile,
+  stars: number,
+): { profile: Profile; rewards: PowerupType[] } {
+  const rewards = powerupRewardsForWin(stars);
+  let next = profile;
+  for (const type of rewards) {
+    next = grantPowerup(next, type);
+  }
+  return { profile: next, rewards };
+}
+
+export function buyPowerup(profile: Profile, type: PowerupType): Profile | null {
+  const spent = spendCoins(profile, POWERUP_COST[type]);
+  if (!spent) return null;
+  return grantPowerup(spent, type);
 }

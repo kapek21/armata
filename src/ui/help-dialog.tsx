@@ -63,7 +63,10 @@ export function HelpDialog({ onClose }: HelpDialogProps): JSX.Element {
               <li>💥 Wybuch — fala przy trafieniu</li>
               <li>🎯 Celownik — pełna trajektoria</li>
             </ul>
-            <p className="mt-1 text-xs text-white/50">Masz: ciężki {profile.powerups.heavy}, wybuch {profile.powerups.explosive}, celownik {profile.powerups.trajectory}</p>
+            <p className="mt-1 text-xs text-white/50">
+              Masz: ciężki {profile.powerups.heavy}, wybuch {profile.powerups.explosive}, celownik{' '}
+              {profile.powerups.trajectory}. Kup więcej w menu (🪙) lub zdobywaj za 2★+.
+            </p>
           </section>
           <section>
             <h3 className="font-semibold text-amber-200">Materiały zamku</h3>

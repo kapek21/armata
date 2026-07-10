@@ -35,6 +35,7 @@ interface HudStore {
   profile: ReturnType<typeof loadProfile>;
   helpOpen: boolean;
   setSnapshot: (patch: Partial<HudSnapshot>) => void;
+  setProfile: (profile: ReturnType<typeof loadProfile>) => void;
   reloadProfile: () => void;
   setHelpOpen: (open: boolean) => void;
 }
@@ -44,6 +45,7 @@ export const useHudStore = create<HudStore>((set) => ({
   profile: loadProfile(),
   helpOpen: false,
   setSnapshot: (patch) => set((s) => ({ snapshot: { ...s.snapshot, ...patch } })),
+  setProfile: (profile) => set({ profile }),
   reloadProfile: () => set({ profile: loadProfile() }),
   setHelpOpen: (open) => set({ helpOpen: open }),
 }));
