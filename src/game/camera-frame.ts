@@ -306,9 +306,9 @@ export function ballisticPowerForTarget(
   const dh = Math.hypot(dx, dz);
   if (dh < 0.12) return Math.max(power, 0.78);
   const elevation = (target.y - muzzle.y) / dh;
-  if (elevation > 0.65) return Math.max(power, 0.9);
-  if (elevation > 0.4) return Math.max(power, 0.78);
-  if (elevation > 0.25) return Math.max(power, 0.68);
+  if (elevation > 0.65) return Math.max(power, 0.82);
+  if (elevation > 0.4) return Math.max(power, 0.62);
+  if (elevation > 0.25) return Math.max(power, 0.5);
   return power;
 }
 
@@ -546,8 +546,8 @@ export function applyCannonVisualForPitch(cannonRoot: THREE.Object3D): void {
   if (!pitchPivot) return;
 
   const pitch = Math.max(0, pitchPivot.rotation.x);
-  const muzzleHiddenAt = (28 * Math.PI) / 180;
-  const fadeEnd = (52 * Math.PI) / 180;
+  const muzzleHiddenAt = (36 * Math.PI) / 180;
+  const fadeEnd = (56 * Math.PI) / 180;
   const hideMuzzle = pitch >= muzzleHiddenAt;
   const fadeT = hideMuzzle ? THREE.MathUtils.smoothstep(pitch, muzzleHiddenAt, fadeEnd) : 0;
   // Gdy obręcz znika, armata od razu półprzezroczysta (wcześniej fade startował od 100%).

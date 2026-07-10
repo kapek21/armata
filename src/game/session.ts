@@ -312,7 +312,8 @@ export class GameSession {
     const dy = this.aim.originY - this.aim.currentY;
     const len = Math.hypot(dx, dy);
     if (len < 10) return 0.28;
-    const loft = THREE.MathUtils.clamp(-dy / len, -1, 1);
+    // Palec w górę = wyższy łuk; w dół = płaska balistyka (siła z długości przeciągnięcia).
+    const loft = THREE.MathUtils.clamp(dy / len, -1, 1);
     return THREE.MathUtils.clamp(0.28 + loft * 0.42, 0, 1);
   }
 
