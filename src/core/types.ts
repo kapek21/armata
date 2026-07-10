@@ -11,7 +11,7 @@ export type CastleModuleType =
 
 export type ModuleImportance = 'critical' | 'structural' | 'decorative';
 
-export type PowerupType = 'heavy' | 'explosive' | 'trajectory';
+export type PowerupType = 'heavy' | 'explosive' | 'trajectory' | 'breach';
 
 export interface Vec3 {
   x: number;

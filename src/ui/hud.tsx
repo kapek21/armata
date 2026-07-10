@@ -123,8 +123,8 @@ export function Hud({
                             >
                               <span>{i + 1}. {lvl.name}</span>
                               {countKeystones(lvl) > 1 && (
-                                <span className="ml-1 text-[10px] text-red-300">
-                                  🔴×{countKeystones(lvl)}
+                                <span className="ml-1 text-[10px] text-amber-300">
+                                  🛡×{countKeystones(lvl)}
                                 </span>
                               )}
                               {locked ? (
@@ -198,7 +198,7 @@ export function Hud({
 
       {showAimHint && (
         <p className="pointer-events-none absolute inset-x-0 bottom-[5.5rem] z-10 text-center text-[10px] text-white/45 safe-bottom">
-          Traf czerwony moduł kluczowy zamku wroga
+          Traf złotą tarczę — kluczowy moduł zamku wroga
         </p>
       )}
 

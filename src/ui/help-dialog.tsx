@@ -35,17 +35,15 @@ export function HelpDialog({ onClose }: HelpDialogProps): JSX.Element {
           <section>
             <h3 className="font-semibold text-amber-200">Cel</h3>
             <p className="mt-1 text-white/70">
-              Zniszcz <span className="text-red-300">wszystkie czerwone moduły kluczowe</span> w zamku
-              wroga, zanim skończy się <strong>czas</strong> lub <strong>amunicja</strong>. Od poziomu
-              10 celów może być kilka — licznik <span className="text-red-300">Klucze X/Y</span> w
-              górnej belce.
+              Zniszcz moduły ze <span className="text-amber-300">złotą tarczą</span> — to kluczowe
+              cele oblężenia. Jeden zegar kampanii obowiązuje na wszystkie poziomy.
             </p>
           </section>
           <section>
             <h3 className="font-semibold text-amber-200">Strzał</h3>
             <ol className="mt-1 list-decimal space-y-1 pl-4 text-white/70">
               <li>Dotknij modułu zamku wroga.</li>
-              <li>Odsuń palec — dłuższe przeciągnięcie = mocniejszy strzał.</li>
+              <li>Odsuń palec — w górę = wyższy łuk nad murami; w bok = siła strzału.</li>
               <li>Puść, aby wystrzelić kulę.</li>
             </ol>
           </section>
@@ -61,11 +59,13 @@ export function HelpDialog({ onClose }: HelpDialogProps): JSX.Element {
             <ul className="mt-1 space-y-1 text-white/70">
               <li>⚓ Ciężki — większa siła uderzenia</li>
               <li>💥 Wybuch — fala przy trafieniu</li>
-              <li>🎯 Celownik — pełna trajektoria</li>
+              <li>🎯 Celownik — trajektoria z omijaniem klocków</li>
+              <li>🔨 Wyłom — niszczy statyczne mury i wieże</li>
             </ul>
             <p className="mt-1 text-xs text-white/50">
               Masz: ciężki {profile.powerups.heavy}, wybuch {profile.powerups.explosive}, celownik{' '}
-              {profile.powerups.trajectory}. Kup więcej w menu (🪙) lub zdobywaj za 2★+.
+              {profile.powerups.trajectory}, wyłom {profile.powerups.breach ?? 0}. Kup w menu (🪙) lub
+              zdobywaj za 2★+.
             </p>
           </section>
           <section>

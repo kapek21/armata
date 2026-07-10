@@ -150,6 +150,97 @@ function makeMetalTexture(size = 128): THREE.CanvasTexture {
   return tex;
 }
 
+function makeGoldTexture(size = 128): THREE.CanvasTexture {
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d')!;
+  const base = ctx.createLinearGradient(0, 0, size, size);
+  base.addColorStop(0, '#fff2b8');
+  base.addColorStop(0.35, '#e8b830');
+  base.addColorStop(0.7, '#c88a18');
+  base.addColorStop(1, '#ffe08a');
+  ctx.fillStyle = base;
+  ctx.fillRect(0, 0, size, size);
+
+  for (let i = 0; i < 28; i++) {
+    const y = (i / 28) * size;
+    ctx.fillStyle = `rgba(255, 240, 180, ${0.08 + (i % 3) * 0.04})`;
+    ctx.fillRect(0, y, size, 2 + (i % 2));
+  }
+  for (let i = 0; i < 40; i++) {
+    const x = Math.random() * size;
+    const y = Math.random() * size;
+    ctx.fillStyle = `rgba(255, 255, 220, ${0.05 + Math.random() * 0.12})`;
+    ctx.fillRect(x, y, 1 + Math.random() * 3, 1);
+  }
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  return tex;
+}
+
+/** Herbowa złota tarcza — emblemat kluczowego modułu. */
+export function makeShieldEmblemTexture(size = 256): THREE.CanvasTexture {
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d')!;
+  ctx.clearRect(0, 0, size, size);
+
+  const cx = size / 2;
+  const top = size * 0.1;
+  const bottom = size * 0.9;
+  const shoulderY = size * 0.38;
+  const width = size * 0.42;
+
+  ctx.beginPath();
+  ctx.moveTo(cx, top);
+  ctx.lineTo(cx + width, shoulderY);
+  ctx.lineTo(cx + width * 0.88, bottom);
+  ctx.lineTo(cx - width * 0.88, bottom);
+  ctx.lineTo(cx - width, shoulderY);
+  ctx.closePath();
+
+  const shieldGrad = ctx.createLinearGradient(cx, top, cx, bottom);
+  shieldGrad.addColorStop(0, '#fff6c8');
+  shieldGrad.addColorStop(0.25, '#f0c838');
+  shieldGrad.addColorStop(0.55, '#d4a020');
+  shieldGrad.addColorStop(1, '#9a7018');
+  ctx.fillStyle = shieldGrad;
+  ctx.fill();
+
+  ctx.strokeStyle = '#fff8d0';
+  ctx.lineWidth = size * 0.028;
+  ctx.stroke();
+  ctx.strokeStyle = '#6a5010';
+  ctx.lineWidth = size * 0.012;
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(cx, top + size * 0.08);
+  ctx.lineTo(cx, bottom - size * 0.12);
+  ctx.moveTo(cx - width * 0.55, size * 0.52);
+  ctx.lineTo(cx + width * 0.55, size * 0.52);
+  ctx.strokeStyle = 'rgba(90, 55, 8, 0.55)';
+  ctx.lineWidth = size * 0.04;
+  ctx.stroke();
+
+  const bossR = size * 0.11;
+  const boss = ctx.createRadialGradient(cx, size * 0.5, 0, cx, size * 0.5, bossR);
+  boss.addColorStop(0, '#fffce8');
+  boss.addColorStop(0.45, '#f5d060');
+  boss.addColorStop(1, '#a87818');
+  ctx.fillStyle = boss;
+  ctx.beginPath();
+  ctx.arc(cx, size * 0.5, bossR, 0, Math.PI * 2);
+  ctx.fill();
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
+  return tex;
+}
+
 function makeGroundTexture(size = 128): THREE.CanvasTexture {
   const canvas = document.createElement('canvas');
   canvas.width = size;
@@ -173,6 +264,8 @@ export interface CastleMaterials {
   glass: THREE.MeshStandardMaterial;
   ground: THREE.MeshStandardMaterial;
   keystone: THREE.MeshStandardMaterial;
+  keystoneGold: THREE.MeshStandardMaterial;
+  keystoneShield: THREE.MeshStandardMaterial;
 }
 
 export function createCastleMaterials(tier: QualityTier): CastleMaterials {
@@ -181,7 +274,18 @@ export function createCastleMaterials(tier: QualityTier): CastleMaterials {
   const woodTex = makeWoodTexture(texSize);
   const glassTex = makeGlassTexture(texSize);
   const metalTex = makeMetalTexture(texSize);
+  const goldTex = makeGoldTexture(texSize);
+  const shieldTex = makeShieldEmblemTexture(texSize === 64 ? 128 : 256);
   const groundTex = makeGroundTexture(texSize);
+
+  const keystoneGold = new THREE.MeshStandardMaterial({
+    map: goldTex,
+    color: 0xffe070,
+    emissive: 0x9a6800,
+    emissiveIntensity: 0.52,
+    roughness: 0.2,
+    metalness: 0.94,
+  });
 
   return {
     stone: new THREE.MeshStandardMaterial({
@@ -216,12 +320,18 @@ export function createCastleMaterials(tier: QualityTier): CastleMaterials {
       roughness: 0.96,
       metalness: 0,
     }),
-    keystone: new THREE.MeshStandardMaterial({
-      color: 0xff1a38,
-      emissive: 0x880020,
-      emissiveIntensity: 0.65,
-      roughness: 0.35,
-      metalness: 0.35,
+    keystone: keystoneGold,
+    keystoneGold,
+    keystoneShield: new THREE.MeshStandardMaterial({
+      map: shieldTex,
+      color: 0xffffff,
+      emissive: 0xaa7700,
+      emissiveIntensity: 0.62,
+      roughness: 0.18,
+      metalness: 0.88,
+      transparent: true,
+      alphaTest: 0.08,
+      side: THREE.DoubleSide,
     }),
   };
 }
@@ -266,5 +376,5 @@ export function setupCastleScene(
 }
 
 export function pulseKeystoneMaterial(mat: THREE.MeshStandardMaterial, t: number): void {
-  mat.emissiveIntensity = 0.38 + Math.sin(t * 4) * 0.18;
+  mat.emissiveIntensity = 0.5 + Math.sin(t * 4) * 0.3;
 }

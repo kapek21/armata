@@ -5,6 +5,7 @@ import {
   defaultEconomy,
   EMPTY_INVENTORY_REFILL,
   POWERUP_COST,
+  POWERUP_TYPES,
   powerupRewardsForWin,
   powerupTotal,
   STARTER_POWERUPS,
@@ -27,6 +28,10 @@ export interface Profile {
   powerups: Record<PowerupType, number>;
   adsRemoved: boolean;
   winStreak: number;
+  /** Pozostały czas kampanii (jeden zegar na wszystkie poziomy). */
+  campaignTimeLeftSec?: number;
+  /** Indeks poziomu, od którego liczony jest bieżący bieg kampanii. */
+  campaignAnchorLevel?: number;
 }
 
 function defaultProfile(): Profile {
@@ -46,7 +51,7 @@ function normalizePowerups(
   raw: Partial<Record<PowerupType, number>> | undefined,
   playedBefore: boolean,
 ): Record<PowerupType, number> {
-  const types: PowerupType[] = ['heavy', 'explosive', 'trajectory'];
+  const types: PowerupType[] = POWERUP_TYPES;
   const fallback = playedBefore ? EMPTY_INVENTORY_REFILL : STARTER_POWERUPS;
   const out = {} as Record<PowerupType, number>;
 
@@ -82,6 +87,8 @@ export function loadProfile(): Profile {
       powerups,
       adsRemoved: parsed.adsRemoved ?? false,
       winStreak: parsed.winStreak ?? 0,
+      campaignTimeLeftSec: parsed.campaignTimeLeftSec,
+      campaignAnchorLevel: parsed.campaignAnchorLevel,
     };
     if (parsed.powerups && powerupTotal(parsed.powerups) === 0 && powerupTotal(powerups) > 0) {
       saveProfile(profile);
@@ -211,4 +218,21 @@ export function buyPowerup(profile: Profile, type: PowerupType): Profile | null 
   const spent = spendCoins(profile, POWERUP_COST[type]);
   if (!spent) return null;
   return grantPowerup(spent, type);
+}
+
+export function saveCampaignClock(
+  profile: Profile,
+  timeLeftSec: number,
+  anchorLevel: number,
+): Profile {
+  return {
+    ...profile,
+    campaignTimeLeftSec: Math.max(0, timeLeftSec),
+    campaignAnchorLevel: anchorLevel,
+  };
+}
+
+export function clearCampaignClock(profile: Profile): Profile {
+  const { campaignTimeLeftSec: _t, campaignAnchorLevel: _a, ...rest } = profile;
+  return rest;
 }

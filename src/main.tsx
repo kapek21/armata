@@ -7,6 +7,7 @@ import { CastleFrame } from './ui/castle-frame.js';
 import { GameChromeBottom, GameChromeTop } from './ui/game-chrome.js';
 import { Hud } from './ui/hud.js';
 import { useHudStore } from './ui/hud-store.js';
+import { useSiegeMusic } from './ui/use-siege-music.js';
 import './index.css';
 
 function App(): JSX.Element {
@@ -16,6 +17,7 @@ function App(): JSX.Element {
   const phase = useHudStore((s) => s.snapshot.phase);
   const helpOpen = useHudStore((s) => s.helpOpen);
   const setHelpOpen = useHudStore((s) => s.setHelpOpen);
+  const { muted: musicMuted, toggle: toggleMusic } = useSiegeMusic();
 
   useEffect(() => {
     let cancelled = false;
@@ -56,10 +58,12 @@ function App(): JSX.Element {
 
   return (
     <div className="game-shell relative flex h-full w-full flex-col overflow-hidden">
-      <GameChromeTop phase={phase} />
+      <GameChromeTop phase={phase} musicMuted={musicMuted} onToggleMusic={toggleMusic} />
       <CastleFrame viewportRef={viewportRef} />
       <GameChromeBottom
         phase={phase}
+        musicMuted={musicMuted}
+        onToggleMusic={toggleMusic}
         onMenu={() => session?.showMenu()}
         onHelp={() => setHelpOpen(true)}
         onRetry={() => session?.retry()}

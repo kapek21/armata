@@ -1,25 +1,37 @@
 import { useHudStore } from './hud-store.js';
 import type { GamePhase } from '../core/types.js';
 import { POWERUP_DEFS } from '../game/powerups.js';
-import { POWERUP_COST } from '../meta/economy.js';
+import { POWERUP_COST, powerupTotal } from '../meta/economy.js';
+import { formatCampaignClock } from '../meta/campaign-time.js';
 import { shouldShowAimHint } from '../meta/profile.js';
 
 interface GameChromeTopProps {
   phase: GamePhase;
+  musicMuted: boolean;
+  onToggleMusic: () => void;
 }
 
-export function GameChromeTop({ phase }: GameChromeTopProps): JSX.Element {
+export function GameChromeTop({ phase, musicMuted, onToggleMusic }: GameChromeTopProps): JSX.Element {
   const snap = useHudStore((s) => s.snapshot);
   if (!snap.ready || phase === 'menu') return <></>;
 
-  const urgent = snap.timeLeftSec <= 10;
-  const warn = snap.timeLeftSec <= 25;
+  const urgent = snap.timeLeftSec <= 60;
+  const warn = snap.timeLeftSec <= 180;
   const ended = phase === 'won' || phase === 'lost';
 
   return (
     <header className="game-chrome-top shrink-0 px-2 pt-2 safe-top">
-      <div className="panel flex items-stretch justify-between gap-1 px-2 py-2 text-xs">
-        <div className="min-w-0 flex-1">
+      <div className="panel relative flex items-stretch justify-between gap-1 px-2 py-2 text-xs">
+        <button
+          type="button"
+          className="btn-secondary absolute right-1 top-1 min-h-8 min-w-8 px-0 text-sm leading-none"
+          aria-label={musicMuted ? 'Włącz muzykę oblężniczą' : 'Wycisz muzykę'}
+          title={musicMuted ? 'Muzyka wyłączona' : 'Muzyka oblężnicza'}
+          onClick={onToggleMusic}
+        >
+          {musicMuted ? '🔇' : '♫'}
+        </button>
+        <div className="min-w-0 flex-1 pr-9">
           <div className="truncate font-semibold text-amber-200">{snap.levelName}</div>
           <div className="text-white/55">
             R{snap.chapter} · {snap.levelIndex + 1}/{snap.levelCount}
@@ -30,13 +42,13 @@ export function GameChromeTop({ phase }: GameChromeTopProps): JSX.Element {
           <div className="text-lg font-bold text-amber-300">{snap.runScore}</div>
         </div>
         <div className="text-center px-2">
-          <div className="text-white/55">Czas</div>
+          <div className="text-white/55">Kampania</div>
           <div
             className={`text-lg font-bold tabular-nums ${
               urgent ? 'text-red-400 animate-pulse' : warn ? 'text-yellow-300' : 'text-emerald-300'
             }`}
           >
-            {snap.timeLeftSec}s
+            {formatCampaignClock(snap.timeLeftSec)}
           </div>
         </div>
         <div className="text-center px-2">
@@ -51,17 +63,17 @@ export function GameChromeTop({ phase }: GameChromeTopProps): JSX.Element {
         aria-hidden={ended}
       >
         <span className="text-[10px] text-white/45">
-          {snap.keystoneTotal > 1 ? 'Klucze:' : 'Klucz:'}
+          {snap.keystoneTotal > 1 ? 'Tarcze:' : 'Tarcza:'}
         </span>
-        <div className="h-2 flex-1 overflow-hidden rounded-full bg-black/40 border border-red-900/40">
+        <div className="h-2 flex-1 overflow-hidden rounded-full bg-black/40 border border-amber-900/50">
           <div
-            className="h-full bg-gradient-to-r from-red-700 to-red-400 transition-all duration-200"
+            className="h-full bg-gradient-to-r from-amber-700 to-yellow-400 transition-all duration-200"
             style={{
               width: `${snap.keystoneHpMax > 0 ? (snap.keystoneHp / snap.keystoneHpMax) * 100 : 0}%`,
             }}
           />
         </div>
-        <span className="min-w-[2.25rem] text-right text-[10px] text-red-300 tabular-nums">
+        <span className="min-w-[2.25rem] text-right text-[10px] text-amber-300 tabular-nums">
           {snap.keystoneTotal > 1
             ? `${snap.keystoneCleared}/${snap.keystoneTotal}`
             : snap.keystoneHp}
@@ -73,6 +85,8 @@ export function GameChromeTop({ phase }: GameChromeTopProps): JSX.Element {
 
 interface GameChromeBottomProps {
   phase: GamePhase;
+  musicMuted: boolean;
+  onToggleMusic: () => void;
   onMenu: () => void;
   onHelp: () => void;
   onRetry: () => void;
@@ -83,6 +97,8 @@ interface GameChromeBottomProps {
 
 export function GameChromeBottom({
   phase,
+  musicMuted,
+  onToggleMusic,
   onMenu,
   onHelp,
   onRetry,
@@ -98,19 +114,16 @@ export function GameChromeBottom({
   const aimHint =
     phase === 'aiming' && shouldShowAimHint(profile)
       ? snap.keystoneTotal > 1
-        ? 'Zniszcz wszystkie czerwone moduły kluczowe zamku'
-        : 'Traf czerwony moduł kluczowy zamku wroga'
+        ? 'Zniszcz wszystkie złote tarcze kluczowe zamku'
+        : 'Traf złotą tarczę — kluczowy moduł zamku'
       : phase === 'aiming'
-        ? 'Dotknij moduł zamku → odsuń palec → puść'
+        ? 'Dotknij moduł → odsuń w górę dla łuku → puść'
         : '';
 
   const showBonusShot = phase === 'lost' && !profile.adsRemoved;
   const showRetry = phase === 'won' || phase === 'lost';
   const showNext = phase === 'won' && snap.levelIndex + 1 < snap.levelCount;
-  const totalPowerups =
-    (profile.powerups.heavy ?? 0) +
-    (profile.powerups.explosive ?? 0) +
-    (profile.powerups.trajectory ?? 0);
+  const totalPowerups = powerupTotal(profile.powerups);
 
   return (
     <footer className="game-chrome-bottom shrink-0 px-2 pb-2 safe-bottom">
@@ -155,6 +168,14 @@ export function GameChromeBottom({
       )}
 
       <div className="mt-2 flex min-h-[6.75rem] flex-wrap content-center items-center justify-center gap-2">
+        <button
+          type="button"
+          className="btn-secondary min-h-11 min-w-11"
+          aria-label={musicMuted ? 'Włącz muzykę' : 'Wycisz muzykę'}
+          onClick={onToggleMusic}
+        >
+          {musicMuted ? '🔇' : '♫'}
+        </button>
         <button type="button" className="btn-secondary min-h-11" onClick={onMenu}>
           Menu
         </button>

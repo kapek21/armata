@@ -20,11 +20,16 @@ import {
   consumeAimHint,
   consumePowerup,
   loadProfile,
+  saveCampaignClock,
   saveProfile,
   shouldShowAimHint,
   unlockNextLevel,
 } from '../meta/profile.js';
 import { coinsForWin } from '../meta/economy.js';
+import {
+  campaignTimeBudgetFromLevel,
+  totalCampaignTimeSec,
+} from '../meta/campaign-time.js';
 import { saveWeeklyBest } from '../meta/leaderboard.js';
 import {
   ballHitDamage,
@@ -35,9 +40,11 @@ import {
 import { levelByIndex, levelCount } from '../levels/index.js';
 import { countKeystones, getKeystoneModule } from '../levels/normalize.js';
 import { useHudStore } from '../ui/hud-store.js';
-import { setupCastleScene, pulseKeystoneMaterial } from './castle-assets.js';
-import { createModuleMesh, disposeModuleVisual, getCastleMaterials, keystoneMaterialFromMesh } from './castle-renderer.js';
+import { setupCastleScene } from './castle-assets.js';
+import { pulseKeystoneAssembly } from './siege-visuals.js';
+import { createModuleMesh, disposeModuleVisual, getCastleMaterials } from './castle-renderer.js';
 import {
+  BREACH_STATIC_DAMAGE,
   EXPLOSIVE_IMPULSE,
   EXPLOSIVE_RADIUS,
   IMPULSE_HEAVY_MULT,
@@ -122,6 +129,10 @@ export class GameSession {
   private clearedTargets = new Set<string>();
   private keystoneDestroyed = false;
   private timeLeftSec = 0;
+  private campaignTimeLimitSec = 0;
+  private campaignAnchorLevel = 0;
+  private levelStartCampaignTime = 0;
+  private lastCampaignLevelIndex = -1;
   private runScore = 0;
   private keystoneHits = 0;
   private secondaryDestroyed = 0;
@@ -134,6 +145,7 @@ export class GameSession {
   private animTime = 0;
   private ballHitCooldown = new Set<string>();
   private lastExplosiveShot = false;
+  private lastBreachShot = false;
   private goalFrame!: GoalFrame;
   private viewportW = 0;
   private viewportH = 0;
@@ -204,8 +216,8 @@ export class GameSession {
     this.level = levelByIndex(index);
     this.ammoLeft = this.level.ammoLimit;
     this.shotsUsed = 0;
-    this.timeLeftSec = this.level.timeLimitSec;
     this.runScore = 0;
+    this.resolveCampaignTimer(index);
     this.keystoneHits = 0;
     this.secondaryDestroyed = 0;
     this.keystoneDestroyed = false;
@@ -236,6 +248,76 @@ export class GameSession {
     resetCannonAim(this.cannonMesh, this.level);
     useHudStore.getState().reloadProfile();
     this.syncHud('');
+  }
+
+  private resolveCampaignTimer(index: number): void {
+    const profile = loadProfile();
+    const prevIndex = this.lastCampaignLevelIndex;
+    const hadTimer = this.timeLeftSec > 0;
+    const continueRun = prevIndex >= 0 && hadTimer && (index === prevIndex || index === prevIndex + 1);
+
+    if (continueRun) {
+      this.campaignTimeLimitSec =
+        this.campaignAnchorLevel === 0
+          ? totalCampaignTimeSec()
+          : campaignTimeBudgetFromLevel(this.campaignAnchorLevel);
+    } else if (
+      index === 0 &&
+      profile.campaignAnchorLevel === 0 &&
+      profile.campaignTimeLeftSec != null &&
+      profile.campaignTimeLeftSec > 0
+    ) {
+      this.campaignTimeLimitSec = totalCampaignTimeSec();
+      this.timeLeftSec = profile.campaignTimeLeftSec;
+      this.campaignAnchorLevel = 0;
+    } else if (index === 0) {
+      this.campaignTimeLimitSec = totalCampaignTimeSec();
+      this.timeLeftSec = this.campaignTimeLimitSec;
+      this.campaignAnchorLevel = 0;
+    } else {
+      this.campaignAnchorLevel = index;
+      this.campaignTimeLimitSec = campaignTimeBudgetFromLevel(index);
+      if (
+        profile.campaignAnchorLevel === index &&
+        profile.campaignTimeLeftSec != null &&
+        profile.campaignTimeLeftSec > 0
+      ) {
+        this.timeLeftSec = Math.min(profile.campaignTimeLeftSec, this.campaignTimeLimitSec);
+      } else {
+        this.timeLeftSec = this.campaignTimeLimitSec;
+      }
+    }
+
+    this.levelStartCampaignTime = this.timeLeftSec;
+    this.lastCampaignLevelIndex = index;
+  }
+
+  private persistCampaignClock(): void {
+    let profile = loadProfile();
+    profile = saveCampaignClock(profile, this.timeLeftSec, this.campaignAnchorLevel);
+    saveProfile(profile);
+  }
+
+  private arcPreferenceFromDrag(): number {
+    const dx = this.aim.originX - this.aim.currentX;
+    const dy = this.aim.originY - this.aim.currentY;
+    const len = Math.hypot(dx, dy);
+    if (len < 6) return 0.5;
+    const loft = THREE.MathUtils.clamp(-dy / len, -1, 1);
+    return THREE.MathUtils.clamp(0.5 + loft * 0.48, 0, 1);
+  }
+
+  private staticObstacleBoxes(): THREE.Box3[] {
+    const boxes: THREE.Box3[] = [];
+    for (const entry of this.entries) {
+      if (!entry.isStatic || entry.cleared || entry.moduleType === 'foundation' || entry.isKeystone) {
+        continue;
+      }
+      const box = new THREE.Box3().setFromObject(entry.mesh);
+      box.expandByScalar(BALL_RADIUS * 0.55);
+      boxes.push(box);
+    }
+    return boxes;
   }
 
   private syncViewport(force = false): void {
@@ -360,8 +442,11 @@ export class GameSession {
   }
 
   private aimObstaclesForBallistic(): THREE.Box3[] {
-    if (this.activePowerup !== 'trajectory') return [];
-    return this.aimObstacleBoxes();
+    const boxes = this.staticObstacleBoxes();
+    if (this.activePowerup === 'trajectory') {
+      boxes.push(...this.aimObstacleBoxes());
+    }
+    return boxes;
   }
 
   private previewDragPower(): number {
@@ -395,7 +480,13 @@ export class GameSession {
   private applyBallisticAim(power = this.previewDragPower()): void {
     if (!this.aimWorldTarget) return;
     this.refreshAimTargetPoint();
-    aimCannonBallistic(this.cannonMesh, this.aimWorldTarget, power, this.aimObstaclesForBallistic());
+    aimCannonBallistic(
+      this.cannonMesh,
+      this.aimWorldTarget,
+      power,
+      this.aimObstaclesForBallistic(),
+      this.arcPreferenceFromDrag(),
+    );
   }
 
   private lockAimTarget(clientX: number, clientY: number): void {
@@ -483,7 +574,13 @@ export class GameSession {
     if (len >= MIN_DRAG_PX && this.aimWorldTarget && this.canFireNow()) {
       const power = powerFromDrag(len, MAX_DRAG_PX);
       this.refreshAimTargetPoint();
-      aimCannonBallistic(this.cannonMesh, this.aimWorldTarget, power, this.aimObstaclesForBallistic());
+      aimCannonBallistic(
+        this.cannonMesh,
+        this.aimWorldTarget,
+        power,
+        this.aimObstaclesForBallistic(),
+        this.arcPreferenceFromDrag(),
+      );
       this.fireShot(power);
     }
     this.aimWorldTarget = null;
@@ -518,6 +615,7 @@ export class GameSession {
 
     this.lastShotPower = power;
     const wasExplosive = this.activePowerup === 'explosive';
+    const wasBreach = this.activePowerup === 'breach';
     if (this.activePowerup) this.usedPowerupThisLevel = true;
 
     const dir = barrelWorldDirection(this.cannonMesh);
@@ -557,6 +655,7 @@ export class GameSession {
     this.postBallIdleMs = 0;
     this.ballHitCooldown = new Set();
     this.lastExplosiveShot = wasExplosive;
+    this.lastBreachShot = wasBreach;
 
     if (this.activePowerup) {
       const profile = loadProfile();
@@ -607,8 +706,7 @@ export class GameSession {
     this.animTime += dtMs / 1000;
     for (const entry of this.entries) {
       if (!entry.isKeystone || entry.cleared) continue;
-      const mat = keystoneMaterialFromMesh(entry.mesh);
-      if (mat?.emissive) pulseKeystoneMaterial(mat, this.animTime);
+      pulseKeystoneAssembly(entry.mesh, this.animTime);
     }
 
     if (this.phase !== 'menu') {
@@ -704,15 +802,22 @@ export class GameSession {
     if (!this.ballBody || !this.ballMesh) return;
     const t = this.ballBody.translation();
     const ballPos = new THREE.Vector3(t.x, t.y, t.z);
-    const heavy = this.lastShotPower > 0.7;
-    const dmg = ballHitDamage(this.lastShotPower, heavy);
+    const heavyShot = this.activePowerup === 'heavy';
 
     for (const entry of this.entries) {
-      if (entry.cleared || entry.isStatic) continue;
+      if (entry.cleared) continue;
+      if (entry.isStatic) {
+        if (!this.lastBreachShot || entry.moduleType === 'foundation') continue;
+      }
       if (this.ballHitCooldown.has(entry.moduleId)) continue;
 
       const box = new THREE.Box3().setFromObject(entry.mesh);
       if (!ballIntersectsBox(ballPos, BALL_RADIUS, box)) continue;
+
+      const dmg =
+        this.lastBreachShot && entry.isStatic
+          ? BREACH_STATIC_DAMAGE
+          : ballHitDamage(this.lastShotPower, heavyShot);
 
       this.ballHitCooldown.add(entry.moduleId);
       this.applyModuleDamage(entry, dmg);
@@ -725,7 +830,8 @@ export class GameSession {
 
   private applyExplosion(center: THREE.Vector3): void {
     for (const entry of this.entries) {
-      if (entry.cleared || entry.isStatic) continue;
+      if (entry.cleared) continue;
+      if (entry.isStatic && (!this.lastBreachShot || entry.moduleType === 'foundation')) continue;
       const dist = entry.mesh.position.distanceTo(center);
       if (dist > EXPLOSIVE_RADIUS) continue;
       const body = this.world.getRigidBody(entry.mesh.userData.bodyHandle as number);
@@ -761,7 +867,7 @@ export class GameSession {
       this.runScore += 1000;
       this.keystoneDestroyed = this.allKeystonesCleared();
       this.refreshKeystoneHud();
-    } else if (entry.importance === 'structural') {
+    } else if (entry.importance === 'structural' || entry.isStatic) {
       this.secondaryDestroyed += 1;
       this.runScore += 50;
     }
@@ -807,33 +913,31 @@ export class GameSession {
   private handleWin(): void {
     if (this.phase === 'won') return;
     this.phase = 'won';
+    const levelElapsed = this.levelStartCampaignTime - this.timeLeftSec;
+    const levelTimeLeft = Math.max(0, this.level.timeLimitSec - levelElapsed);
     const finalScore = computeRunScore({
       keystoneHits: this.keystoneHits,
       keystoneDestroyed: true,
       secondaryDestroyed: this.secondaryDestroyed,
-      timeLeftSec: this.timeLeftSec,
+      timeLeftSec: levelTimeLeft,
       shotsUsed: this.shotsUsed,
       usedPowerup: this.usedPowerupThisLevel,
     });
     this.runScore = finalScore;
-    const stars = hybridStars(
-      this.timeLeftSec,
-      this.shotsUsed,
-      finalScore,
-      this.level,
-    );
+    const stars = hybridStars(levelTimeLeft, this.shotsUsed, finalScore, this.level);
     let profile = loadProfile();
     profile = applyLevelWin(
       profile,
       this.level.id,
       stars,
       this.shotsUsed,
-      Math.round(this.timeLeftSec),
+      Math.round(levelTimeLeft),
       finalScore,
     );
     profile = addCoins(profile, coinsForWin(stars, finalScore));
     const { profile: withPowerups, rewards } = applyWinPowerupRewards(profile, stars);
     profile = unlockNextLevel(withPowerups, this.levelIndex, levelCount());
+    profile = saveCampaignClock(profile, this.timeLeftSec, this.campaignAnchorLevel);
     saveProfile(profile);
     saveWeeklyBest(finalScore);
     useHudStore.getState().reloadProfile();
@@ -849,6 +953,7 @@ export class GameSession {
     this.phase = 'lost';
     let profile = loadProfile();
     profile = applyLevelLoss(profile);
+    profile = saveCampaignClock(profile, this.timeLeftSec, this.campaignAnchorLevel);
     saveProfile(profile);
     useHudStore.getState().reloadProfile();
     this.syncHud(reason);
@@ -871,6 +976,7 @@ export class GameSession {
     if (this.phase === 'menu') return;
     this.menuReturnPhase = this.phase;
     this.phase = 'menu';
+    this.persistCampaignClock();
     this.syncHud('');
   }
 
@@ -885,9 +991,11 @@ export class GameSession {
   }
 
   private syncHud(message: string): void {
+    const levelElapsed = this.levelStartCampaignTime - this.timeLeftSec;
+    const levelTimeLeft = Math.max(0, this.level.timeLimitSec - levelElapsed);
     const stars =
       this.phase === 'won'
-        ? hybridStars(this.timeLeftSec, this.shotsUsed, this.runScore, this.level)
+        ? hybridStars(levelTimeLeft, this.shotsUsed, this.runScore, this.level)
         : 0;
     useHudStore.getState().setSnapshot({
       phase: this.phase,
@@ -899,7 +1007,7 @@ export class GameSession {
       ammoLeft: this.ammoLeft,
       ammoTotal: this.level.ammoLimit,
       timeLeftSec: Math.ceil(this.timeLeftSec),
-      timeLimitSec: this.level.timeLimitSec,
+      timeLimitSec: this.campaignTimeLimitSec || totalCampaignTimeSec(),
       runScore: this.runScore,
       keystoneHp: Math.max(0, Math.round(this.keystoneHp)),
       keystoneHpMax: this.keystoneHpMax,

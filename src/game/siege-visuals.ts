@@ -24,18 +24,38 @@ type AddMesh = (
   mat: THREE.Material,
   pos: [number, number, number],
   rot?: [number, number, number],
+  glow?: { halo?: boolean },
 ) => void;
+
+function addGlowMesh(
+  group: THREE.Group,
+  geo: THREE.BufferGeometry,
+  mat: THREE.Material,
+  pos: [number, number, number],
+  tier: QualityTier,
+  rot?: [number, number, number],
+  glow?: { halo?: boolean },
+): void {
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.position.set(...pos);
+  if (rot) mesh.rotation.set(...rot);
+  mesh.castShadow = tier !== 'low';
+  mesh.receiveShadow = tier !== 'low';
+  mesh.userData.keystoneGlow = true;
+  if (glow?.halo) mesh.userData.keystoneHalo = true;
+  group.add(mesh);
+}
 
 export function buildKeystoneAssembly(
   group: THREE.Group,
   mod: CastleModule,
   mats: CastleMaterials,
   tier: QualityTier,
-  addMesh: AddMesh,
+  _addMesh: AddMesh,
 ): void {
   const [w, h, d] = mod.size;
   const shellMat = mats.stone.clone();
-  shellMat.color.multiplyScalar(0.82);
+  shellMat.color.multiplyScalar(0.78);
   applyRepeat(shellMat, mod.size);
 
   const body = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), shellMat);
@@ -44,28 +64,83 @@ export function buildKeystoneAssembly(
   body.userData.moduleId = mod.id;
   group.add(body);
 
-  const coreSize = Math.min(w, h, d) * 0.42;
-  const coreMat = mats.keystone.clone();
-  addMesh(new THREE.BoxGeometry(coreSize, coreSize, coreSize * 1.1), coreMat, [0, 0, d * 0.06]);
+  const gold = mats.keystoneGold.clone();
+  const shieldMat = mats.keystoneShield.clone();
+  const frameT = Math.min(0.1, Math.min(w, h) * 0.11);
+  const faceZ = d / 2 + 0.02;
 
-  const bandMat = mats.metal.clone();
-  bandMat.color.multiplyScalar(0.75);
-  const bandH = Math.min(0.1, h * 0.14);
-  addMesh(new THREE.BoxGeometry(w * 1.02, bandH, d * 1.02), bandMat, [0, h * 0.22, 0]);
-  addMesh(new THREE.BoxGeometry(w * 1.02, bandH, d * 1.02), bandMat, [0, -h * 0.22, 0]);
+  const pushGlow = (
+    geo: THREE.BufferGeometry,
+    mat: THREE.Material,
+    pos: [number, number, number],
+    rot?: [number, number, number],
+    glow?: { halo?: boolean },
+  ): void => {
+    addGlowMesh(group, geo, mat, pos, tier, rot, glow);
+  };
 
-  const strapW = Math.min(0.08, w * 0.1);
-  addMesh(new THREE.BoxGeometry(strapW, h * 0.88, d * 1.04), bandMat, [-w * 0.38, 0, 0]);
-  addMesh(new THREE.BoxGeometry(strapW, h * 0.88, d * 1.04), bandMat, [w * 0.38, 0, 0]);
+  pushGlow(new THREE.BoxGeometry(w + frameT * 0.3, frameT, d * 0.22), gold, [0, h / 2 - frameT * 0.35, 0]);
+  pushGlow(new THREE.BoxGeometry(w + frameT * 0.3, frameT, d * 0.22), gold, [0, -h / 2 + frameT * 0.35, 0]);
+  pushGlow(new THREE.BoxGeometry(frameT, h * 0.92, d * 0.22), gold, [-w / 2 + frameT * 0.45, 0, 0]);
+  pushGlow(new THREE.BoxGeometry(frameT, h * 0.92, d * 0.22), gold, [w / 2 - frameT * 0.45, 0, 0]);
+
+  const shieldW = Math.min(w, h) * 0.78;
+  const shieldH = shieldW * 1.18;
+  pushGlow(
+    new THREE.PlaneGeometry(shieldW, shieldH),
+    shieldMat,
+    [0, 0, faceZ],
+    undefined,
+    { halo: false },
+  );
 
   if (tier !== 'low') {
-    const crackMat = new THREE.MeshStandardMaterial({
-      color: 0x1a1010,
-      roughness: 0.95,
-      metalness: 0,
-    });
-    addMesh(new THREE.BoxGeometry(w * 0.08, h * 0.55, d * 0.06), crackMat, [w * 0.18, 0, d * 0.48]);
-    addMesh(new THREE.BoxGeometry(w * 0.06, h * 0.35, d * 0.06), crackMat, [-w * 0.2, h * 0.08, d * 0.46]);
+    const haloMat = gold.clone();
+    haloMat.emissive.setHex(0xffcc44);
+    haloMat.emissiveIntensity = 0.38;
+    haloMat.transparent = true;
+    haloMat.opacity = 0.55;
+    pushGlow(
+      new THREE.PlaneGeometry(shieldW * 1.18, shieldH * 1.12),
+      haloMat,
+      [0, 0, faceZ - 0.025],
+      undefined,
+      { halo: true },
+    );
+    pushGlow(
+      new THREE.TorusGeometry(shieldW * 0.42, frameT * 0.35, 8, 20),
+      gold,
+      [0, 0, faceZ - 0.01],
+      [Math.PI / 2, 0, 0],
+    );
+  }
+
+  const coreSize = Math.min(w, h) * 0.34;
+  pushGlow(
+    new THREE.BoxGeometry(coreSize, coreSize, Math.min(d * 0.45, coreSize)),
+    gold,
+    [0, 0, -d * 0.06],
+  );
+
+  const bandMat = gold.clone();
+  bandMat.color.multiplyScalar(0.88);
+  const bandH = Math.min(0.09, h * 0.12);
+  pushGlow(new THREE.BoxGeometry(w * 1.04, bandH, d * 0.18), bandMat, [0, h * 0.2, d * 0.08]);
+  pushGlow(new THREE.BoxGeometry(w * 1.04, bandH, d * 0.18), bandMat, [0, -h * 0.2, d * 0.08]);
+
+  if (tier !== 'low') {
+    const rivetMat = bandMat.clone();
+    rivetMat.emissiveIntensity = 0.75;
+    for (const sx of [-1, 1]) {
+      for (const sy of [-1, 1]) {
+        pushGlow(
+          new THREE.CylinderGeometry(frameT * 0.35, frameT * 0.35, d * 0.22, 8),
+          rivetMat,
+          [sx * w * 0.4, sy * h * 0.38, d * 0.1],
+          [Math.PI / 2, 0, 0],
+        );
+      }
+    }
   }
 }
 
@@ -212,14 +287,23 @@ function applyRepeat(mat: THREE.MeshStandardMaterial, size: [number, number, num
 export function keystoneMaterialFromAssembly(root: THREE.Object3D): THREE.MeshStandardMaterial | null {
   let found: THREE.MeshStandardMaterial | null = null;
   root.traverse((child) => {
-    if (found || !(child instanceof THREE.Mesh)) return;
-    if (
-      child.material instanceof THREE.MeshStandardMaterial &&
-      child.material.emissive &&
-      child.material.emissive.getHex() > 0
-    ) {
+    if (found || !(child instanceof THREE.Mesh) || !child.userData.keystoneGlow) return;
+    if (child.material instanceof THREE.MeshStandardMaterial) {
       found = child.material;
     }
   });
   return found;
+}
+
+export function pulseKeystoneAssembly(root: THREE.Object3D, t: number): void {
+  const pulse = 0.5 + Math.sin(t * 4) * 0.3;
+  const halo = 0.35 + Math.sin(t * 3.2 + 0.6) * 0.15;
+  root.traverse((child) => {
+    if (!(child instanceof THREE.Mesh) || !child.userData.keystoneGlow) return;
+    const mats = Array.isArray(child.material) ? child.material : [child.material];
+    for (const m of mats) {
+      if (!(m instanceof THREE.MeshStandardMaterial)) continue;
+      m.emissiveIntensity = child.userData.keystoneHalo ? halo : pulse;
+    }
+  });
 }

@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import type { GamePhase, HudSnapshot } from '../core/types.js';
 import { levelByIndex, levelCount } from '../levels/index.js';
 import { loadProfile } from '../meta/profile.js';
+import { totalCampaignTimeSec } from '../meta/campaign-time.js';
 
 const profile = loadProfile();
 const lvl0 = levelByIndex(0);
@@ -15,8 +16,8 @@ const initial: HudSnapshot = {
   chapter: lvl0.chapter,
   ammoLeft: lvl0.ammoLimit,
   ammoTotal: lvl0.ammoLimit,
-  timeLeftSec: lvl0.timeLimitSec,
-  timeLimitSec: lvl0.timeLimitSec,
+  timeLeftSec: profile.campaignTimeLeftSec ?? totalCampaignTimeSec(),
+  timeLimitSec: totalCampaignTimeSec(),
   runScore: 0,
   keystoneHp: 100,
   keystoneHpMax: 100,
