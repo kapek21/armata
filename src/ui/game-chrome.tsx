@@ -15,8 +15,8 @@ export function GameChromeTop({ phase, musicMuted, onToggleMusic }: GameChromeTo
   const snap = useHudStore((s) => s.snapshot);
   if (!snap.ready || phase === 'menu') return <></>;
 
-  const urgent = snap.timeLeftSec <= 60;
-  const warn = snap.timeLeftSec <= 180;
+  const urgent = snap.timeLeftSec <= 30;
+  const warn = snap.timeLeftSec <= 60;
   const ended = phase === 'won' || phase === 'lost';
 
   return (
@@ -114,10 +114,10 @@ export function GameChromeBottom({
   const aimHint =
     phase === 'aiming' && shouldShowAimHint(profile)
       ? snap.keystoneTotal > 1
-        ? 'Zniszcz wszystkie złote tarcze kluczowe zamku'
-        : 'Traf złotą tarczę — kluczowy moduł zamku'
+        ? 'Zniszcz wszystkie moduły ze tarczą'
+        : 'Traf moduł ze znakiem tarczy'
       : phase === 'aiming'
-        ? 'Dotknij moduł → odsuń w górę dla łuku → puść'
+        ? 'Dotknij moduł → odsuń w bok (siła), w górę tylko dla łuku'
         : '';
 
   const showBonusShot = phase === 'lost' && !profile.adsRemoved;

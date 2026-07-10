@@ -28,6 +28,9 @@ import {
 import { coinsForWin } from '../meta/economy.js';
 import {
   campaignTimeBudgetFromLevel,
+  clampCampaignTimeLeftSec,
+  levelCampaignBudgetSec,
+  levelCampaignStarTimeSec,
   totalCampaignTimeSec,
 } from '../meta/campaign-time.js';
 import { saveWeeklyBest } from '../meta/leaderboard.js';
@@ -54,6 +57,7 @@ import {
   aimArcColorFromPower,
   aimCannonBallistic,
   applyWorldOffset,
+  ballisticPowerForTarget,
   BALL_RADIUS,
   barrelWorldDirection,
   computeGoalFrame,
@@ -268,7 +272,7 @@ export class GameSession {
       profile.campaignTimeLeftSec > 0
     ) {
       this.campaignTimeLimitSec = totalCampaignTimeSec();
-      this.timeLeftSec = profile.campaignTimeLeftSec;
+      this.timeLeftSec = clampCampaignTimeLeftSec(profile.campaignTimeLeftSec) ?? totalCampaignTimeSec();
       this.campaignAnchorLevel = 0;
     } else if (index === 0) {
       this.campaignTimeLimitSec = totalCampaignTimeSec();
@@ -282,7 +286,8 @@ export class GameSession {
         profile.campaignTimeLeftSec != null &&
         profile.campaignTimeLeftSec > 0
       ) {
-        this.timeLeftSec = Math.min(profile.campaignTimeLeftSec, this.campaignTimeLimitSec);
+        const saved = clampCampaignTimeLeftSec(profile.campaignTimeLeftSec) ?? this.campaignTimeLimitSec;
+        this.timeLeftSec = Math.min(saved, this.campaignTimeLimitSec);
       } else {
         this.timeLeftSec = this.campaignTimeLimitSec;
       }
@@ -302,19 +307,23 @@ export class GameSession {
     const dx = this.aim.originX - this.aim.currentX;
     const dy = this.aim.originY - this.aim.currentY;
     const len = Math.hypot(dx, dy);
-    if (len < 6) return 0.5;
+    if (len < 10) return 0.28;
     const loft = THREE.MathUtils.clamp(-dy / len, -1, 1);
-    return THREE.MathUtils.clamp(0.5 + loft * 0.48, 0, 1);
+    return THREE.MathUtils.clamp(0.28 + loft * 0.42, 0, 1);
   }
 
-  private staticObstacleBoxes(): THREE.Box3[] {
+  private staticObstacleBoxesForLoft(target: THREE.Vector3): THREE.Box3[] {
     const boxes: THREE.Box3[] = [];
+    const muzzle = muzzleWorldPosition(this.cannonMesh);
     for (const entry of this.entries) {
       if (!entry.isStatic || entry.cleared || entry.moduleType === 'foundation' || entry.isKeystone) {
         continue;
       }
       const box = new THREE.Box3().setFromObject(entry.mesh);
-      box.expandByScalar(BALL_RADIUS * 0.55);
+      if (box.max.y < target.y - 0.35) continue;
+      if (box.min.z > Math.max(muzzle.z, target.z) + 0.5) continue;
+      if (box.max.z < Math.min(muzzle.z, target.z) - 0.5) continue;
+      box.expandByScalar(BALL_RADIUS * 0.4);
       boxes.push(box);
     }
     return boxes;
@@ -442,11 +451,25 @@ export class GameSession {
   }
 
   private aimObstaclesForBallistic(): THREE.Box3[] {
-    const boxes = this.staticObstacleBoxes();
+    if (!this.aimWorldTarget) return [];
+    const arcPref = this.arcPreferenceFromDrag();
+    const boxes: THREE.Box3[] = [];
     if (this.activePowerup === 'trajectory') {
       boxes.push(...this.aimObstacleBoxes());
     }
+    if (arcPref > 0.68) {
+      boxes.push(...this.staticObstacleBoxesForLoft(this.aimWorldTarget));
+    }
     return boxes;
+  }
+
+  private ballisticPowerForShot(basePower: number): number {
+    if (!this.aimWorldTarget) return basePower;
+    return ballisticPowerForTarget(
+      muzzleWorldPosition(this.cannonMesh),
+      this.aimWorldTarget,
+      basePower,
+    );
   }
 
   private previewDragPower(): number {
@@ -480,10 +503,11 @@ export class GameSession {
   private applyBallisticAim(power = this.previewDragPower()): void {
     if (!this.aimWorldTarget) return;
     this.refreshAimTargetPoint();
+    const resolvedPower = this.ballisticPowerForShot(power);
     aimCannonBallistic(
       this.cannonMesh,
       this.aimWorldTarget,
-      power,
+      resolvedPower,
       this.aimObstaclesForBallistic(),
       this.arcPreferenceFromDrag(),
     );
@@ -572,7 +596,7 @@ export class GameSession {
     this.aimLine.visible = false;
 
     if (len >= MIN_DRAG_PX && this.aimWorldTarget && this.canFireNow()) {
-      const power = powerFromDrag(len, MAX_DRAG_PX);
+      const power = this.ballisticPowerForShot(powerFromDrag(len, MAX_DRAG_PX));
       this.refreshAimTargetPoint();
       aimCannonBallistic(
         this.cannonMesh,
@@ -913,8 +937,9 @@ export class GameSession {
   private handleWin(): void {
     if (this.phase === 'won') return;
     this.phase = 'won';
+    const levelBudget = levelCampaignBudgetSec(this.level);
     const levelElapsed = this.levelStartCampaignTime - this.timeLeftSec;
-    const levelTimeLeft = Math.max(0, this.level.timeLimitSec - levelElapsed);
+    const levelTimeLeft = Math.max(0, levelBudget - levelElapsed);
     const finalScore = computeRunScore({
       keystoneHits: this.keystoneHits,
       keystoneDestroyed: true,
@@ -924,7 +949,12 @@ export class GameSession {
       usedPowerup: this.usedPowerupThisLevel,
     });
     this.runScore = finalScore;
-    const stars = hybridStars(levelTimeLeft, this.shotsUsed, finalScore, this.level);
+    const stars = hybridStars(
+      levelTimeLeft,
+      this.shotsUsed,
+      finalScore,
+      { ...this.level, starTimeSec: levelCampaignStarTimeSec(this.level) },
+    );
     let profile = loadProfile();
     profile = applyLevelWin(
       profile,
@@ -991,11 +1021,17 @@ export class GameSession {
   }
 
   private syncHud(message: string): void {
+    const levelBudget = levelCampaignBudgetSec(this.level);
     const levelElapsed = this.levelStartCampaignTime - this.timeLeftSec;
-    const levelTimeLeft = Math.max(0, this.level.timeLimitSec - levelElapsed);
+    const levelTimeLeft = Math.max(0, levelBudget - levelElapsed);
     const stars =
       this.phase === 'won'
-        ? hybridStars(levelTimeLeft, this.shotsUsed, this.runScore, this.level)
+        ? hybridStars(
+            levelTimeLeft,
+            this.shotsUsed,
+            this.runScore,
+            { ...this.level, starTimeSec: levelCampaignStarTimeSec(this.level) },
+          )
         : 0;
     useHudStore.getState().setSnapshot({
       phase: this.phase,

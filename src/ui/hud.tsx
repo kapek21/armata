@@ -198,7 +198,7 @@ export function Hud({
 
       {showAimHint && (
         <p className="pointer-events-none absolute inset-x-0 bottom-[5.5rem] z-10 text-center text-[10px] text-white/45 safe-bottom">
-          Traf złotą tarczę — kluczowy moduł zamku wroga
+          Traf moduł ze znakiem tarczy
         </p>
       )}
 

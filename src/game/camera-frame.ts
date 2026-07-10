@@ -246,7 +246,7 @@ function arcHitsObstacle(
 function selectBallisticPitch(
   pitchLow: number,
   pitchHigh: number,
-  direct: number,
+  _direct: number,
   muzzle: THREE.Vector3,
   yaw: number,
   speed: number,
@@ -254,30 +254,26 @@ function selectBallisticPitch(
   target: THREE.Vector3,
   arcPreference: number,
 ): number {
-  const loft = obstacles.length > 0 || arcPreference > 0.38;
-  const maxPitch = loft ? MAX_LOFT_PITCH_RAD : MAX_AIM_PITCH_RAD;
+  const wantLoft = arcPreference > 0.68;
+  const maxPitch = wantLoft && obstacles.length > 0 ? MAX_LOFT_PITCH_RAD : MAX_AIM_PITCH_RAD;
 
   if (obstacles.length === 0) {
-    let chosen = pitchLow >= direct * 0.85 ? pitchLow : pitchHigh;
-    if (arcPreference > 0.58) chosen = pitchHigh;
-    else if (arcPreference < 0.28) chosen = pitchLow;
-    return Math.min(chosen, maxPitch);
+    if (wantLoft && pitchHigh > pitchLow + 0.05) {
+      return Math.min(pitchHigh, maxPitch);
+    }
+    return Math.min(pitchLow, maxPitch);
   }
 
   const lowBlocked = arcHitsObstacle(muzzle, yaw, pitchLow, speed, obstacles, target);
   const highBlocked = arcHitsObstacle(muzzle, yaw, pitchHigh, speed, obstacles, target);
 
-  if (lowBlocked && !highBlocked) return Math.min(pitchHigh, maxPitch);
-  if (!lowBlocked && highBlocked) return pitchLow;
-  if (lowBlocked && highBlocked) return Math.min(pitchHigh, maxPitch);
-
-  let chosen = arcPreference > 0.45 ? pitchHigh : pitchLow >= direct * 0.85 ? pitchLow : pitchHigh;
-  if (!lowBlocked && !highBlocked && arcPreference > 0.62) chosen = pitchHigh;
-  return Math.min(chosen, maxPitch);
+  if (!lowBlocked) return Math.min(pitchLow, maxPitch);
+  if (wantLoft && !highBlocked) return Math.min(pitchHigh, maxPitch);
+  return Math.min(pitchLow, maxPitch);
 }
 
-export const MAX_AIM_PITCH_RAD = (56 * Math.PI) / 180;
-export const MAX_LOFT_PITCH_RAD = (72 * Math.PI) / 180;
+export const MAX_AIM_PITCH_RAD = (48 * Math.PI) / 180;
+export const MAX_LOFT_PITCH_RAD = (58 * Math.PI) / 180;
 export const MIN_AIM_PITCH_RAD = (5 * Math.PI) / 180;
 
 export function clampBallisticTarget(target: THREE.Vector3, muzzle: THREE.Vector3): THREE.Vector3 {
@@ -291,10 +287,29 @@ export function clampBallisticTarget(target: THREE.Vector3, muzzle: THREE.Vector
     dh = 2;
   }
   const dy = target.y - muzzle.y;
-  if (dy > dh * 1.1) {
+  if (dy > dh * 0.95) {
+    target.y = muzzle.y + dh * 0.62;
+  } else if (dy > dh * 1.1) {
     target.y = muzzle.y + dh * 0.75;
   }
   return target;
+}
+
+/** Podbija moc strzału dla wysokich celów, żeby trajektoria była osiągalna bez pionowej lufy. */
+export function ballisticPowerForTarget(
+  muzzle: THREE.Vector3,
+  target: THREE.Vector3,
+  power: number,
+): number {
+  const dx = target.x - muzzle.x;
+  const dz = target.z - muzzle.z;
+  const dh = Math.hypot(dx, dz);
+  if (dh < 0.12) return Math.max(power, 0.78);
+  const elevation = (target.y - muzzle.y) / dh;
+  if (elevation > 0.65) return Math.max(power, 0.9);
+  if (elevation > 0.4) return Math.max(power, 0.78);
+  if (elevation > 0.25) return Math.max(power, 0.68);
+  return power;
 }
 
 /** Korekta współrzędnych dotyku — dolna strefa (armata) mapowana na pole celu. */
@@ -329,13 +344,15 @@ export function aimCannonBallistic(
   target: THREE.Vector3,
   power: number,
   obstacles: THREE.Box3[] = [],
-  arcPreference = 0.5,
+  arcPreference = 0.28,
 ): boolean {
   const muzzle = restMuzzleWorld(cannonRoot);
-  clampBallisticTarget(target, muzzle);
-  const dx = target.x - muzzle.x;
-  const dy = target.y - muzzle.y;
-  const dz = target.z - muzzle.z;
+  const aimTarget = target.clone();
+  clampBallisticTarget(aimTarget, muzzle);
+  power = ballisticPowerForTarget(muzzle, aimTarget, power);
+  const dx = aimTarget.x - muzzle.x;
+  const dy = aimTarget.y - muzzle.y;
+  const dz = aimTarget.z - muzzle.z;
   const dh = Math.hypot(dx, dz);
   if (dh < 0.08) return false;
 
@@ -347,7 +364,7 @@ export function aimCannonBallistic(
 
   let pitchWorld: number;
   if (disc < 0) {
-    pitchWorld = Math.atan2(Math.max(dy, 0), dh);
+    pitchWorld = Math.min(Math.atan2(Math.max(dy, 0), dh), MAX_AIM_PITCH_RAD);
   } else {
     const sqrtDisc = Math.sqrt(disc);
     const pitchLow = Math.atan((v2 - sqrtDisc) / (g * dh));
@@ -361,13 +378,14 @@ export function aimCannonBallistic(
       yawWorld,
       v,
       obstacles,
-      target,
+      aimTarget,
       arcPreference,
     );
   }
 
+  const wantLoft = arcPreference > 0.68;
   const maxPitch =
-    obstacles.length > 0 || arcPreference > 0.38 ? MAX_LOFT_PITCH_RAD : MAX_AIM_PITCH_RAD;
+    wantLoft && obstacles.length > 0 ? MAX_LOFT_PITCH_RAD : MAX_AIM_PITCH_RAD;
   pitchWorld = THREE.MathUtils.clamp(pitchWorld, MIN_AIM_PITCH_RAD, maxPitch);
   const yaw = THREE.MathUtils.clamp(yawWorld, (-42 * Math.PI) / 180, (42 * Math.PI) / 180);
 

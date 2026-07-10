@@ -35,8 +35,8 @@ export function HelpDialog({ onClose }: HelpDialogProps): JSX.Element {
           <section>
             <h3 className="font-semibold text-amber-200">Cel</h3>
             <p className="mt-1 text-white/70">
-              Zniszcz moduły ze <span className="text-amber-300">złotą tarczą</span> — to kluczowe
-              cele oblężenia. Jeden zegar kampanii obowiązuje na wszystkie poziomy.
+              Zniszcz moduły ze <span className="text-amber-200/90">małą tarczą</span> na froncie
+              — to kluczowe cele. Jeden zegar kampanii na wszystkie poziomy.
             </p>
           </section>
           <section>

@@ -10,6 +10,7 @@ import {
   powerupTotal,
   STARTER_POWERUPS,
 } from './economy.js';
+import { clampCampaignTimeLeftSec } from './campaign-time.js';
 
 export const AIM_HINT_SHOTS = 3;
 
@@ -227,7 +228,7 @@ export function saveCampaignClock(
 ): Profile {
   return {
     ...profile,
-    campaignTimeLeftSec: Math.max(0, timeLeftSec),
+    campaignTimeLeftSec: clampCampaignTimeLeftSec(timeLeftSec) ?? 0,
     campaignAnchorLevel: anchorLevel,
   };
 }
