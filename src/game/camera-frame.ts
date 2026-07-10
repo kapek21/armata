@@ -523,21 +523,122 @@ export function applyCannonAim(cannonRoot: THREE.Object3D, pitchRad: number, yaw
   applyCannonVisualForPitch(cannonRoot);
 }
 
-function setCannonMeshOpacity(mesh: THREE.Object3D | null, opacity: number): void {
+interface CannonMatSnapshot {
+  color: THREE.Color;
+  emissive: THREE.Color;
+  emissiveIntensity: number;
+  opacity: number;
+  transparent: boolean;
+  depthWrite: boolean;
+}
+
+const cannonMatSnapshots = new WeakMap<THREE.MeshStandardMaterial, CannonMatSnapshot>();
+
+function snapshotCannonMaterial(mat: THREE.MeshStandardMaterial): void {
+  if (cannonMatSnapshots.has(mat)) return;
+  cannonMatSnapshots.set(mat, {
+    color: mat.color.clone(),
+    emissive: mat.emissive.clone(),
+    emissiveIntensity: mat.emissiveIntensity,
+    opacity: mat.opacity,
+    transparent: mat.transparent,
+    depthWrite: mat.depthWrite,
+  });
+}
+
+function restoreCannonMaterial(mat: THREE.MeshStandardMaterial): void {
+  const snap = cannonMatSnapshots.get(mat);
+  if (!snap) return;
+  mat.color.copy(snap.color);
+  mat.emissive.copy(snap.emissive);
+  mat.emissiveIntensity = snap.emissiveIntensity;
+  mat.opacity = snap.opacity;
+  mat.transparent = snap.transparent;
+  mat.depthWrite = snap.depthWrite;
+  mat.needsUpdate = true;
+}
+
+function applyCannonFadeMaterial(
+  mat: THREE.MeshStandardMaterial,
+  opacity: number,
+  emissiveHex: number,
+  emissiveIntensity: number,
+): void {
+  snapshotCannonMaterial(mat);
+  const isTransparent = opacity < 0.995;
+  mat.opacity = opacity;
+  mat.transparent = isTransparent;
+  mat.depthWrite = opacity >= 0.62;
+  mat.emissive.setHex(emissiveHex);
+  mat.emissiveIntensity = emissiveIntensity;
+  mat.needsUpdate = true;
+}
+
+function restoreCannonMeshMaterials(mesh: THREE.Object3D | null): void {
   if (!mesh) return;
   mesh.traverse((child) => {
     if (!(child as THREE.Mesh).isMesh) return;
     const m = child as THREE.Mesh;
     const materials = Array.isArray(m.material) ? m.material : [m.material];
     for (const mat of materials) {
-      if (!(mat instanceof THREE.MeshStandardMaterial)) continue;
-      const isTransparent = opacity < 0.995;
-      mat.opacity = opacity;
-      mat.transparent = isTransparent;
-      mat.depthWrite = !isTransparent;
-      mat.needsUpdate = true;
+      if (mat instanceof THREE.MeshStandardMaterial) restoreCannonMaterial(mat);
     }
   });
+}
+
+function applyCannonFadeToGroup(
+  mesh: THREE.Object3D | null,
+  fadeT: number,
+  part: 'base' | 'barrel' | 'wheel',
+): void {
+  if (!mesh) return;
+  const styles = {
+    base: { opacity: THREE.MathUtils.lerp(0.78, 0.66, fadeT), emissive: 0x2a1c0c, emissiveIntensity: 0.07 },
+    barrel: {
+      opacity: THREE.MathUtils.lerp(0.56, 0.42, fadeT),
+      emissive: 0x5c4020,
+      emissiveIntensity: 0.11 + fadeT * 0.12,
+    },
+    wheel: { opacity: THREE.MathUtils.lerp(0.86, 0.74, fadeT), emissive: 0x1e1408, emissiveIntensity: 0.05 },
+  }[part];
+
+  mesh.traverse((child) => {
+    if (!(child as THREE.Mesh).isMesh) return;
+    const m = child as THREE.Mesh;
+    const materials = Array.isArray(m.material) ? m.material : [m.material];
+    for (const mat of materials) {
+      if (!(mat instanceof THREE.MeshStandardMaterial)) continue;
+      applyCannonFadeMaterial(mat, styles.opacity, styles.emissive, styles.emissiveIntensity);
+    }
+  });
+}
+
+function ensureCannonGhostOutline(cannonRoot: THREE.Object3D, show: boolean, fadeT: number): void {
+  let outline = cannonRoot.getObjectByName('cannon-ghost-outline') as THREE.LineSegments | null;
+  if (!show) {
+    if (outline) outline.visible = false;
+    return;
+  }
+
+  if (!outline) {
+    const edges = new THREE.EdgesGeometry(new THREE.BoxGeometry(1.85, 1.05, 1.45), 18);
+    const mat = new THREE.LineBasicMaterial({
+      color: 0xc4a060,
+      transparent: true,
+      opacity: 0.32,
+      depthTest: true,
+      toneMapped: true,
+    });
+    outline = new THREE.LineSegments(edges, mat);
+    outline.name = 'cannon-ghost-outline';
+    outline.position.set(0, 0.52, 0.02);
+    outline.renderOrder = 1;
+    cannonRoot.add(outline);
+  }
+
+  outline.visible = true;
+  const lineMat = outline.material as THREE.LineBasicMaterial;
+  lineMat.opacity = THREE.MathUtils.lerp(0.22, 0.38, fadeT);
 }
 
 /** Półprzezroczysta podstawa/lufa tylko gdy obręcz jest ukryta (ten sam próg pitch). */
@@ -550,27 +651,41 @@ export function applyCannonVisualForPitch(cannonRoot: THREE.Object3D): void {
   const fadeEnd = (56 * Math.PI) / 180;
   const hideMuzzle = pitch >= muzzleHiddenAt;
   const fadeT = hideMuzzle ? THREE.MathUtils.smoothstep(pitch, muzzleHiddenAt, fadeEnd) : 0;
-  // Gdy obręcz znika, armata od razu półprzezroczysta (wcześniej fade startował od 100%).
-  const opacity = hideMuzzle ? THREE.MathUtils.lerp(0.48, 0.2, fadeT) : 1;
 
-  setCannonMeshOpacity(cannonRoot.getObjectByName('cannon-base') ?? null, opacity);
-  setCannonMeshOpacity(cannonRoot.getObjectByName('cannon-barrel') ?? null, opacity);
+  const base = cannonRoot.getObjectByName('cannon-base');
+  const barrel = cannonRoot.getObjectByName('cannon-barrel');
+
+  if (!hideMuzzle) {
+    restoreCannonMeshMaterials(base ?? null);
+    restoreCannonMeshMaterials(barrel ?? null);
+    for (const id of ['wheel-l', 'wheel-r']) {
+      restoreCannonMeshMaterials(cannonRoot.getObjectByName(id) ?? null);
+    }
+    ensureCannonGhostOutline(cannonRoot, false, 0);
+
+    const muzzle = cannonRoot.getObjectByName('cannon-muzzle');
+    if (muzzle) muzzle.visible = true;
+
+    for (let i = 0; i < 3; i++) {
+      const ring = cannonRoot.getObjectByName(`barrel-ring-${i}`);
+      if (ring) ring.visible = true;
+    }
+    return;
+  }
+
+  applyCannonFadeToGroup(base ?? null, fadeT, 'base');
+  applyCannonFadeToGroup(barrel ?? null, fadeT, 'barrel');
+  for (const id of ['wheel-l', 'wheel-r']) {
+    applyCannonFadeToGroup(cannonRoot.getObjectByName(id) ?? null, fadeT, 'wheel');
+  }
+  ensureCannonGhostOutline(cannonRoot, true, fadeT);
 
   const muzzle = cannonRoot.getObjectByName('cannon-muzzle');
-  if (muzzle) {
-    muzzle.visible = !hideMuzzle;
-    if (!hideMuzzle) setCannonMeshOpacity(muzzle, 1);
-  }
+  if (muzzle) muzzle.visible = false;
 
   for (let i = 0; i < 3; i++) {
     const ring = cannonRoot.getObjectByName(`barrel-ring-${i}`);
-    if (ring) ring.visible = !hideMuzzle;
-  }
-
-  const wheels = ['wheel-l', 'wheel-r'];
-  for (const id of wheels) {
-    const w = cannonRoot.getObjectByName(id);
-    if (w) setCannonMeshOpacity(w, opacity);
+    if (ring) ring.visible = false;
   }
 }
 
