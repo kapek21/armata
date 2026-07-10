@@ -6,28 +6,54 @@ function makeStoneTexture(size = 128): THREE.CanvasTexture {
   canvas.width = size;
   canvas.height = size;
   const ctx = canvas.getContext('2d')!;
-  const cols = 4;
-  const rows = 4;
-  const cellW = size / cols;
-  const cellH = size / rows;
-  const mortar = '#5a5a62';
+  const cols = 3;
+  const rows = 3;
+  const mortar = '#4a4642';
 
   ctx.fillStyle = mortar;
   ctx.fillRect(0, 0, size, size);
 
   for (let row = 0; row < rows; row++) {
-    for (let col = 0; col < cols; col++) {
-      const ox = (row % 2) * (cellW * 0.25);
-      const x = col * cellW + ox + 2;
-      const y = row * cellH + 2;
-      const w = cellW - 4;
-      const h = cellH - 4;
-      const shade = 42 + ((row + col) % 3) * 10;
-      ctx.fillStyle = `hsl(220, 6%, ${shade}%)`;
+    const offset = (row % 2) * (size / cols) * 0.33;
+    for (let col = -1; col < cols + 1; col++) {
+      const cellW = size / cols;
+      const cellH = size / rows;
+      const jitterX = ((row * 3 + col) % 5) * 1.2 - 2;
+      const jitterY = ((row + col * 2) % 4) * 1.1 - 1.5;
+      const w = cellW - 7 + ((col + row) % 3) * 2;
+      const h = cellH - 8 + (row % 2) * 3;
+      const x = col * cellW + offset + 3 + jitterX;
+      const y = row * cellH + 3 + jitterY;
+      const shade = 38 + ((row + col) % 4) * 9;
+
+      ctx.fillStyle = `hsl(28, 8%, ${shade}%)`;
       ctx.fillRect(x, y, w, h);
-      ctx.fillStyle = `hsl(220, 5%, ${shade + 8}%)`;
-      ctx.fillRect(x + 2, y + 2, w * 0.35, h * 0.3);
+      ctx.fillStyle = `hsl(28, 6%, ${shade + 10}%)`;
+      ctx.fillRect(x + 3, y + 2, w * 0.38, h * 0.28);
+
+      if ((row + col) % 3 === 0) {
+        ctx.fillStyle = '#35312c';
+        ctx.beginPath();
+        ctx.moveTo(x + w, y);
+        ctx.lineTo(x + w - 8, y + h * 0.4);
+        ctx.lineTo(x + w, y + h * 0.55);
+        ctx.closePath();
+        ctx.fill();
+      }
     }
+  }
+
+  for (let i = 0; i < 6; i++) {
+    const cx = 12 + (i * 37) % (size - 24);
+    const cy = 18 + (i * 29) % (size - 24);
+    const r = 3 + (i % 3) * 2;
+    const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+    g.addColorStop(0, 'rgba(22, 18, 16, 0.9)');
+    g.addColorStop(1, 'rgba(22, 18, 16, 0)');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fill();
   }
 
   const tex = new THREE.CanvasTexture(canvas);
@@ -40,14 +66,15 @@ function makeWoodTexture(size = 128): THREE.CanvasTexture {
   canvas.width = size;
   canvas.height = size;
   const ctx = canvas.getContext('2d')!;
-  const planks = 6;
+  const planks = 4;
   const plankH = size / planks;
 
   for (let i = 0; i < planks; i++) {
     const y = i * plankH;
-    const shade = 32 + (i % 3) * 6;
-    ctx.fillStyle = `hsl(35, 48%, ${shade}%)`;
-    ctx.fillRect(0, y, size, plankH - 2);
+    const shade = 28 + (i % 3) * 5;
+    const wobble = (i % 2) * 3;
+    ctx.fillStyle = `hsl(32, 44%, ${shade}%)`;
+    ctx.fillRect(0, y + 1, size + wobble, plankH - 3);
 
     for (let g = 0; g < 18; g++) {
       ctx.strokeStyle = `hsla(30, 35%, ${shade - 8}%, 0.35)`;
@@ -159,14 +186,14 @@ export function createCastleMaterials(tier: QualityTier): CastleMaterials {
   return {
     stone: new THREE.MeshStandardMaterial({
       map: stoneTex,
-      color: 0xbcbcbc,
-      roughness: 0.88,
-      metalness: 0.04,
+      color: 0xa89888,
+      roughness: 0.92,
+      metalness: 0.03,
     }),
     wood: new THREE.MeshStandardMaterial({
       map: woodTex,
-      color: 0xc8942a,
-      roughness: 0.72,
+      color: 0x9a7030,
+      roughness: 0.78,
       metalness: 0.02,
     }),
     metal: new THREE.MeshStandardMaterial({
@@ -190,11 +217,11 @@ export function createCastleMaterials(tier: QualityTier): CastleMaterials {
       metalness: 0,
     }),
     keystone: new THREE.MeshStandardMaterial({
-      color: 0xff2244,
-      emissive: 0x660018,
-      emissiveIntensity: 0.5,
-      roughness: 0.42,
-      metalness: 0.25,
+      color: 0xff1a38,
+      emissive: 0x880020,
+      emissiveIntensity: 0.65,
+      roughness: 0.35,
+      metalness: 0.35,
     }),
   };
 }

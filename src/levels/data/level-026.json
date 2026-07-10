@@ -243,32 +243,15 @@
         ]
       },
       {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "bridge-deep",
-        "type": "wall",
-        "material": "wood",
-        "position": [
-          0,
-          0.5,
-          -2.35
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
         "importance": "critical",
         "isStatic": false,
         "id": "keystone",
         "type": "keystone",
         "material": "wood",
         "position": [
-          0,
+          2.2,
           1.4,
-          -2.7
+          -2
         ],
         "size": [
           0.8,
@@ -285,7 +268,7 @@
         "material": "wood",
         "position": [
           -2.2,
-          3.37,
+          2.37,
           -2
         ],
         "size": [
@@ -303,7 +286,7 @@
         "material": "wood",
         "position": [
           2.2,
-          2.37,
+          1.37,
           -2
         ],
         "size": [

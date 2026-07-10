@@ -226,31 +226,14 @@
         ]
       },
       {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "gate-mid",
-        "type": "wall",
-        "material": "wood",
-        "position": [
-          0,
-          1.5,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
         "importance": "critical",
         "isStatic": false,
         "id": "keystone",
         "type": "keystone",
         "material": "wood",
         "position": [
-          0,
-          2.39,
+          1.8,
+          1.3900000000000001,
           -2
         ],
         "size": [

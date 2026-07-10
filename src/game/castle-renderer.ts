@@ -1,6 +1,12 @@
 import * as THREE from 'three';
 import type { BlockType, CastleModule, CastleModuleType, QualityTier } from '../core/types.js';
 import { createCastleMaterials, type CastleMaterials } from './castle-assets.js';
+import {
+  addBattleScars,
+  addSiegeMachineDecor,
+  buildKeystoneAssembly,
+  keystoneMaterialFromAssembly,
+} from './siege-visuals.js';
 
 let sharedMaterials: CastleMaterials | null = null;
 
@@ -29,7 +35,7 @@ function applyTextureRepeat(
 ): void {
   if (!mat.map) return;
   mat.map = mat.map.clone();
-  mat.map.repeat.set(Math.max(0.8, size[0] * 1.1), Math.max(0.8, size[1] * 1.1));
+  mat.map.repeat.set(Math.max(0.55, size[0] * 0.75), Math.max(0.55, size[1] * 0.75));
   mat.map.needsUpdate = true;
 }
 
@@ -50,13 +56,27 @@ function addMesh(
   mat: THREE.Material,
   pos: [number, number, number],
   tier: QualityTier,
+  rot?: [number, number, number],
 ): void {
   const mesh = new THREE.Mesh(geo, mat);
   mesh.position.set(...pos);
+  if (rot) mesh.rotation.set(...rot);
   mesh.castShadow = tier !== 'low';
   mesh.receiveShadow = tier !== 'low';
   mesh.userData.moduleId = group.userData.moduleId;
   group.add(mesh);
+}
+
+function makeAddMesh(
+  group: THREE.Group,
+  tier: QualityTier,
+): (
+  geo: THREE.BufferGeometry,
+  mat: THREE.Material,
+  pos: [number, number, number],
+  rot?: [number, number, number],
+) => void {
+  return (geo, mat, pos, rot) => addMesh(group, geo, mat, pos, tier, rot);
 }
 
 function addCrenellations(
@@ -67,20 +87,21 @@ function addCrenellations(
   mat: THREE.MeshStandardMaterial,
   tier: QualityTier,
 ): void {
-  const merlonW = Math.min(0.22, w * 0.22);
-  const merlonH = Math.min(0.14, h * 0.18);
-  const gap = merlonW * 0.55;
+  const merlonW = Math.min(0.28, w * 0.24);
+  const merlonH = Math.min(0.18, h * 0.22);
+  const gap = merlonW * 0.5;
   const count = Math.max(2, Math.floor((w + gap) / (merlonW + gap)));
   const span = count * merlonW + (count - 1) * gap;
   const startX = -span / 2 + merlonW / 2;
   const y = h / 2 + merlonH / 2 - 0.02;
 
   for (let i = 0; i < count; i++) {
+    const broken = i % 4 === 2;
     addMesh(
       group,
-      new THREE.BoxGeometry(merlonW, merlonH, d * 0.92),
+      new THREE.BoxGeometry(merlonW, broken ? merlonH * 0.55 : merlonH, d * 0.92),
       mat,
-      [startX + i * (merlonW + gap), y, 0],
+      [startX + i * (merlonW + gap), y - (broken ? merlonH * 0.2 : 0), 0],
       tier,
     );
   }
@@ -100,10 +121,10 @@ function addDecorations(
 
   switch (mod.type as CastleModuleType) {
     case 'foundation': {
-      const lipH = Math.min(0.08, h * 0.14);
+      const lipH = Math.min(0.1, h * 0.16);
       addMesh(
         group,
-        new THREE.BoxGeometry(w * 1.04, lipH, d * 1.04),
+        new THREE.BoxGeometry(w * 1.05, lipH, d * 1.05),
         stoneAccent,
         [0, -h / 2 + lipH / 2, 0],
         tier,
@@ -117,9 +138,9 @@ function addDecorations(
       break;
     }
     case 'tower': {
-      const capW = w * 0.88;
-      const capH = Math.min(0.16, h * 0.2);
-      const capD = d * 0.88;
+      const capW = w * 0.92;
+      const capH = Math.min(0.2, h * 0.22);
+      const capD = d * 0.92;
       addMesh(
         group,
         new THREE.BoxGeometry(capW, capH, capD),
@@ -128,12 +149,19 @@ function addDecorations(
         tier,
       );
       addCrenellations(group, capW, capH, capD, stoneAccent, tier);
+      addMesh(
+        group,
+        new THREE.BoxGeometry(w * 0.15, h * 0.55, d * 0.12),
+        woodAccent,
+        [0, 0, d / 2 + 0.04],
+        tier,
+      );
       break;
     }
     case 'gate': {
-      const archW = w * 0.42;
-      const archH = h * 0.55;
-      const archD = d * 0.55;
+      const archW = w * 0.44;
+      const archH = h * 0.58;
+      const archD = d * 0.58;
       addMesh(
         group,
         new THREE.BoxGeometry(archW, archH, archD),
@@ -143,7 +171,7 @@ function addDecorations(
       );
       addMesh(
         group,
-        new THREE.BoxGeometry(w * 0.96, Math.min(0.12, h * 0.12), d * 0.94),
+        new THREE.BoxGeometry(w * 0.98, Math.min(0.14, h * 0.14), d * 0.96),
         stoneAccent,
         [0, h / 2 - 0.06, 0],
         tier,
@@ -165,34 +193,45 @@ export function moduleRootFromPick(mesh: THREE.Object3D): THREE.Object3D {
 
 export function createModuleMesh(mod: CastleModule, tier: QualityTier): THREE.Group {
   const mats = getCastleMaterials(tier);
-  const mat = makeModuleMaterial(mats, mod);
+  const isKeystone = mod.type === 'keystone' || mod.importance === 'critical';
   const [w, h, d] = mod.size;
 
   const group = new THREE.Group();
   group.userData.moduleId = mod.id;
   group.userData.moduleType = mod.type;
 
-  const body = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
-  body.userData.moduleId = mod.id;
-  body.castShadow = tier !== 'low';
-  body.receiveShadow = tier !== 'low';
-  group.add(body);
+  const push = makeAddMesh(group, tier);
 
-  addDecorations(group, mod, mats, tier);
+  if (isKeystone) {
+    buildKeystoneAssembly(group, mod, mats, tier, push);
+  } else {
+    const mat = makeModuleMaterial(mats, mod);
+    const body = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+    body.userData.moduleId = mod.id;
+    body.castShadow = tier !== 'low';
+    body.receiveShadow = tier !== 'low';
+    group.add(body);
+
+    const gap = 0.018;
+    const seamMat = new THREE.MeshStandardMaterial({
+      color: 0x2a2420,
+      roughness: 1,
+      metalness: 0,
+    });
+    addMesh(group, new THREE.BoxGeometry(w + gap, gap, d + gap), seamMat, [0, h / 2 - gap / 2, 0], tier);
+    addMesh(group, new THREE.BoxGeometry(w + gap, gap, d + gap), seamMat, [0, -h / 2 + gap / 2, 0], tier);
+
+    addBattleScars(group, mod, mats, tier, push);
+    addSiegeMachineDecor(group, mod, mats, tier, push);
+    addDecorations(group, mod, mats, tier);
+  }
 
   group.position.set(...mod.position);
   return group;
 }
 
 export function keystoneMaterialFromMesh(root: THREE.Object3D): THREE.MeshStandardMaterial | null {
-  let found: THREE.MeshStandardMaterial | null = null;
-  root.traverse((child) => {
-    if (found || !(child instanceof THREE.Mesh)) return;
-    if (child.material instanceof THREE.MeshStandardMaterial && child.material.emissive) {
-      found = child.material;
-    }
-  });
-  return found;
+  return keystoneMaterialFromAssembly(root);
 }
 
 export function disposeModuleVisual(root: THREE.Object3D): void {

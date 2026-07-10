@@ -228,13 +228,13 @@
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "gate-deep",
+        "id": "gate-mid",
         "type": "wall",
-        "material": "stone",
+        "material": "wood",
         "position": [
           0,
-          0.5,
-          -2.35
+          1.5,
+          -2
         ],
         "size": [
           1,
@@ -250,8 +250,8 @@
         "material": "wood",
         "position": [
           0,
-          1.3900000000000001,
-          -2.7
+          2.39,
+          -2.35
         ],
         "size": [
           0.78,
@@ -268,7 +268,7 @@
         "material": "wood",
         "position": [
           -1.8,
-          2.5700000000000003,
+          2.37,
           -2
         ],
         "size": [

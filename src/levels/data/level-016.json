@@ -483,13 +483,13 @@
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "keep-deep",
+        "id": "keep-peak",
         "type": "wall",
-        "material": "wood",
+        "material": "stone",
         "position": [
           3.75,
-          0.5,
-          -2.35
+          2.5,
+          -2
         ],
         "size": [
           1,
@@ -505,8 +505,8 @@
         "material": "wood",
         "position": [
           3.75,
-          1.41,
-          -2.7
+          3.41,
+          -2
         ],
         "size": [
           0.82,
@@ -523,7 +523,7 @@
         "material": "wood",
         "position": [
           -6,
-          2.5700000000000003,
+          2.37,
           -2
         ],
         "size": [

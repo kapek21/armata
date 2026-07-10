@@ -328,14 +328,31 @@
         ]
       },
       {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "court-deep",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          -1.2,
+          0.5,
+          -2.85
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
         "importance": "critical",
         "isStatic": false,
         "id": "keystone",
         "type": "keystone",
         "material": "wood",
         "position": [
-          -2.4,
-          2.53,
+          -1.2,
+          1.38,
           -3.2
         ],
         "size": [

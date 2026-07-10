@@ -109,9 +109,31 @@ function keystone(id, x, y, z, chapter, slot, size = 0.82) {
   });
 }
 
-/** Rola głównego klucza rotuje co poziom w rozdziale. */
-function primaryRole(slot) {
-  return ['peak', 'mid', 'deep', 'low'][slot % 4];
+/** Rola głównego klucza — mieszany hash (peak/mid/deep/low) na wszystkich 50 poziomach. */
+function primaryRole(levelIndex, slot) {
+  const chapter = Math.ceil(levelIndex / 10);
+  return ['peak', 'mid', 'deep', 'low'][(levelIndex * 7 + slot * 11 + chapter) % 4];
+}
+
+/** Role dodatkowych kluczy — ogranicza „peak”, żeby cele nie były zawsze na górze. */
+function extraRoles(levelIndex, slot, count, primary) {
+  const cycle = ['mid', 'low', 'deep', 'flank', 'peak'];
+  const start = (levelIndex * 3 + slot * 2) % cycle.length;
+  const roles = [];
+  for (let i = 0; i < count; i++) {
+    roles.push(cycle[(start + i) % cycle.length]);
+  }
+  if (primary === 'peak' && roles[0] === 'peak') {
+    roles[0] = cycle[(start + count + 1) % cycle.length];
+  }
+  let peaks = roles.filter((r) => r === 'peak').length;
+  for (let i = roles.length - 1; i >= 0 && peaks > 1; i--) {
+    if (roles[i] === 'peak') {
+      roles[i] = 'low';
+      peaks--;
+    }
+  }
+  return roles;
 }
 
 /** Y środka keystone na wierzchu bloku w danym rzędzie. */
@@ -263,8 +285,9 @@ function appendKeystones(modules, spots, chapter, slot, levelIndex) {
 function watchtower(chapter, slot, levelIndex) {
   const h = Math.max(2, 2 + Math.floor(slot / 2) + (chapter > 1 ? 1 : 0));
   const modules = [foundation(9 + slot * 0.2)];
-  const role = primaryRole(slot);
+  const role = primaryRole(levelIndex, slot);
   const ksSize = 0.82;
+  const extras = extraRoles(levelIndex, slot, 2, role);
 
   for (let i = 0; i < h; i++) {
     modules.push(
@@ -306,18 +329,20 @@ function watchtower(chapter, slot, levelIndex) {
     [
       {
         id: 'keystone-2',
-        role: 'flank',
+        role: extras[0],
         x: -1.3,
         z: Z,
         flankX: -1.3,
         rowY: ROW.mid,
+        zDeep: DEEP_Z,
         size: 0.74,
       },
       {
         id: 'keystone-3',
-        role: slot % 2 === 0 ? 'low' : 'deep',
+        role: extras[1],
         x: 1.3,
         z: Z,
+        flankX: 1.3,
         rowY: ROW.low,
         zDeep: DEEP_Z,
         size: 0.74,
@@ -334,8 +359,9 @@ function watchtower(chapter, slot, levelIndex) {
 function gatehouse(chapter, slot, levelIndex) {
   const modules = [foundation(12)];
   const gateStatic = chapter >= 2 || slot >= 5;
-  const role = primaryRole(slot);
+  const role = primaryRole(levelIndex, slot);
   const ksSize = 0.78;
+  const extras = extraRoles(levelIndex, slot, 2, role);
 
   modules.push(
     m({
@@ -407,19 +433,26 @@ function gatehouse(chapter, slot, levelIndex) {
     [
       {
         id: 'keystone-2',
-        role: 'peak',
+        role: extras[0],
         x: -1.8,
         z: Z,
+        flankX: -1.8,
         towerTopY: 1.55,
         towerH: 1.3,
+        rowY: ROW.mid,
+        zDeep: DEEP_Z,
         size: 0.74,
       },
       {
         id: 'keystone-3',
-        role: slot % 2 === 0 ? 'mid' : 'low',
+        role: extras[1],
         x: 1.8,
         z: Z,
-        rowY: slot % 2 === 0 ? ROW.mid : ROW.low,
+        flankX: 1.8,
+        towerTopY: 1.55,
+        towerH: 1.3,
+        rowY: ROW.low,
+        zDeep: DEEP_Z,
         size: 0.74,
       },
     ],
@@ -435,9 +468,10 @@ function gatehouse(chapter, slot, levelIndex) {
 function curtain_wall(chapter, slot, levelIndex) {
   const spread = 3 + Math.floor(slot / 3);
   const modules = [foundation(10 + spread * 2)];
-  const role = primaryRole(slot);
+  const role = primaryRole(levelIndex, slot);
   const keySide = slot % 2 === 0 ? 1 : -1;
   const ksSize = 0.82;
+  const extras = extraRoles(levelIndex, slot, 3, role);
 
   for (let x = -spread; x <= spread; x++) {
     const upperMat = Math.abs(x) === 0 && slot % 3 === 0 ? 'glass' : 'wood';
@@ -498,24 +532,27 @@ function curtain_wall(chapter, slot, levelIndex) {
     [
       {
         id: 'keystone-2',
-        role: 'peak',
+        role: extras[0],
         x: -spread * 1.1 - 0.5,
         z: Z,
         towerTopY: 1.55,
         towerH: 1.3,
+        rowY: ROW.mid,
+        zDeep: DEEP_Z,
         size: 0.74,
       },
       {
         id: 'keystone-3',
-        role: 'mid',
+        role: extras[1],
         x: 0,
         z: Z,
         rowY: ROW.mid,
+        zDeep: DEEP_Z,
         size: 0.74,
       },
       {
         id: 'keystone-4',
-        role: 'deep',
+        role: extras[2],
         x: -keySide * (spread * 0.75),
         z: Z,
         rowY: ROW.low,
@@ -536,10 +573,11 @@ function twin_towers(chapter, slot, levelIndex) {
   const towerH = 2 + Math.floor(slot / 4);
   const gap = 2.2 + (slot % 3) * 0.15;
   const modules = [foundation(11)];
-  const role = primaryRole(slot);
+  const role = primaryRole(levelIndex, slot);
   const bridgeY = ROW.low + towerH - 0.2;
   const bridgeH = 0.35;
   const ksSize = 0.8;
+  const extras = extraRoles(levelIndex, slot, 2, role);
 
   for (const side of [-1, 1]) {
     const tx = side * gap;
@@ -594,18 +632,22 @@ function twin_towers(chapter, slot, levelIndex) {
     [
       {
         id: 'keystone-2',
-        role: 'peak',
+        role: extras[0],
         x: -gap,
         z: Z,
         columns: towerH,
+        rowY: ROW.mid,
+        zDeep: DEEP_Z,
         size: 0.74,
       },
       {
         id: 'keystone-3',
-        role: slot % 2 === 0 ? 'mid' : 'low',
+        role: extras[1],
         x: gap,
         z: Z,
-        rowY: slot % 2 === 0 ? ROW.mid : ROW.low,
+        columns: towerH,
+        rowY: ROW.low,
+        zDeep: DEEP_Z,
         size: 0.74,
       },
     ],
@@ -621,8 +663,9 @@ function twin_towers(chapter, slot, levelIndex) {
 function courtyard(chapter, slot, levelIndex) {
   const arm = 2 + Math.floor(slot / 3);
   const modules = [foundation(12, 8)];
-  const role = primaryRole(slot);
+  const role = primaryRole(levelIndex, slot);
   const ksSize = 0.76;
+  const extras = extraRoles(levelIndex, slot, 3, role);
 
   for (let i = 0; i < arm; i++) {
     modules.push(
@@ -679,27 +722,31 @@ function courtyard(chapter, slot, levelIndex) {
     [
       {
         id: 'keystone-2',
-        role: 'mid',
+        role: extras[0],
         x: -1.2,
         z: Z - 0.5,
         rowY: ROW.mid,
+        zDeep: DEEP_Z,
         size: 0.74,
       },
       {
         id: 'keystone-3',
-        role: 'low',
+        role: extras[1],
         x: -1.8,
         z: Z - 0.2,
         rowY: ROW.low,
+        zDeep: DEEP_Z,
         size: 0.74,
       },
       {
         id: 'keystone-4',
-        role: 'peak',
+        role: extras[2],
         x: -0.5,
         z: Z,
         supportY: 1.5,
         supportH: 1.6,
+        rowY: ROW.mid,
+        zDeep: DEEP_Z,
         size: 0.72,
       },
     ],
@@ -714,9 +761,10 @@ function courtyard(chapter, slot, levelIndex) {
 /** Poziomy 37–44: bastion 2-rzędowy, klucze na każdym poziomie */
 function bastion(chapter, slot, levelIndex) {
   const modules = [foundation(13)];
-  const role = primaryRole(slot);
+  const role = primaryRole(levelIndex, slot);
   const ksSize = 0.75;
   const ksZ = Z + DEEP_Z;
+  const extras = extraRoles(levelIndex, slot, 3, role);
 
   for (const [cx] of [[-2.8], [2.8], [-2.5], [2.5]]) {
     modules.push(
@@ -784,27 +832,31 @@ function bastion(chapter, slot, levelIndex) {
     [
       {
         id: 'keystone-2',
-        role: 'low',
+        role: extras[0],
         x: -1.5,
         z: Z,
         rowY: ROW.low,
+        zDeep: DEEP_Z,
         size: 0.74,
       },
       {
         id: 'keystone-3',
-        role: 'mid',
+        role: extras[1],
         x: 1.5,
         z: Z,
         rowY: ROW.mid,
+        zDeep: DEEP_Z,
         size: 0.74,
       },
       {
         id: 'keystone-4',
-        role: 'peak',
+        role: extras[2],
         x: 1.2,
         z: Z - 0.25,
         supportY: 1.55,
         supportH: 0.45,
+        rowY: ROW.high,
+        zDeep: DEEP_Z,
         size: 0.72,
       },
     ],
@@ -819,9 +871,10 @@ function bastion(chapter, slot, levelIndex) {
 /** Poziomy 45–50: cytadela wielopiętrowa, 4 role kluczy */
 function citadel(chapter, slot, levelIndex) {
   const modules = [foundation(14, 8)];
-  const role = primaryRole(slot);
+  const role = primaryRole(levelIndex, slot);
   const ksSize = 0.78;
   const ksZ = Z + DEEP_Z;
+  const extras = extraRoles(levelIndex, slot, 3, role);
 
   modules.push(
     m({
@@ -910,27 +963,31 @@ function citadel(chapter, slot, levelIndex) {
     [
       {
         id: 'keystone-2',
-        role: 'flank',
+        role: extras[0],
         x: -2,
         z: Z,
         flankX: -2,
         rowY: ROW.mid,
+        zDeep: DEEP_Z,
         size: 0.74,
       },
       {
         id: 'keystone-3',
-        role: 'peak',
+        role: extras[1],
         x: 2,
         z: Z,
         columns: 3,
+        rowY: ROW.mid,
+        zDeep: DEEP_Z,
         size: 0.74,
       },
       {
         id: 'keystone-4',
-        role: levelIndex === 50 ? 'mid' : 'deep',
+        role: extras[2],
         x: levelIndex === 50 ? 2.2 : 2.6,
         z: levelIndex === 50 ? Z - 0.2 : Z,
         rowY: levelIndex === 50 ? ROW.mid : ROW.low,
+        columns: levelIndex === 50 ? 2 : 3,
         zDeep: DEEP_Z,
         size: 0.72,
       },

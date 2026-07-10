@@ -396,6 +396,23 @@
         ]
       },
       {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "keep-deep",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          -3,
+          0.5,
+          -2.35
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
         "importance": "critical",
         "isStatic": false,
         "id": "keystone",
@@ -404,7 +421,7 @@
         "position": [
           -3,
           1.41,
-          -2
+          -2.7
         ],
         "size": [
           0.82,
@@ -421,7 +438,7 @@
         "material": "wood",
         "position": [
           -4.9,
-          2.5700000000000003,
+          2.37,
           -2
         ],
         "size": [

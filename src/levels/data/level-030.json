@@ -449,13 +449,13 @@
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "court-deep",
+        "id": "court-low",
         "type": "wall",
         "material": "wood",
         "position": [
-          -1.2,
+          -1.8,
           0.5,
-          -2.85
+          -2.2
         ],
         "size": [
           1,
@@ -470,9 +470,9 @@
         "type": "keystone",
         "material": "wood",
         "position": [
-          -1.2,
+          -1.8,
           1.38,
-          -3.2
+          -2.2
         ],
         "size": [
           0.76,

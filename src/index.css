@@ -26,63 +26,195 @@ body,
 }
 
 .castle-frame {
-  background:
-    linear-gradient(90deg, #3d3428 0%, #5a4f3a 12%, transparent 18%, transparent 82%, #5a4f3a 88%, #3d3428 100%),
-    linear-gradient(180deg, #4a4032 0%, #2e2820 100%);
-  border-radius: 8px;
+  background: #2a2218;
+  border-radius: 6px;
   box-shadow:
-    inset 0 0 40px rgba(0, 0, 0, 0.65),
-    0 8px 24px rgba(0, 0, 0, 0.45);
-  padding: 10px 14px 12px;
+    inset 0 0 50px rgba(0, 0, 0, 0.75),
+    0 10px 28px rgba(0, 0, 0, 0.55);
+  padding: 28px 34px 30px;
+}
+
+.castle-frame__merlons {
+  position: absolute;
+  top: 2px;
+  left: 28px;
+  right: 28px;
+  height: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 4px;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.castle-frame__merlon {
+  flex: 1;
+  max-width: 28px;
+  height: 14px;
+  background: linear-gradient(180deg, #5a4a38 0%, #3a3028 100%);
+  border-radius: 2px 2px 0 0;
+  box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.35);
+}
+
+.castle-frame__merlon--damaged {
+  height: 8px;
+  opacity: 0.65;
+  transform: translateY(4px) rotate(-4deg);
 }
 
 .castle-frame__pillar {
   position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 12px;
-  background: linear-gradient(90deg, #2a241c, #4a4035, #2a241c);
+  top: 18px;
+  bottom: 22px;
+  width: 30px;
+  background-size: cover;
+  background-position: center;
   z-index: 2;
   pointer-events: none;
+  box-shadow:
+    inset -4px 0 10px rgba(0, 0, 0, 0.45),
+    inset 4px 0 10px rgba(0, 0, 0, 0.35);
 }
 
 .castle-frame__pillar--left {
   left: 0;
-  border-radius: 6px 0 0 6px;
+  border-radius: 4px 0 0 4px;
 }
 
 .castle-frame__pillar--right {
   right: 0;
-  border-radius: 0 6px 6px 0;
+  border-radius: 0 4px 4px 0;
+}
+
+.castle-frame__impact {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(12, 10, 8, 0.9) 0%, rgba(12, 10, 8, 0) 70%);
+  pointer-events: none;
+}
+
+.castle-frame__impact--a {
+  width: 18px;
+  height: 18px;
+  top: 28%;
+  right: 2px;
+}
+
+.castle-frame__impact--b {
+  width: 12px;
+  height: 12px;
+  bottom: 22%;
+  left: 4px;
+}
+
+.castle-frame__impact--c {
+  width: 22px;
+  height: 22px;
+  top: 45%;
+  left: 3px;
 }
 
 .castle-frame__lintel,
 .castle-frame__sill {
   position: absolute;
-  left: 10px;
-  right: 10px;
-  height: 10px;
-  background: linear-gradient(180deg, #3a3228, #5c5040);
+  left: 24px;
+  right: 24px;
+  height: 22px;
+  background-size: cover;
   z-index: 2;
   pointer-events: none;
-  border-radius: 2px;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.5);
 }
 
 .castle-frame__lintel {
-  top: 0;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+  top: 18px;
 }
 
 .castle-frame__sill {
   bottom: 0;
+  height: 24px;
+}
+
+.castle-frame__arrow-slit {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 10px;
+  height: 16px;
+  transform: translate(-50%, -35%);
+  background: #0a0a0c;
+  border-radius: 6px 6px 2px 2px;
+  box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.8);
+}
+
+.castle-frame__lintel-chip {
+  position: absolute;
+  right: 18%;
+  top: 0;
+  width: 22px;
+  height: 12px;
+  background: #2a2218;
+  clip-path: polygon(0 0, 100% 0, 70% 100%, 20% 100%);
+}
+
+.castle-frame__sill-plank {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  height: 6px;
+  bottom: 6px;
+  background: linear-gradient(180deg, #6a5038, #3a2818);
+  border-radius: 2px;
+}
+
+.castle-frame__sill-plank--2 {
+  bottom: 14px;
+  opacity: 0.75;
+  transform: scaleX(0.92);
+}
+
+.castle-frame__corbel {
+  position: absolute;
+  width: 18px;
+  height: 14px;
+  background-size: cover;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.castle-frame__corbel--left {
+  left: 22px;
+  top: 36px;
+  clip-path: polygon(0 0, 100% 0, 60% 100%, 0 100%);
+}
+
+.castle-frame__corbel--right {
+  right: 22px;
+  top: 36px;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 40% 100%);
 }
 
 .murder-hole {
-  border-radius: 4px;
-  box-shadow: inset 0 0 28px rgba(0, 0, 0, 0.55);
-  background: #0a0a0c;
+  border-radius: 2px;
+  box-shadow:
+    inset 0 0 36px rgba(0, 0, 0, 0.7),
+    inset 0 0 0 3px rgba(20, 16, 12, 0.9);
+  background: #08080a;
   z-index: 1;
   min-height: 180px;
+}
+
+.murder-hole__inner-edge {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow:
+    inset 8px 0 16px rgba(0, 0, 0, 0.55),
+    inset -8px 0 16px rgba(0, 0, 0, 0.55),
+    inset 0 8px 14px rgba(0, 0, 0, 0.45),
+    inset 0 -8px 14px rgba(0, 0, 0, 0.45);
+  z-index: 2;
 }
 
 .game-chrome-top,
