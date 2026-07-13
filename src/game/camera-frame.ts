@@ -255,10 +255,7 @@ function selectBallisticPitch(
   arcPreference: number,
 ): number {
   const wantLoft = arcPreference > 0.68;
-  const maxPitch = Math.min(
-    wantLoft && obstacles.length > 0 ? MAX_LOFT_PITCH_RAD : MAX_AIM_PITCH_RAD,
-    CANNON_MAX_AIM_PITCH_RAD,
-  );
+  const maxPitch = wantLoft && obstacles.length > 0 ? MAX_LOFT_PITCH_RAD : MAX_AIM_PITCH_RAD;
 
   if (obstacles.length === 0) {
     if (wantLoft && pitchHigh > pitchLow + 0.05) {
@@ -278,10 +275,6 @@ function selectBallisticPitch(
 export const MAX_AIM_PITCH_RAD = (48 * Math.PI) / 180;
 export const MAX_LOFT_PITCH_RAD = (58 * Math.PI) / 180;
 export const MIN_AIM_PITCH_RAD = (5 * Math.PI) / 180;
-/** Pitch od którego armata staje się półprzezroczysta (zgodny z ukryciem lufy). */
-export const CANNON_FADE_PITCH_RAD = (36 * Math.PI) / 180;
-/** Maks. pitch podczas celowania — tuż poniżej progu fade, bez zmiany grawitacji/impulsu. */
-export const CANNON_MAX_AIM_PITCH_RAD = CANNON_FADE_PITCH_RAD - 0.004;
 
 export function clampBallisticTarget(target: THREE.Vector3, muzzle: THREE.Vector3): THREE.Vector3 {
   const dx = target.x - muzzle.x;
@@ -371,7 +364,7 @@ export function aimCannonBallistic(
 
   let pitchWorld: number;
   if (disc < 0) {
-    pitchWorld = Math.min(Math.atan2(Math.max(dy, 0), dh), CANNON_MAX_AIM_PITCH_RAD);
+    pitchWorld = Math.min(Math.atan2(Math.max(dy, 0), dh), MAX_AIM_PITCH_RAD);
   } else {
     const sqrtDisc = Math.sqrt(disc);
     const pitchLow = Math.atan((v2 - sqrtDisc) / (g * dh));
@@ -391,10 +384,8 @@ export function aimCannonBallistic(
   }
 
   const wantLoft = arcPreference > 0.68;
-  const maxPitch = Math.min(
-    wantLoft && obstacles.length > 0 ? MAX_LOFT_PITCH_RAD : MAX_AIM_PITCH_RAD,
-    CANNON_MAX_AIM_PITCH_RAD,
-  );
+  const maxPitch =
+    wantLoft && obstacles.length > 0 ? MAX_LOFT_PITCH_RAD : MAX_AIM_PITCH_RAD;
   pitchWorld = THREE.MathUtils.clamp(pitchWorld, MIN_AIM_PITCH_RAD, maxPitch);
   const yaw = THREE.MathUtils.clamp(yawWorld, (-42 * Math.PI) / 180, (42 * Math.PI) / 180);
 
@@ -416,7 +407,7 @@ export function aimCannonAtWorldPoint(cannonRoot: THREE.Object3D, target: THREE.
   let pitch = Math.atan2(_localDir.y, Math.hypot(_localDir.x, _localDir.z));
   let yaw = -Math.atan2(_localDir.x, -_localDir.z);
 
-  pitch = THREE.MathUtils.clamp(pitch, (3 * Math.PI) / 180, CANNON_MAX_AIM_PITCH_RAD);
+  pitch = THREE.MathUtils.clamp(pitch, (3 * Math.PI) / 180, (74 * Math.PI) / 180);
   yaw = THREE.MathUtils.clamp(yaw, (-42 * Math.PI) / 180, (42 * Math.PI) / 180);
 
   applyCannonAim(cannonRoot, pitch, yaw);
@@ -531,6 +522,9 @@ export function applyCannonAim(cannonRoot: THREE.Object3D, pitchRad: number, yaw
   if (pitchPivot) pitchPivot.rotation.x = pitchRad;
   applyCannonVisualForPitch(cannonRoot);
 }
+
+/** Pitch od którego armata staje się półprzezroczysta (zgodny z ukryciem lufy). */
+export const CANNON_FADE_PITCH_RAD = (36 * Math.PI) / 180;
 
 export function cannonAimAngles(cannonRoot: THREE.Object3D): { pitch: number; yaw: number } {
   const pitchPivot = cannonRoot.getObjectByName('pitch-pivot');
