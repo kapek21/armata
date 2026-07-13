@@ -292,8 +292,64 @@ function collectKeystoneAnchors(modules) {
   return anchors;
 }
 
-function placeKeystones(modules, count, hp, rng) {
-  const anchors = collectKeystoneAnchors(modules);
+/** Zostawia tylko kotwice na najwyższym poziomie konstrukcji. */
+function topKeystoneAnchors(anchors) {
+  if (anchors.length === 0) return anchors;
+  const maxRestY = Math.max(...anchors.map((a) => a.restY));
+  const top = anchors.filter((a) => a.restY >= maxRestY - 0.05);
+  return top.length > 0 ? top : anchors;
+}
+
+/** Ocena „wewnętrzności” — głębiej, bliżej środka, otoczone modułami. */
+function interiorScore(anchor, modules) {
+  const { x, z, mod } = anchor;
+  let score = 0;
+
+  if (z < Z - 0.05) score += 4;
+  else if (z <= Z + 0.12) score += 2;
+  else score -= 3;
+
+  score += Math.max(0, 3 - Math.abs(x) * 0.9);
+
+  let neighbors = 0;
+  for (const other of modules) {
+    if (other.id === mod.id || isKeystoneMod(other) || other.type === 'foundation') continue;
+    const dx = other.position[0] - x;
+    const dz = other.position[2] - z;
+    if (Math.hypot(dx, dz) < 1.25 && (Math.abs(dx) > 0.25 || Math.abs(dz) > 0.2)) {
+      neighbors++;
+    }
+  }
+  score += neighbors * 0.75;
+
+  const y = mod.position[1];
+  if (y >= ROW.low - 0.1 && y <= ROW.mid + 0.1) score += 1.5;
+  if (y >= ROW.high) score -= 0.75;
+
+  if (Math.abs(x) > 2.8) score -= 2;
+
+  return score;
+}
+
+/** Preferuje kotwice wewnątrz konstrukcji (d3–d10). */
+function preferInteriorAnchors(anchors, modules, rng) {
+  if (anchors.length === 0) return anchors;
+  const scored = anchors
+    .map((a) => ({ ...a, score: interiorScore(a, modules) }))
+    .sort((a, b) => b.score - a.score);
+  const best = scored[0].score;
+  const preferred = scored.filter((a) => a.score >= best - 1.25);
+  const pool = preferred.length > 0 ? preferred : scored.slice(0, Math.max(1, Math.ceil(scored.length / 3)));
+  return pool.sort(() => rng() - 0.5);
+}
+
+function placeKeystones(modules, count, hp, rng, difficulty) {
+  let anchors = collectKeystoneAnchors(modules);
+  if (difficulty <= 2) {
+    anchors = topKeystoneAnchors(anchors);
+  } else {
+    anchors = preferInteriorAnchors(anchors, modules, rng);
+  }
   if (anchors.length === 0) {
     modules.push(
       m({
@@ -550,7 +606,7 @@ function buildCastle(difficulty, variant) {
   trimToMaxModules(modules);
   const keyCount = Math.min(MAX_KEYSTONES, keystoneCountFor(difficulty, variant, rng));
   const hp = runKeystoneHp(difficulty, variant);
-  placeKeystones(modules, keyCount, hp, rng);
+  placeKeystones(modules, keyCount, hp, rng, difficulty);
   trimToMaxModules(modules);
   finalizeKeystones(modules);
   trimToMaxModules(modules);
