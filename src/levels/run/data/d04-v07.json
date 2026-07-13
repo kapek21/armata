@@ -1,13 +1,13 @@
 {
   "id": "run-d04-v07",
-  "name": "Cel 4 — Bastion 7",
+  "name": "Cel 4 — Brama warowna 7",
   "chapter": 4,
   "difficulty": 4,
   "runDifficulty": 4,
   "variant": 7,
   "clearReward": 1055,
-  "blueprint": "bastion",
-  "ammoLimit": 5,
+  "blueprint": "gatehouse",
+  "ammoLimit": 7,
   "timeLimitSec": 999,
   "starTimeSec": [
     999,
@@ -15,9 +15,9 @@
     999
   ],
   "starShots": [
-    5,
-    5,
-    5
+    7,
+    7,
+    7
   ],
   "starScore": [
     1455,
@@ -53,224 +53,122 @@
           -2
         ],
         "size": [
-          13,
+          11.6,
           0.5,
           7
         ]
       },
       {
         "importance": "structural",
-        "isStatic": true,
-        "id": "corner--2.8",
-        "type": "tower",
-        "material": "metal",
-        "position": [
-          -2.8,
-          0.55,
-          -2
-        ],
-        "size": [
-          0.7,
-          1.15,
-          0.7
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": true,
-        "id": "corner-2.8",
-        "type": "tower",
-        "material": "metal",
-        "position": [
-          2.8,
-          0.55,
-          -2
-        ],
-        "size": [
-          0.7,
-          1.15,
-          0.7
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": true,
-        "id": "corner--2.5",
-        "type": "tower",
-        "material": "metal",
-        "position": [
-          -2.5,
-          0.55,
-          -2
-        ],
-        "size": [
-          0.7,
-          1.15,
-          0.7
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": true,
-        "id": "corner-2.5",
-        "type": "tower",
-        "material": "metal",
-        "position": [
-          2.5,
-          0.55,
-          -2
-        ],
-        "size": [
-          0.7,
-          1.15,
-          0.7
-        ]
-      },
-      {
-        "importance": "structural",
         "isStatic": false,
-        "id": "ring--1.5-base",
-        "type": "wall",
-        "material": "stone",
-        "position": [
-          -1.5,
-          0.5,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "ring--1.5-upper",
-        "type": "wall",
-        "material": "wood",
-        "position": [
-          -1.5,
-          1.5,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "ring-0-base",
-        "type": "wall",
-        "material": "stone",
-        "position": [
-          0,
-          0.5,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "ring-0-upper",
-        "type": "wall",
-        "material": "glass",
-        "position": [
-          0,
-          1.5,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "ring-1.5-base",
-        "type": "wall",
-        "material": "stone",
-        "position": [
-          1.5,
-          0.5,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "ring-1.5-upper",
-        "type": "wall",
-        "material": "wood",
-        "position": [
-          1.5,
-          1.5,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": true,
-        "id": "gate",
+        "id": "gate-base",
         "type": "gate",
         "material": "stone",
         "position": [
           0,
-          0.55,
-          -1.8
+          0.5,
+          -2
         ],
         "size": [
           1.4,
-          1.1,
+          1,
           1
         ]
       },
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "window",
-        "type": "wall",
+        "id": "gate-upper",
+        "type": "gate",
         "material": "glass",
         "position": [
-          1.2,
-          1.55,
-          -2.25
+          0,
+          1.5,
+          -2
         ],
         "size": [
-          1.2,
-          0.45,
-          0.7
+          1,
+          1,
+          1
         ]
       },
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "vault-l",
+        "id": "wall-l-0",
         "type": "wall",
-        "material": "wood",
+        "material": "stone",
         "position": [
-          -0.8,
-          2.5,
+          -2.625,
+          0.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "wall-l-1",
+        "type": "wall",
+        "material": "stone",
+        "position": [
+          -1.5750000000000002,
+          0.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "wall-r-0",
+        "type": "wall",
+        "material": "stone",
+        "position": [
+          1.5750000000000002,
+          0.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "wall-r-1",
+        "type": "wall",
+        "material": "stone",
+        "position": [
+          2.625,
+          0.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "tower-l-0",
+        "type": "tower",
+        "material": "stone",
+        "position": [
+          -2.5,
+          0.5,
           -2.35
         ],
         "size": [
@@ -282,13 +180,132 @@
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "vault-r",
+        "id": "tower-l-1",
+        "type": "tower",
+        "material": "wood",
+        "position": [
+          -2.5,
+          1.5,
+          -2.35
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "tower-r-0",
+        "type": "tower",
+        "material": "stone",
+        "position": [
+          2.5,
+          0.5,
+          -2.35
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "tower-r-1",
+        "type": "tower",
+        "material": "wood",
+        "position": [
+          2.5,
+          1.5,
+          -2.35
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "parapet-0",
         "type": "wall",
         "material": "wood",
         "position": [
-          0.8,
-          2.5,
-          -2.35
+          -2.1,
+          1.5,
+          -2.2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "parapet-1",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          -1.05,
+          1.5,
+          -2.2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "parapet-2",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          0,
+          1.5,
+          -2.2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "parapet-3",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          1.05,
+          1.5,
+          -2.2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "parapet-4",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          2.1,
+          1.5,
+          -2.2
         ],
         "size": [
           1,
@@ -303,16 +320,16 @@
         "type": "keystone",
         "material": "wood",
         "position": [
-          0.8,
-          3.375,
+          2.5,
+          2.41,
           -2.35
         ],
         "size": [
-          0.75,
-          0.75,
-          0.75
+          0.8200000000000001,
+          0.8200000000000001,
+          0.8200000000000001
         ],
-        "hitPoints": 147
+        "hitPoints": 127
       }
     ]
   }

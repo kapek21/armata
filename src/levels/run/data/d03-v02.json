@@ -1,13 +1,13 @@
 {
   "id": "run-d03-v02",
-  "name": "Cel 3 — Bliźniacze wieże 2",
+  "name": "Cel 3 — Brama warowna 2",
   "chapter": 3,
   "difficulty": 3,
   "runDifficulty": 3,
   "variant": 2,
   "clearReward": 830,
-  "blueprint": "twin_towers",
-  "ammoLimit": 6,
+  "blueprint": "gatehouse",
+  "ammoLimit": 8,
   "timeLimitSec": 999,
   "starTimeSec": [
     999,
@@ -15,9 +15,9 @@
     999
   ],
   "starShots": [
-    6,
-    6,
-    6
+    8,
+    8,
+    8
   ],
   "starScore": [
     1230,
@@ -53,7 +53,7 @@
           -2
         ],
         "size": [
-          11,
+          11.2,
           0.5,
           7
         ]
@@ -61,131 +61,29 @@
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "tower-l-base-base",
-        "type": "tower",
+        "id": "gate-base",
+        "type": "gate",
         "material": "stone",
-        "position": [
-          -2.5,
-          0.5,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "tower-l-base-upper",
-        "type": "wall",
-        "material": "stone",
-        "position": [
-          -2.5,
-          1.5,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "tower-l-1",
-        "type": "tower",
-        "material": "stone",
-        "position": [
-          -2.5,
-          1.5,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "tower-r-base-base",
-        "type": "tower",
-        "material": "stone",
-        "position": [
-          2.5,
-          0.5,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "tower-r-base-upper",
-        "type": "wall",
-        "material": "stone",
-        "position": [
-          2.5,
-          1.5,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "tower-r-1",
-        "type": "tower",
-        "material": "stone",
-        "position": [
-          2.5,
-          1.5,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "bridge",
-        "type": "wall",
-        "material": "glass",
         "position": [
           0,
-          2.3,
+          0.5,
           -2
         ],
         "size": [
-          4.25,
-          0.35,
-          0.75
+          1.4,
+          1,
+          1
         ]
       },
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "tie-l",
-        "type": "wall",
+        "id": "gate-upper",
+        "type": "gate",
         "material": "wood",
         "position": [
-          -1.375,
-          1.7999999999999998,
+          0,
+          1.5,
           -2
         ],
         "size": [
@@ -197,12 +95,131 @@
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "tie-r",
+        "id": "wall-l-0",
+        "type": "wall",
+        "material": "stone",
+        "position": [
+          -2.625,
+          0.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "wall-l-1",
+        "type": "wall",
+        "material": "stone",
+        "position": [
+          -1.5750000000000002,
+          0.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "wall-r-0",
+        "type": "wall",
+        "material": "stone",
+        "position": [
+          1.5750000000000002,
+          0.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "wall-r-1",
+        "type": "wall",
+        "material": "stone",
+        "position": [
+          2.625,
+          0.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "expand-1",
+        "type": "wall",
+        "material": "stone",
+        "position": [
+          3.3000000000000003,
+          1.5,
+          -2.7
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "expand-2",
         "type": "wall",
         "material": "wood",
         "position": [
-          1.375,
-          1.7999999999999998,
+          -3.85,
+          2.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "expand-3",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          2.75,
+          0.5,
+          -2.7
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "expand-4",
+        "type": "tower",
+        "material": "stone",
+        "position": [
+          -3.3000000000000003,
+          1.5,
           -2
         ],
         "size": [
@@ -218,16 +235,16 @@
         "type": "keystone",
         "material": "wood",
         "position": [
-          2.5,
-          2.4,
+          2.625,
+          1.4100000000000001,
           -2
         ],
         "size": [
-          0.8,
-          0.8,
-          0.8
+          0.8200000000000001,
+          0.8200000000000001,
+          0.8200000000000001
         ],
-        "hitPoints": 118
+        "hitPoints": 105
       }
     ]
   }

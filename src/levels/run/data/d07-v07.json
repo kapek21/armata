@@ -1,13 +1,13 @@
 {
   "id": "run-d07-v07",
-  "name": "Cel 7 — Dziedziniec 7",
+  "name": "Cel 7 — Bastion 7",
   "chapter": 7,
   "difficulty": 7,
   "runDifficulty": 7,
   "variant": 7,
   "clearReward": 1505,
-  "blueprint": "courtyard",
-  "ammoLimit": 4,
+  "blueprint": "bastion",
+  "ammoLimit": 6,
   "timeLimitSec": 999,
   "starTimeSec": [
     999,
@@ -15,9 +15,9 @@
     999
   ],
   "starShots": [
-    4,
-    4,
-    4
+    6,
+    6,
+    6
   ],
   "starScore": [
     1905,
@@ -31,8 +31,8 @@
       0.6,
       8.2
     ],
-    "angleMinDeg": 14,
-    "angleMaxDeg": 52
+    "angleMinDeg": 17,
+    "angleMaxDeg": 58
   },
   "enemyCastle": {
     "origin": [
@@ -53,242 +53,38 @@
           -2
         ],
         "size": [
-          12,
+          15.4,
           0.5,
-          8
+          7
         ]
       },
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "back-0-base",
-        "type": "wall",
+        "id": "outer-gate",
+        "type": "gate",
         "material": "stone",
         "position": [
-          -1.5,
+          0,
           0.5,
-          -3.2
+          -1.65
         ],
         "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "back-0-upper",
-        "type": "wall",
-        "material": "wood",
-        "position": [
-          -1.5,
           1.5,
-          -3.2
-        ],
-        "size": [
-          1,
-          1,
+          1.1,
           1
         ]
       },
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "side-0-base",
-        "type": "wall",
-        "material": "stone",
-        "position": [
-          -2.4,
-          0.5,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "side-0-upper",
-        "type": "wall",
-        "material": "wood",
-        "position": [
-          -2.4,
-          1.5,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "back-1-base",
-        "type": "wall",
-        "material": "stone",
-        "position": [
-          -0.3999999999999999,
-          0.5,
-          -3.2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "back-1-upper",
-        "type": "wall",
-        "material": "wood",
-        "position": [
-          -0.3999999999999999,
-          1.5,
-          -3.2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "side-1-base",
-        "type": "wall",
-        "material": "stone",
-        "position": [
-          -2.4,
-          0.5,
-          -1.45
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "side-1-upper",
-        "type": "wall",
-        "material": "wood",
-        "position": [
-          -2.4,
-          1.5,
-          -1.45
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "back-2-base",
-        "type": "wall",
-        "material": "stone",
-        "position": [
-          0.7000000000000002,
-          0.5,
-          -3.2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "back-2-upper",
-        "type": "wall",
-        "material": "stone",
-        "position": [
-          0.7000000000000002,
-          1.5,
-          -3.2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "side-2-base",
-        "type": "wall",
-        "material": "stone",
-        "position": [
-          -2.4,
-          0.5,
-          -0.8999999999999999
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "side-2-upper",
-        "type": "wall",
-        "material": "wood",
-        "position": [
-          -2.4,
-          1.5,
-          -0.8999999999999999
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "corner-tower",
+        "id": "flank-l-0",
         "type": "tower",
         "material": "stone",
         "position": [
-          -2.4,
-          1.55,
-          -3.2
-        ],
-        "size": [
-          1,
-          1.2,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "inner-1",
-        "type": "wall",
-        "material": "wood",
-        "position": [
-          -1.2,
-          1.5,
-          -2.5
+          -2.2,
+          0.5,
+          -2
         ],
         "size": [
           1,
@@ -299,35 +95,324 @@
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "inner-2",
-        "type": "wall",
-        "material": "glass",
+        "id": "flank-l-1",
+        "type": "tower",
+        "material": "stone",
         "position": [
-          -1.8,
-          1.5,
-          -2.2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": true,
-        "id": "pillar",
-        "type": "wall",
-        "material": "metal",
-        "position": [
-          -0.5,
+          -2.2,
           1.5,
           -2
         ],
         "size": [
-          0.35,
-          1.6,
-          0.35
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "flank-l-cap",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          -2.2,
+          2.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "flank-r-0",
+        "type": "tower",
+        "material": "stone",
+        "position": [
+          2.2,
+          0.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "flank-r-1",
+        "type": "tower",
+        "material": "stone",
+        "position": [
+          2.2,
+          1.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "flank-r-cap",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          2.2,
+          2.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "rampart-0",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          -2.1,
+          1.5,
+          -2.15
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "rampart-1",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          -1.05,
+          1.5,
+          -2.15
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "rampart-2",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          0,
+          1.5,
+          -2.15
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "rampart-3",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          1.05,
+          1.5,
+          -2.15
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "rampart-4",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          2.1,
+          1.5,
+          -2.15
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "keep-core-0",
+        "type": "wall",
+        "material": "stone",
+        "position": [
+          0,
+          0.5,
+          -2.35
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "keep-core-1",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          0,
+          1.5,
+          -2.35
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "keep-core-2",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          0,
+          2.5,
+          -2.35
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "expand-1",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          3.5000000000000004,
+          1.5,
+          -2.7
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "expand-2",
+        "type": "wall",
+        "material": "stone",
+        "position": [
+          -4.05,
+          2.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "expand-3",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          2.95,
+          0.5,
+          -2.7
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "expand-3-b",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          2.45,
+          0.5,
+          -2.35
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "expand-4",
+        "type": "tower",
+        "material": "stone",
+        "position": [
+          -3.5000000000000004,
+          1.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "expand-5",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          4.05,
+          2.5,
+          -2.7
+        ],
+        "size": [
+          1,
+          1,
+          1
         ]
       },
       {
@@ -337,16 +422,16 @@
         "type": "keystone",
         "material": "wood",
         "position": [
-          -2.4,
-          2.53,
-          -3.2
+          0,
+          3.41,
+          -2.35
         ],
         "size": [
-          0.76,
-          0.76,
-          0.76
+          0.8200000000000001,
+          0.8200000000000001,
+          0.8200000000000001
         ],
-        "hitPoints": 189
+        "hitPoints": 163
       }
     ]
   }

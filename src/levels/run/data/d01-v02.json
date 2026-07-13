@@ -7,7 +7,7 @@
   "variant": 2,
   "clearReward": 530,
   "blueprint": "watchtower",
-  "ammoLimit": 7,
+  "ammoLimit": 9,
   "timeLimitSec": 999,
   "starTimeSec": [
     999,
@@ -15,9 +15,9 @@
     999
   ],
   "starShots": [
-    7,
-    7,
-    7
+    9,
+    9,
+    9
   ],
   "starScore": [
     930,
@@ -53,7 +53,7 @@
           -2
         ],
         "size": [
-          9.4,
+          7.3,
           0.5,
           7
         ]
@@ -63,7 +63,7 @@
         "isStatic": false,
         "id": "core-0",
         "type": "gate",
-        "material": "wood",
+        "material": "stone",
         "position": [
           0,
           0.5,
@@ -78,11 +78,62 @@
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "core-1",
+        "id": "expand-1",
         "type": "wall",
         "material": "stone",
         "position": [
-          0,
+          3.2,
+          1.5,
+          -2.7
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "expand-2",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          -3.75,
+          2.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "expand-3",
+        "type": "wall",
+        "material": "stone",
+        "position": [
+          2.65,
+          0.5,
+          -2.7
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "expand-4",
+        "type": "tower",
+        "material": "wood",
+        "position": [
+          -3.2,
           1.5,
           -2
         ],
@@ -100,15 +151,15 @@
         "material": "wood",
         "position": [
           0,
-          2.41,
+          1.4100000000000001,
           -2
         ],
         "size": [
-          0.82,
-          0.82,
-          0.82
+          0.8200000000000001,
+          0.8200000000000001,
+          0.8200000000000001
         ],
-        "hitPoints": 90
+        "hitPoints": 81
       }
     ]
   }

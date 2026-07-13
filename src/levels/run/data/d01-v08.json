@@ -1,13 +1,13 @@
 {
   "id": "run-d01-v08",
-  "name": "Cel 1 — Brama warowna 8",
+  "name": "Cel 1 — Wieża strażnicza 8",
   "chapter": 1,
   "difficulty": 1,
   "runDifficulty": 1,
   "variant": 8,
   "clearReward": 620,
-  "blueprint": "gatehouse",
-  "ammoLimit": 6,
+  "blueprint": "watchtower",
+  "ammoLimit": 8,
   "timeLimitSec": 999,
   "starTimeSec": [
     999,
@@ -15,9 +15,9 @@
     999
   ],
   "starShots": [
-    6,
-    6,
-    6
+    8,
+    8,
+    8
   ],
   "starScore": [
     1020,
@@ -53,36 +53,19 @@
           -2
         ],
         "size": [
-          12,
+          7.3,
           0.5,
           7
         ]
       },
       {
         "importance": "structural",
-        "isStatic": true,
-        "id": "gate",
+        "isStatic": false,
+        "id": "core-0",
         "type": "gate",
         "material": "stone",
         "position": [
           0,
-          0.55,
-          -2
-        ],
-        "size": [
-          1.5,
-          1.15,
-          1.1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "wing-l-base",
-        "type": "wall",
-        "material": "stone",
-        "position": [
-          -1.8,
           0.5,
           -2
         ],
@@ -95,11 +78,11 @@
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "wing-l-upper",
-        "type": "wall",
+        "id": "core-1",
+        "type": "gate",
         "material": "wood",
         "position": [
-          -1.8,
+          0,
           1.5,
           -2
         ],
@@ -112,13 +95,47 @@
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "wing-r-base",
+        "id": "expand-1",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          3.2,
+          1.5,
+          -2.7
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "expand-2",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          -3.75,
+          2.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "expand-3",
         "type": "wall",
         "material": "stone",
         "position": [
-          1.8,
+          2.65,
           0.5,
-          -2
+          -2.7
         ],
         "size": [
           1,
@@ -129,115 +146,13 @@
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "wing-r-upper",
+        "id": "expand-3-b",
         "type": "wall",
         "material": "wood",
         "position": [
-          1.8,
-          1.5,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "tower-l",
-        "type": "tower",
-        "material": "stone",
-        "position": [
-          -1.8,
-          1.55,
-          -2
-        ],
-        "size": [
-          0.85,
-          1.2,
-          0.85
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "tower-r",
-        "type": "tower",
-        "material": "stone",
-        "position": [
-          1.8,
-          1.55,
-          -2
-        ],
-        "size": [
-          0.85,
-          1.2,
-          0.85
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "lintel",
-        "type": "wall",
-        "material": "wood",
-        "position": [
-          0,
-          1.55,
-          -2
-        ],
-        "size": [
-          1.3,
-          0.7,
-          0.9
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "inner-l",
-        "type": "wall",
-        "material": "wood",
-        "position": [
-          -0.9,
-          1.5,
+          2.15,
+          0.5,
           -2.35
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "inner-r",
-        "type": "wall",
-        "material": "wood",
-        "position": [
-          0.9,
-          1.5,
-          -2.35
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "gate-mid",
-        "type": "wall",
-        "material": "wood",
-        "position": [
-          0,
-          1.5,
-          -2
         ],
         "size": [
           1,
@@ -253,15 +168,15 @@
         "material": "wood",
         "position": [
           0,
-          2.39,
-          -2.35
+          2.41,
+          -2
         ],
         "size": [
-          0.78,
-          0.78,
-          0.78
+          0.8200000000000001,
+          0.8200000000000001,
+          0.8200000000000001
         ],
-        "hitPoints": 108
+        "hitPoints": 93
       }
     ]
   }

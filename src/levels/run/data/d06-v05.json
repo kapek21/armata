@@ -1,13 +1,13 @@
 {
   "id": "run-d06-v05",
-  "name": "Cel 6 — Bliźniacze wieże 5",
+  "name": "Cel 6 — Mur kurtynowy 5",
   "chapter": 6,
   "difficulty": 6,
   "runDifficulty": 6,
   "variant": 5,
   "clearReward": 1325,
-  "blueprint": "twin_towers",
-  "ammoLimit": 4,
+  "blueprint": "curtain_wall",
+  "ammoLimit": 6,
   "timeLimitSec": 999,
   "starTimeSec": [
     999,
@@ -15,9 +15,9 @@
     999
   ],
   "starShots": [
-    4,
-    4,
-    4
+    6,
+    6,
+    6
   ],
   "starScore": [
     1725,
@@ -31,8 +31,8 @@
       0.6,
       8.2
     ],
-    "angleMinDeg": 13,
-    "angleMaxDeg": 50
+    "angleMinDeg": 16,
+    "angleMaxDeg": 56
   },
   "enemyCastle": {
     "origin": [
@@ -53,7 +53,7 @@
           -2
         ],
         "size": [
-          11,
+          13.8,
           0.5,
           7
         ]
@@ -61,11 +61,11 @@
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "tower-l-base-base",
-        "type": "tower",
+        "id": "curtain-base-0",
+        "type": "wall",
         "material": "stone",
         "position": [
-          -2.5,
+          -3.6750000000000003,
           0.5,
           -2
         ],
@@ -78,12 +78,267 @@
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "tower-l-base-upper",
+        "id": "curtain-base-1",
         "type": "wall",
         "material": "stone",
         "position": [
-          -2.5,
+          -2.625,
+          0.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "curtain-base-2",
+        "type": "wall",
+        "material": "stone",
+        "position": [
+          -1.5750000000000002,
+          0.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "curtain-base-3",
+        "type": "wall",
+        "material": "stone",
+        "position": [
+          -0.525,
+          0.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "curtain-base-4",
+        "type": "wall",
+        "material": "stone",
+        "position": [
+          0.525,
+          0.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "curtain-base-5",
+        "type": "wall",
+        "material": "stone",
+        "position": [
+          1.5750000000000002,
+          0.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "curtain-base-6",
+        "type": "wall",
+        "material": "stone",
+        "position": [
+          2.625,
+          0.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "curtain-base-7",
+        "type": "wall",
+        "material": "stone",
+        "position": [
+          3.6750000000000003,
+          0.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "curtain-upper-0",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          -3.6750000000000003,
           1.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "curtain-upper-1",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          -2.625,
+          1.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "curtain-upper-2",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          -1.5750000000000002,
+          1.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "curtain-upper-3",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          -0.525,
+          1.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "curtain-upper-4",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          0.525,
+          1.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "curtain-upper-5",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          1.5750000000000002,
+          1.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "curtain-upper-6",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          2.625,
+          1.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "curtain-upper-7",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          3.6750000000000003,
+          1.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "tower-l-0",
+        "type": "tower",
+        "material": "stone",
+        "position": [
+          -4.7,
+          0.5,
           -2
         ],
         "size": [
@@ -99,7 +354,7 @@
         "type": "tower",
         "material": "stone",
         "position": [
-          -2.5,
+          -4.7,
           1.5,
           -2
         ],
@@ -114,9 +369,9 @@
         "isStatic": false,
         "id": "tower-l-2",
         "type": "tower",
-        "material": "wood",
+        "material": "stone",
         "position": [
-          -2.5,
+          -4.7,
           2.5,
           -2
         ],
@@ -129,29 +384,12 @@
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "tower-r-base-base",
+        "id": "tower-r-0",
         "type": "tower",
         "material": "stone",
         "position": [
-          2.5,
+          4.7,
           0.5,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "tower-r-base-upper",
-        "type": "wall",
-        "material": "stone",
-        "position": [
-          2.5,
-          1.5,
           -2
         ],
         "size": [
@@ -167,7 +405,7 @@
         "type": "tower",
         "material": "stone",
         "position": [
-          2.5,
+          4.7,
           1.5,
           -2
         ],
@@ -182,9 +420,9 @@
         "isStatic": false,
         "id": "tower-r-2",
         "type": "tower",
-        "material": "wood",
+        "material": "stone",
         "position": [
-          2.5,
+          4.7,
           2.5,
           -2
         ],
@@ -197,46 +435,12 @@
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "bridge",
+        "id": "merlon-c",
         "type": "wall",
-        "material": "glass",
+        "material": "wood",
         "position": [
           0,
-          3.3,
-          -2
-        ],
-        "size": [
-          4.25,
-          0.35,
-          0.75
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "tie-l",
-        "type": "wall",
-        "material": "wood",
-        "position": [
-          -1.375,
-          2.8,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "tie-r",
-        "type": "wall",
-        "material": "wood",
-        "position": [
-          1.375,
-          2.8,
+          2.5,
           -2
         ],
         "size": [
@@ -252,16 +456,16 @@
         "type": "keystone",
         "material": "wood",
         "position": [
-          -2.5,
-          3.4,
+          3.6750000000000003,
+          2.41,
           -2
         ],
         "size": [
-          0.8,
-          0.8,
-          0.8
+          0.8200000000000001,
+          0.8200000000000001,
+          0.8200000000000001
         ],
-        "hitPoints": 169
+        "hitPoints": 147
       }
     ]
   }
