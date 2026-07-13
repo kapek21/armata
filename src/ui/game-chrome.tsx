@@ -120,8 +120,8 @@ export function GameChromeBottom({
         ? 'Dotknij moduł → odsuń w bok (siła), w górę tylko dla łuku'
         : '';
 
-  const showBonusShot = phase === 'lost' && !profile.adsRemoved;
-  const showRetry = (phase === 'won' || phase === 'lost') && snap.runEnded;
+  const showBonusShot = phase === 'lost' && snap.runEnded && !profile.adsRemoved;
+  const showRetry = phase !== 'menu' && phase !== 'loading';
   const showNext = false;
   const totalPowerups = powerupTotal(profile.powerups);
 
@@ -189,7 +189,7 @@ export function GameChromeBottom({
         )}
         {showRetry && (
           <button type="button" className="btn-primary min-h-11" onClick={onRetry}>
-            Nowy run
+            Retry
           </button>
         )}
         {showNext && (
