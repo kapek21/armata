@@ -406,8 +406,8 @@
         "type": "keystone",
         "material": "wood",
         "position": [
-          0,
-          3.38,
+          -3.1500000000000004,
+          2.38,
           -2
         ],
         "size": [

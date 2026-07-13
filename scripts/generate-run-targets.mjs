@@ -300,6 +300,83 @@ function topKeystoneAnchors(anchors) {
   return top.length > 0 ? top : anchors;
 }
 
+/** Usuwa kotwice na szczycie konstrukcji (d3+). */
+function excludeTopKeystoneAnchors(anchors) {
+  if (anchors.length === 0) return anchors;
+
+  const supportTop = (a) => a.mod.position[1] + a.mod.size[1] / 2;
+  const maxTop = Math.max(...anchors.map(supportTop));
+
+  let filtered = anchors.filter((a) => supportTop(a) < maxTop - 0.45);
+  if (filtered.length > 0) return filtered;
+
+  const minY = Math.min(...anchors.map((a) => a.mod.position[1]));
+  filtered = anchors.filter((a) => a.mod.position[1] <= minY + 0.01);
+  return filtered.length > 0 ? filtered : anchors;
+}
+
+function structuralModules(modules) {
+  return modules.filter((mod) => !isKeystoneMod(mod) && mod.type !== 'foundation');
+}
+
+function globalMaxSupportTop(modules) {
+  const struct = structuralModules(modules).filter((mod) => !mod.isStatic);
+  if (struct.length === 0) return 0;
+  return Math.max(...struct.map((mod) => mod.position[1] + mod.size[1] / 2));
+}
+
+/** Po finalize: d3+ nie mogą stać na najwyższym rzędzie konstrukcji. */
+function clampKeystonesBelowPeak(modules) {
+  const maxTop = globalMaxSupportTop(modules);
+  const struct = structuralModules(modules);
+  const resolved = [];
+
+  for (const ks of modules.filter(isKeystoneMod)) {
+    const ksSupportTop = ks.position[1] - ks.size[0] / 2;
+    if (ksSupportTop < maxTop - 0.45) {
+      resolved.push(ks);
+      continue;
+    }
+
+    const [ox, , oz] = ks.position;
+    const size = ks.size[0];
+    let placed = false;
+
+    const lowerSupports = struct
+      .filter((mod) => !mod.isStatic && mod.position[1] + mod.size[1] / 2 < maxTop - 0.45)
+      .sort(
+        (a, b) =>
+          b.position[1] + b.size[1] / 2 - (a.position[1] + a.size[1] / 2),
+      );
+
+    for (const mod of lowerSupports) {
+      ks.position[0] = mod.position[0];
+      ks.position[2] = mod.position[2];
+      ks.position[1] = stackY(mod.position[1], mod.size[1], size);
+      if (!keystonePenetrates(modules, ks, resolved)) {
+        placed = true;
+        break;
+      }
+    }
+
+    if (!placed) {
+      ks.position[0] = ox;
+      ks.position[2] = oz;
+      for (const mod of lowerSupports) {
+        ks.position[0] = mod.position[0];
+        ks.position[2] = mod.position[2];
+        ks.position[1] = stackY(mod.position[1], mod.size[1], size);
+        if (!keystonePenetrates(modules, ks, resolved)) {
+          placed = true;
+          break;
+        }
+      }
+    }
+
+    resolved.push(ks);
+  }
+}
+
 /** Ocena „wewnętrzności” — głębiej, bliżej środka, otoczone modułami. */
 function interiorScore(anchor, modules) {
   const { x, z, mod } = anchor;
@@ -324,7 +401,7 @@ function interiorScore(anchor, modules) {
 
   const y = mod.position[1];
   if (y >= ROW.low - 0.1 && y <= ROW.mid + 0.1) score += 1.5;
-  if (y >= ROW.high) score -= 0.75;
+  if (y >= ROW.high) score -= 2.5;
 
   if (Math.abs(x) > 2.8) score -= 2;
 
@@ -348,6 +425,7 @@ function placeKeystones(modules, count, hp, rng, difficulty) {
   if (difficulty <= 2) {
     anchors = topKeystoneAnchors(anchors);
   } else {
+    anchors = excludeTopKeystoneAnchors(anchors);
     anchors = preferInteriorAnchors(anchors, modules, rng);
   }
   if (anchors.length === 0) {
@@ -609,6 +687,9 @@ function buildCastle(difficulty, variant) {
   placeKeystones(modules, keyCount, hp, rng, difficulty);
   trimToMaxModules(modules);
   finalizeKeystones(modules);
+  if (difficulty >= 3) {
+    clampKeystonesBelowPeak(modules);
+  }
   trimToMaxModules(modules);
   return { modules, blueprint, keyCount };
 }
