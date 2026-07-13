@@ -523,6 +523,22 @@ export function applyCannonAim(cannonRoot: THREE.Object3D, pitchRad: number, yaw
   applyCannonVisualForPitch(cannonRoot);
 }
 
+/** Pitch od którego armata staje się półprzezroczysta (zgodny z ukryciem lufy). */
+export const CANNON_FADE_PITCH_RAD = (36 * Math.PI) / 180;
+
+export function cannonAimAngles(cannonRoot: THREE.Object3D): { pitch: number; yaw: number } {
+  const pitchPivot = cannonRoot.getObjectByName('pitch-pivot');
+  const yawPivot = cannonRoot.getObjectByName('yaw-pivot');
+  return {
+    pitch: pitchPivot ? Math.max(0, pitchPivot.rotation.x) : 0,
+    yaw: yawPivot ? yawPivot.rotation.y : 0,
+  };
+}
+
+export function isCannonAimTransparent(cannonRoot: THREE.Object3D): boolean {
+  return cannonAimAngles(cannonRoot).pitch >= CANNON_FADE_PITCH_RAD;
+}
+
 interface CannonMatSnapshot {
   color: THREE.Color;
   emissive: THREE.Color;
@@ -619,7 +635,7 @@ export function applyCannonVisualForPitch(cannonRoot: THREE.Object3D): void {
   if (!pitchPivot) return;
 
   const pitch = Math.max(0, pitchPivot.rotation.x);
-  const muzzleHiddenAt = (36 * Math.PI) / 180;
+  const muzzleHiddenAt = CANNON_FADE_PITCH_RAD;
   const fadeEnd = (56 * Math.PI) / 180;
   const hideMuzzle = pitch >= muzzleHiddenAt;
   const fadeT = hideMuzzle ? THREE.MathUtils.smoothstep(pitch, muzzleHiddenAt, fadeEnd) : 0;
