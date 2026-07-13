@@ -1,0 +1,302 @@
+{
+  "id": "run-d05-v08",
+  "name": "Cel 5 — Cytadela 8",
+  "chapter": 5,
+  "difficulty": 5,
+  "runDifficulty": 5,
+  "variant": 8,
+  "clearReward": 1220,
+  "blueprint": "citadel",
+  "ammoLimit": 4,
+  "timeLimitSec": 999,
+  "starTimeSec": [
+    999,
+    999,
+    999
+  ],
+  "starShots": [
+    4,
+    4,
+    4
+  ],
+  "starScore": [
+    1620,
+    1420,
+    1220
+  ],
+  "killZoneY": -2,
+  "cannon": {
+    "position": [
+      0,
+      0.6,
+      8.2
+    ],
+    "angleMinDeg": 15,
+    "angleMaxDeg": 54
+  },
+  "enemyCastle": {
+    "origin": [
+      0,
+      0,
+      -2
+    ],
+    "modules": [
+      {
+        "importance": "structural",
+        "isStatic": true,
+        "id": "found",
+        "type": "foundation",
+        "material": "ground",
+        "position": [
+          0,
+          -0.25,
+          -2
+        ],
+        "size": [
+          14,
+          0.5,
+          8
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": true,
+        "id": "outer-gate",
+        "type": "gate",
+        "material": "stone",
+        "position": [
+          0,
+          0.55,
+          -1.65
+        ],
+        "size": [
+          1.6,
+          1.2,
+          1.1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": true,
+        "id": "flank--1-0",
+        "type": "tower",
+        "material": "stone",
+        "position": [
+          -2,
+          0.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "flank--1-1",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          -2.3,
+          1.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "flank--1-2",
+        "type": "wall",
+        "material": "glass",
+        "position": [
+          -2.6,
+          2.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": true,
+        "id": "flank-1-0",
+        "type": "tower",
+        "material": "stone",
+        "position": [
+          2,
+          0.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "flank-1-1",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          2.3,
+          1.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "flank-1-2",
+        "type": "wall",
+        "material": "glass",
+        "position": [
+          2.6,
+          2.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": true,
+        "id": "keep-0",
+        "type": "wall",
+        "material": "stone",
+        "position": [
+          0,
+          1.5,
+          -2.15
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "keep-1",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          0,
+          2.5,
+          -2.25
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "keep-2",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          -0.9,
+          2.5,
+          -2.35
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "keep-3",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          0.9,
+          2.5,
+          -2.35
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": true,
+        "id": "core-pillar",
+        "type": "wall",
+        "material": "metal",
+        "position": [
+          0,
+          3.5,
+          -2.45
+        ],
+        "size": [
+          0.5,
+          1.2,
+          0.5
+        ]
+      },
+      {
+        "importance": "critical",
+        "isStatic": false,
+        "id": "keystone",
+        "type": "keystone",
+        "material": "wood",
+        "position": [
+          0,
+          1.54,
+          -2.15
+        ],
+        "size": [
+          0.78,
+          0.78,
+          0.78
+        ],
+        "hitPoints": 164
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "keystone-4-deep-support",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          2.6,
+          0.5,
+          -2.35
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      }
+    ]
+  }
+}

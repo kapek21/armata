@@ -34,7 +34,7 @@ export function GameChromeTop({ phase, musicMuted, onToggleMusic }: GameChromeTo
         <div className="min-w-0 flex-1 pr-9">
           <div className="truncate font-semibold text-amber-200">{snap.levelName}</div>
           <div className="text-white/55">
-            R{snap.chapter} · {snap.levelIndex + 1}/{snap.levelCount}
+            Cel {snap.runTargetIndex}/{snap.runTargetCount} · trudność {snap.runDifficulty}
           </div>
         </div>
         <div className="text-center px-2">
@@ -42,7 +42,7 @@ export function GameChromeTop({ phase, musicMuted, onToggleMusic }: GameChromeTo
           <div className="text-lg font-bold text-amber-300">{snap.runScore}</div>
         </div>
         <div className="text-center px-2">
-          <div className="text-white/55">Kampania</div>
+          <div className="text-white/55">Czas</div>
           <div
             className={`text-lg font-bold tabular-nums ${
               urgent ? 'text-red-400 animate-pulse' : warn ? 'text-yellow-300' : 'text-emerald-300'
@@ -121,8 +121,8 @@ export function GameChromeBottom({
         : '';
 
   const showBonusShot = phase === 'lost' && !profile.adsRemoved;
-  const showRetry = phase === 'won' || phase === 'lost';
-  const showNext = phase === 'won' && snap.levelIndex + 1 < snap.levelCount;
+  const showRetry = (phase === 'won' || phase === 'lost') && snap.runEnded;
+  const showNext = false;
   const totalPowerups = powerupTotal(profile.powerups);
 
   return (
@@ -189,7 +189,7 @@ export function GameChromeBottom({
         )}
         {showRetry && (
           <button type="button" className="btn-primary min-h-11" onClick={onRetry}>
-            Retry
+            Nowy run
           </button>
         )}
         {showNext && (

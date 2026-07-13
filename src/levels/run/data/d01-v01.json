@@ -1,0 +1,98 @@
+{
+  "id": "run-d01-v01",
+  "name": "Cel 1 — Wieża strażnicza 1",
+  "chapter": 1,
+  "difficulty": 1,
+  "runDifficulty": 1,
+  "variant": 1,
+  "clearReward": 515,
+  "blueprint": "watchtower",
+  "ammoLimit": 7,
+  "timeLimitSec": 999,
+  "starTimeSec": [
+    999,
+    999,
+    999
+  ],
+  "starShots": [
+    7,
+    7,
+    7
+  ],
+  "starScore": [
+    915,
+    715,
+    515
+  ],
+  "killZoneY": -2,
+  "cannon": {
+    "position": [
+      0,
+      0.6,
+      8.2
+    ],
+    "angleMinDeg": 11,
+    "angleMaxDeg": 46
+  },
+  "enemyCastle": {
+    "origin": [
+      0,
+      0,
+      -2
+    ],
+    "modules": [
+      {
+        "importance": "structural",
+        "isStatic": true,
+        "id": "found",
+        "type": "foundation",
+        "material": "ground",
+        "position": [
+          0,
+          -0.25,
+          -2
+        ],
+        "size": [
+          9.2,
+          0.5,
+          7
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "core-0",
+        "type": "gate",
+        "material": "wood",
+        "position": [
+          0,
+          0.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "critical",
+        "isStatic": false,
+        "id": "keystone",
+        "type": "keystone",
+        "material": "wood",
+        "position": [
+          0,
+          1.41,
+          -2
+        ],
+        "size": [
+          0.82,
+          0.82,
+          0.82
+        ],
+        "hitPoints": 87
+      }
+    ]
+  }
+}

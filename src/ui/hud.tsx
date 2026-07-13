@@ -1,10 +1,9 @@
 import { useHudStore } from './hud-store.js';
-import { levelByIndex, levelCount, chapterCount } from '../levels/index.js';
-import { countKeystones } from '../levels/normalize.js';
 import { POWERUP_DEFS } from '../game/powerups.js';
 import { POWERUP_COST } from '../meta/economy.js';
 import { buyPowerup, saveProfile, shouldShowAimHint } from '../meta/profile.js';
 import { getWeeklyLeaderboard } from '../meta/leaderboard.js';
+import { RUN_TARGET_COUNT } from '../meta/run-state.js';
 import type { GamePhase, PowerupType } from '../core/types.js';
 import { HelpDialog } from './help-dialog.js';
 
@@ -39,7 +38,7 @@ export function Hud({
   };
 
   const helpOverlay = helpOpen ? <HelpDialog onClose={onCloseHelp} /> : null;
-  const weekly = getWeeklyLeaderboard(profile.levels[snap.levelId]?.bestScore ?? snap.runScore);
+  const weekly = getWeeklyLeaderboard(profile.bestRunScore ?? snap.runScore);
 
   if (phase === 'menu') {
     return (
@@ -67,8 +66,23 @@ export function Hud({
             <h1 id="menu-title" className="font-display text-center text-xl text-amber-300 pr-10">
               ARMATA
             </h1>
-            <p className="mt-1 text-center text-xs text-white/60">Oblężenie zamku — traf kluczowy moduł</p>
+            <p className="mt-1 text-center text-xs text-white/60">
+              3 minuty · {RUN_TARGET_COUNT} celów · trudność rośnie
+            </p>
             <p className="mt-1 text-center text-xs text-amber-200/80">🪙 {profile.coins} monet</p>
+            {(profile.bestRunScore ?? 0) > 0 && (
+              <p className="mt-1 text-center text-xs text-emerald-300/90">
+                Najlepszy run: {profile.bestRunScore} pkt
+              </p>
+            )}
+
+            <button
+              type="button"
+              className="btn-primary mt-4 w-full min-h-12"
+              onClick={() => onStartLevel(0)}
+            >
+              Nowa rozgrywka (3:00)
+            </button>
 
             <div className="mt-3 rounded-lg border border-white/10 bg-black/25 p-2">
               <p className="mb-2 text-center text-[11px] font-semibold uppercase tracking-wide text-amber-200/90">
@@ -96,54 +110,11 @@ export function Hud({
                 })}
               </div>
               <p className="mt-2 text-center text-[10px] text-white/45">
-                Wygrana z 2★ lub 3★ też daje losowy power-up
+                2+ zniszczone cele lub ukończony run daje power-upy
               </p>
             </div>
 
-            <div className="mt-3 flex-1 overflow-y-auto">
-              {Array.from({ length: chapterCount() }, (_, ch) => ch + 1).map((chapter) => (
-                <div key={chapter} className="mb-3">
-                  <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-white/45">
-                    Rozdział {chapter}
-                  </p>
-                  <ul className="flex flex-col gap-1">
-                    {Array.from({ length: levelCount() }, (_, i) => i)
-                      .filter((i) => levelByIndex(i).chapter === chapter)
-                      .map((i) => {
-                        const lvl = levelByIndex(i);
-                        const locked = i >= profile.unlockedLevels;
-                        const best = profile.levels[lvl.id];
-                        return (
-                          <li key={lvl.id}>
-                            <button
-                              type="button"
-                              disabled={locked}
-                              className="btn-secondary w-full text-left text-sm disabled:opacity-40"
-                              onClick={() => onStartLevel(i)}
-                            >
-                              <span>{i + 1}. {lvl.name}</span>
-                              {countKeystones(lvl) > 1 && (
-                                <span className="ml-1 text-[10px] text-amber-300">
-                                  🛡×{countKeystones(lvl)}
-                                </span>
-                              )}
-                              {locked ? (
-                                <span className="float-right text-white/40">🔒</span>
-                              ) : (
-                                <span className="float-right text-amber-300">
-                                  {'★'.repeat(best?.stars ?? 0) || '—'}
-                                </span>
-                              )}
-                            </button>
-                          </li>
-                        );
-                      })}
-                  </ul>
-                </div>
-              ))}
-            </div>
-
-            <details className="mt-2 text-xs text-white/60">
+            <details className="mt-3 text-xs text-white/60">
               <summary className="cursor-pointer text-amber-200/90">Ranking tygodnia</summary>
               <ol className="mt-1 space-y-0.5">
                 {weekly.slice(0, 5).map((e) => (
@@ -173,24 +144,22 @@ export function Hud({
 
   return (
     <>
-      {snap.message && phase === 'simulating' && (
+      {snap.message && (phase === 'simulating' || phase === 'won') && (
         <div className="pointer-events-none absolute inset-x-0 top-[18%] z-10 flex justify-center">
           <span className="panel px-4 py-2 text-sm text-amber-200">{snap.message}</span>
         </div>
       )}
 
-      {(phase === 'won' || phase === 'lost') && (
+      {(phase === 'won' || phase === 'lost') && snap.runEnded && (
         <div className="pointer-events-none absolute inset-0 z-[15] flex items-center justify-center px-4">
           <div className="panel max-w-xs px-6 py-5 text-center">
             <p className="text-2xl">{phase === 'won' ? '🏰' : '💥'}</p>
             <p className="mt-2 font-display text-lg text-amber-200">
-              {phase === 'won' ? 'Zamek zdobyty!' : 'Oblężenie nieudane'}
+              {phase === 'won' ? 'Run ukończony!' : 'Run zakończony'}
             </p>
-            {phase === 'won' && (
-              <>
-                <p className="mt-1 text-amber-300">{'★'.repeat(snap.starsEarned) || '—'}</p>
-                <p className="mt-1 text-sm text-white/70">Wynik: {snap.finalScore}</p>
-              </>
+            <p className="mt-1 text-sm text-white/70">Wynik: {snap.finalScore}</p>
+            {snap.message && (
+              <p className="mt-2 text-xs text-amber-200/80">{snap.message}</p>
             )}
           </div>
         </div>

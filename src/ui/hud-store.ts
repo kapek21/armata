@@ -1,22 +1,28 @@
 import { create } from 'zustand';
 import type { GamePhase, HudSnapshot } from '../core/types.js';
-import { levelByIndex, levelCount } from '../levels/index.js';
+import { runTarget, RUN_TARGET_COUNT } from '../levels/run/index.js';
+import { totalCampaignTimeSec } from '../meta/campaign-time.js';
 import { loadProfile } from '../meta/profile.js';
-import { clampCampaignTimeLeftSec, totalCampaignTimeSec } from '../meta/campaign-time.js';
 
 const profile = loadProfile();
-const lvl0 = levelByIndex(0);
+const lvl0 = runTarget(1, 1);
 
 const initial: HudSnapshot = {
   phase: 'loading',
   levelId: lvl0.id,
   levelName: lvl0.name,
   levelIndex: 0,
-  levelCount: levelCount(),
-  chapter: lvl0.chapter,
+  levelCount: RUN_TARGET_COUNT,
+  chapter: 1,
+  runTargetIndex: 1,
+  runTargetCount: RUN_TARGET_COUNT,
+  runDifficulty: 1,
+  runVariant: 1,
+  runComplete: false,
+  runEnded: false,
   ammoLeft: lvl0.ammoLimit,
   ammoTotal: lvl0.ammoLimit,
-  timeLeftSec: clampCampaignTimeLeftSec(profile.campaignTimeLeftSec) ?? totalCampaignTimeSec(),
+  timeLeftSec: totalCampaignTimeSec(),
   timeLimitSec: totalCampaignTimeSec(),
   runScore: 0,
   keystoneHp: 100,

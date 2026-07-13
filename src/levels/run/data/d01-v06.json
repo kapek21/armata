@@ -1,0 +1,268 @@
+{
+  "id": "run-d01-v06",
+  "name": "Cel 1 — Brama warowna 6",
+  "chapter": 1,
+  "difficulty": 1,
+  "runDifficulty": 1,
+  "variant": 6,
+  "clearReward": 590,
+  "blueprint": "gatehouse",
+  "ammoLimit": 7,
+  "timeLimitSec": 999,
+  "starTimeSec": [
+    999,
+    999,
+    999
+  ],
+  "starShots": [
+    7,
+    7,
+    7
+  ],
+  "starScore": [
+    990,
+    790,
+    590
+  ],
+  "killZoneY": -2,
+  "cannon": {
+    "position": [
+      0,
+      0.6,
+      8.2
+    ],
+    "angleMinDeg": 11,
+    "angleMaxDeg": 46
+  },
+  "enemyCastle": {
+    "origin": [
+      0,
+      0,
+      -2
+    ],
+    "modules": [
+      {
+        "importance": "structural",
+        "isStatic": true,
+        "id": "found",
+        "type": "foundation",
+        "material": "ground",
+        "position": [
+          0,
+          -0.25,
+          -2
+        ],
+        "size": [
+          12,
+          0.5,
+          7
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": true,
+        "id": "gate",
+        "type": "gate",
+        "material": "stone",
+        "position": [
+          0,
+          0.55,
+          -2
+        ],
+        "size": [
+          1.5,
+          1.15,
+          1.1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "wing-l-base",
+        "type": "wall",
+        "material": "stone",
+        "position": [
+          -1.8,
+          0.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "wing-l-upper",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          -1.8,
+          1.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "wing-r-base",
+        "type": "wall",
+        "material": "stone",
+        "position": [
+          1.8,
+          0.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "wing-r-upper",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          1.8,
+          1.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "tower-l",
+        "type": "tower",
+        "material": "stone",
+        "position": [
+          -1.8,
+          1.55,
+          -2
+        ],
+        "size": [
+          0.85,
+          1.2,
+          0.85
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "tower-r",
+        "type": "tower",
+        "material": "stone",
+        "position": [
+          1.8,
+          1.55,
+          -2
+        ],
+        "size": [
+          0.85,
+          1.2,
+          0.85
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "lintel",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          0,
+          1.55,
+          -2
+        ],
+        "size": [
+          1.3,
+          0.7,
+          0.9
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "inner-l",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          -0.9,
+          1.5,
+          -2.35
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "inner-r",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          0.9,
+          1.5,
+          -2.35
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "gate-mid",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          0,
+          1.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "critical",
+        "isStatic": false,
+        "id": "keystone",
+        "type": "keystone",
+        "material": "wood",
+        "position": [
+          0,
+          2.39,
+          -2.35
+        ],
+        "size": [
+          0.78,
+          0.78,
+          0.78
+        ],
+        "hitPoints": 102
+      }
+    ]
+  }
+}

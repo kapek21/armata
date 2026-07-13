@@ -33,6 +33,10 @@ export interface Profile {
   campaignTimeLeftSec?: number;
   /** Indeks poziomu, od którego liczony jest bieżący bieg kampanii. */
   campaignAnchorLevel?: number;
+  /** Najlepszy wynik trybu run (3 min). */
+  bestRunScore?: number;
+  lastRunScore?: number;
+  runsPlayed?: number;
 }
 
 function defaultProfile(): Profile {
@@ -90,6 +94,9 @@ export function loadProfile(): Profile {
       winStreak: parsed.winStreak ?? 0,
       campaignTimeLeftSec: parsed.campaignTimeLeftSec,
       campaignAnchorLevel: parsed.campaignAnchorLevel,
+      bestRunScore: parsed.bestRunScore,
+      lastRunScore: parsed.lastRunScore,
+      runsPlayed: parsed.runsPlayed,
     };
     if (parsed.powerups && powerupTotal(parsed.powerups) === 0 && powerupTotal(powerups) > 0) {
       saveProfile(profile);

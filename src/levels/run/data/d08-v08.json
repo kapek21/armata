@@ -1,0 +1,319 @@
+{
+  "id": "run-d08-v08",
+  "name": "Cel 8 — Bastion 8",
+  "chapter": 8,
+  "difficulty": 8,
+  "runDifficulty": 8,
+  "variant": 8,
+  "clearReward": 1670,
+  "blueprint": "bastion",
+  "ammoLimit": 2,
+  "timeLimitSec": 999,
+  "starTimeSec": [
+    999,
+    999,
+    999
+  ],
+  "starShots": [
+    2,
+    2,
+    2
+  ],
+  "starScore": [
+    2070,
+    1870,
+    1670
+  ],
+  "killZoneY": -2,
+  "cannon": {
+    "position": [
+      0,
+      0.6,
+      8.2
+    ],
+    "angleMinDeg": 15,
+    "angleMaxDeg": 54
+  },
+  "enemyCastle": {
+    "origin": [
+      0,
+      0,
+      -2
+    ],
+    "modules": [
+      {
+        "importance": "structural",
+        "isStatic": true,
+        "id": "found",
+        "type": "foundation",
+        "material": "ground",
+        "position": [
+          0,
+          -0.25,
+          -2
+        ],
+        "size": [
+          13,
+          0.5,
+          7
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": true,
+        "id": "corner--2.8",
+        "type": "tower",
+        "material": "metal",
+        "position": [
+          -2.8,
+          0.55,
+          -2
+        ],
+        "size": [
+          0.7,
+          1.15,
+          0.7
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": true,
+        "id": "corner-2.8",
+        "type": "tower",
+        "material": "metal",
+        "position": [
+          2.8,
+          0.55,
+          -2
+        ],
+        "size": [
+          0.7,
+          1.15,
+          0.7
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": true,
+        "id": "corner--2.5",
+        "type": "tower",
+        "material": "metal",
+        "position": [
+          -2.5,
+          0.55,
+          -2
+        ],
+        "size": [
+          0.7,
+          1.15,
+          0.7
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": true,
+        "id": "corner-2.5",
+        "type": "tower",
+        "material": "metal",
+        "position": [
+          2.5,
+          0.55,
+          -2
+        ],
+        "size": [
+          0.7,
+          1.15,
+          0.7
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "ring--1.5-base",
+        "type": "wall",
+        "material": "stone",
+        "position": [
+          -1.5,
+          0.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "ring--1.5-upper",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          -1.5,
+          1.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "ring-0-base",
+        "type": "wall",
+        "material": "stone",
+        "position": [
+          0,
+          0.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "ring-0-upper",
+        "type": "wall",
+        "material": "glass",
+        "position": [
+          0,
+          1.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "ring-1.5-base",
+        "type": "wall",
+        "material": "stone",
+        "position": [
+          1.5,
+          0.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "ring-1.5-upper",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          1.5,
+          1.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": true,
+        "id": "gate",
+        "type": "gate",
+        "material": "stone",
+        "position": [
+          0,
+          0.55,
+          -1.8
+        ],
+        "size": [
+          1.4,
+          1.1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "window",
+        "type": "wall",
+        "material": "glass",
+        "position": [
+          1.2,
+          1.55,
+          -2.25
+        ],
+        "size": [
+          1.2,
+          0.45,
+          0.7
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "vault-l",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          -0.8,
+          2.5,
+          -2.35
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "vault-r",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          0.8,
+          2.5,
+          -2.35
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "critical",
+        "isStatic": false,
+        "id": "keystone",
+        "type": "keystone",
+        "material": "wood",
+        "position": [
+          0,
+          2.375,
+          -2
+        ],
+        "size": [
+          0.75,
+          0.75,
+          0.75
+        ],
+        "hitPoints": 206
+      }
+    ]
+  }
+}

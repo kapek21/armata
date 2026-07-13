@@ -66,6 +66,12 @@ export interface LevelDefinition {
   difficulty: number;
   /** Szablon zamku z generatora poziomów */
   blueprint?: CastleBlueprint;
+  /** Tryb run: trudność 1–10 */
+  runDifficulty?: number;
+  /** Tryb run: wariant 1–10 w puli trudności */
+  variant?: number;
+  /** Tryb run: punkty za zniszczenie keystone */
+  clearReward?: number;
   ammoLimit: number;
   timeLimitSec: number;
   starTimeSec: [number, number, number];
@@ -91,6 +97,12 @@ export interface AimState {
   currentY: number;
 }
 
+export interface RunTargetDefinition extends LevelDefinition {
+  runDifficulty: number;
+  variant: number;
+  clearReward: number;
+}
+
 export interface HudSnapshot {
   phase: GamePhase;
   levelId: string;
@@ -98,6 +110,15 @@ export interface HudSnapshot {
   levelIndex: number;
   levelCount: number;
   chapter: number;
+  /** Bieżący cel runu 1–10 */
+  runTargetIndex: number;
+  runTargetCount: number;
+  runDifficulty: number;
+  runVariant: number;
+  /** Cały run ukończony (10/10) */
+  runComplete: boolean;
+  /** Run zakończony — pokaż ekran podsumowania */
+  runEnded: boolean;
   ammoLeft: number;
   ammoTotal: number;
   timeLeftSec: number;

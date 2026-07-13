@@ -9,6 +9,21 @@ export function ballHitDamage(power: number, heavy = false): number {
   return heavy ? base * 1.5 : base;
 }
 
+export function runTargetClearScore(params: {
+  clearReward: number;
+  keystoneHits: number;
+  secondaryDestroyed: number;
+  shotsUsed: number;
+  usedPowerup: boolean;
+}): number {
+  let score = params.clearReward;
+  score += params.keystoneHits * KEYSTONE_HIT_POINTS;
+  score += params.secondaryDestroyed * SECONDARY_DESTROY_POINTS;
+  score += Math.max(0, 100 - params.shotsUsed * 20);
+  if (!params.usedPowerup) score = Math.round(score * 1.05);
+  return Math.max(0, score);
+}
+
 export function computeRunScore(params: {
   keystoneHits: number;
   keystoneDestroyed: boolean;

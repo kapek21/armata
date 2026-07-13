@@ -35,8 +35,9 @@ export function HelpDialog({ onClose }: HelpDialogProps): JSX.Element {
           <section>
             <h3 className="font-semibold text-amber-200">Cel</h3>
             <p className="mt-1 text-white/70">
-              Zniszcz moduły ze <span className="text-amber-200/90">małą tarczą</span> na froncie
-              — to kluczowe cele. Jeden zegar kampanii na wszystkie poziomy.
+              Masz <span className="text-amber-200/90">3 minuty</span> na zniszczenie do 10 celów.
+              Trudność rośnie z każdym zdobytym zamkiem. Punkty sumują się przez cały run.
+              <span className="text-amber-200/90"> Nowy run</span> resetuje czas i wynik.
             </p>
           </section>
           <section>
@@ -48,10 +49,10 @@ export function HelpDialog({ onClose }: HelpDialogProps): JSX.Element {
             </ol>
           </section>
           <section>
-            <h3 className="font-semibold text-amber-200">Punkty i gwiazdki</h3>
+            <h3 className="font-semibold text-amber-200">Punkty</h3>
             <p className="mt-1 text-white/70">
-              Trafienia w kluczowe moduły dają punkty. Wygrana dopiero po zniszczeniu wszystkich
-              keystone&apos;ów. Gwiazdki za szybkość, oszczędność strzałów i wysoki wynik.
+              Trafienia i zniszczenie keystone&apos;a dają punkty za dany cel. Po runie dostajesz
+              monety i ewentualne power-upy (2+ cele lub ukończony run).
             </p>
           </section>
           <section>
@@ -65,7 +66,7 @@ export function HelpDialog({ onClose }: HelpDialogProps): JSX.Element {
             <p className="mt-1 text-xs text-white/50">
               Masz: ciężki {profile.powerups.heavy}, wybuch {profile.powerups.explosive}, celownik{' '}
               {profile.powerups.trajectory}, wyłom {profile.powerups.breach ?? 0}. Kup w menu (🪙) lub
-              zdobywaj za 2★+.
+              zdobywaj za 2+ cele lub ukończony run.
             </p>
           </section>
           <section>
