@@ -61,7 +61,6 @@ import {
   ballisticPowerForTarget,
   BALL_RADIUS,
   barrelWorldDirection,
-  CANNON_FADE_PITCH_RAD,
   cannonAimAngles,
   computeGoalFrame,
   frameGameplayCamera,
@@ -98,6 +97,8 @@ const BALL_STILL_SPEED = 0.1;
 const BALL_MAX_AGE_MS = 4000;
 const MIN_DRAG_PX = 18;
 const MAX_DRAG_PX = 160;
+/** Moc odniesienia przy ustawianiu kąta po kliknięciu w cel. */
+const AIM_ANGLE_SETUP_POWER = 0.62;
 
 const _hitClosest = new THREE.Vector3();
 
@@ -314,31 +315,36 @@ export class GameSession {
     saveProfile(profile);
   }
 
-  private arcPreferenceFromDrag(): number {
-    const dx = this.aim.originX - this.aim.currentX;
-    const dy = this.aim.originY - this.aim.currentY;
-    const len = Math.hypot(dx, dy);
-    if (len < 10) return 0.28;
-    // Palec w górę = wyższy łuk; w dół = płaska balistyka (siła z długości przeciągnięcia).
-    const loft = THREE.MathUtils.clamp(dy / len, -1, 1);
-    return THREE.MathUtils.clamp(0.28 + loft * 0.42, 0, 1);
+  private downwardAimDragPx(): number {
+    return Math.max(0, this.aim.currentY - this.aim.originY);
   }
 
-  private staticObstacleBoxesForLoft(target: THREE.Vector3): THREE.Box3[] {
-    const boxes: THREE.Box3[] = [];
-    const muzzle = muzzleWorldPosition(this.cannonMesh);
-    for (const entry of this.entries) {
-      if (!entry.isStatic || entry.cleared || entry.moduleType === 'foundation' || entry.isKeystone) {
-        continue;
-      }
-      const box = new THREE.Box3().setFromObject(entry.mesh);
-      if (box.max.y < target.y - 0.35) continue;
-      if (box.min.z > Math.max(muzzle.z, target.z) + 0.5) continue;
-      if (box.max.z < Math.min(muzzle.z, target.z) - 0.5) continue;
-      box.expandByScalar(BALL_RADIUS * 0.4);
-      boxes.push(box);
+  private aimPowerFromDrag(): number {
+    const down = this.downwardAimDragPx();
+    if (down < MIN_DRAG_PX) return AIM_ANGLE_SETUP_POWER;
+    return powerFromDrag(down, MAX_DRAG_PX);
+  }
+
+  private aimObstaclesForAngleSetup(): THREE.Box3[] {
+    if (!this.aimWorldTarget) return [];
+    if (this.activePowerup === 'trajectory') {
+      return this.aimObstacleBoxes();
     }
-    return boxes;
+    return [];
+  }
+
+  private setupAimAngleForTarget(): void {
+    if (!this.aimWorldTarget) return;
+    this.refreshAimTargetPoint();
+    const setupPower = this.ballisticPowerForShot(AIM_ANGLE_SETUP_POWER);
+    aimCannonBallistic(
+      this.cannonMesh,
+      this.aimWorldTarget,
+      setupPower,
+      this.aimObstaclesForAngleSetup(),
+      0.28,
+    );
+    this.lockAimAnglesFromCannon();
   }
 
   private syncViewport(force = false): void {
@@ -406,10 +412,11 @@ export class GameSession {
     });
   }
 
-  private aimDragLength(): number {
-    const dx = this.aim.originX - this.aim.currentX;
-    const dy = this.aim.originY - this.aim.currentY;
-    return Math.hypot(dx, dy);
+  private lockAimAnglesFromCannon(): void {
+    const { pitch, yaw } = cannonAimAngles(this.cannonMesh);
+    this.aimAnglesLocked = true;
+    this.lockedAimPitch = pitch;
+    this.lockedAimYaw = yaw;
   }
 
   private onLostPointerCapture = (e: PointerEvent): void => {
@@ -470,19 +477,6 @@ export class GameSession {
     this.syncHud('Dodatkowy strzał!');
   }
 
-  private aimObstaclesForBallistic(): THREE.Box3[] {
-    if (!this.aimWorldTarget) return [];
-    const arcPref = this.arcPreferenceFromDrag();
-    const boxes: THREE.Box3[] = [];
-    if (this.activePowerup === 'trajectory') {
-      boxes.push(...this.aimObstacleBoxes());
-    }
-    if (arcPref > 0.68) {
-      boxes.push(...this.staticObstacleBoxesForLoft(this.aimWorldTarget));
-    }
-    return boxes;
-  }
-
   private ballisticPowerForShot(basePower: number): number {
     if (!this.aimWorldTarget) return basePower;
     return ballisticPowerForTarget(
@@ -490,14 +484,6 @@ export class GameSession {
       this.aimWorldTarget,
       basePower,
     );
-  }
-
-  private previewDragPower(): number {
-    const dx = this.aim.originX - this.aim.currentX;
-    const dy = this.aim.originY - this.aim.currentY;
-    const len = Math.hypot(dx, dy);
-    if (len < MIN_DRAG_PX) return 0.62;
-    return Math.max(0.38, powerFromDrag(len, MAX_DRAG_PX));
   }
 
   private aimObstacleBoxes(): THREE.Box3[] {
@@ -528,33 +514,6 @@ export class GameSession {
 
   private applyLockedAimAngles(): void {
     applyCannonAim(this.cannonMesh, this.lockedAimPitch, this.lockedAimYaw);
-  }
-
-  private applyBallisticAim(power = this.previewDragPower()): void {
-    if (!this.aimWorldTarget) return;
-
-    if (this.aimAnglesLocked) {
-      this.applyLockedAimAngles();
-      return;
-    }
-
-    this.refreshAimTargetPoint();
-    const resolvedPower = this.ballisticPowerForShot(power);
-    aimCannonBallistic(
-      this.cannonMesh,
-      this.aimWorldTarget,
-      resolvedPower,
-      this.aimObstaclesForBallistic(),
-      this.arcPreferenceFromDrag(),
-    );
-
-    const { pitch, yaw } = cannonAimAngles(this.cannonMesh);
-    if (pitch >= CANNON_FADE_PITCH_RAD) {
-      this.aimAnglesLocked = true;
-      this.lockedAimPitch = CANNON_FADE_PITCH_RAD;
-      this.lockedAimYaw = yaw;
-      this.applyLockedAimAngles();
-    }
   }
 
   private lockAimTarget(clientX: number, clientY: number): void {
@@ -601,6 +560,11 @@ export class GameSession {
     };
     this.resetAimLock();
     this.lockAimTarget(e.clientX, e.clientY);
+    if (this.aimWorldTarget) {
+      this.setupAimAngleForTarget();
+    } else {
+      resetCannonAim(this.cannonMesh, this.level);
+    }
     this.updateAimVisual();
   }
 
@@ -609,11 +573,7 @@ export class GameSession {
     e.preventDefault();
     this.aim.currentX = e.clientX;
     this.aim.currentY = e.clientY;
-    if (this.aimDragLength() < MIN_DRAG_PX) {
-      this.resetAimLock();
-    } else if (this.aimWorldTarget) {
-      this.applyBallisticAim();
-    }
+    if (this.aimAnglesLocked) this.applyLockedAimAngles();
     this.updateAimVisual();
   }
 
@@ -634,7 +594,7 @@ export class GameSession {
 
     this.aim.currentX = e.clientX;
     this.aim.currentY = e.clientY;
-    const len = this.aimDragLength();
+    const down = this.downwardAimDragPx();
 
     this.releasePointer(e);
     this.activePointerId = -1;
@@ -642,18 +602,11 @@ export class GameSession {
     this.aimLine.visible = false;
 
     const fired =
-      len >= MIN_DRAG_PX && this.aimWorldTarget != null && this.canFireNow();
+      down >= MIN_DRAG_PX && this.aimWorldTarget != null && this.canFireNow();
     if (fired) {
-      const power = this.ballisticPowerForShot(powerFromDrag(len, MAX_DRAG_PX));
-      if (!this.aimAnglesLocked) {
-        this.refreshAimTargetPoint();
-        aimCannonBallistic(
-          this.cannonMesh,
-          this.aimWorldTarget!,
-          power,
-          this.aimObstaclesForBallistic(),
-          this.arcPreferenceFromDrag(),
-        );
+      const power = this.ballisticPowerForShot(powerFromDrag(down, MAX_DRAG_PX));
+      if (this.aimAnglesLocked) {
+        this.applyLockedAimAngles();
       }
       this.fireShot(power);
     } else {
@@ -665,21 +618,17 @@ export class GameSession {
   }
 
   private updateAimVisual(): void {
-    const len = this.aimDragLength();
+    const down = this.downwardAimDragPx();
     const minLen = this.activePowerup === 'trajectory' ? 8 : MIN_DRAG_PX;
-    if (len < minLen) {
+    if (down < minLen) {
       if (this.activePowerup !== 'trajectory') {
         this.aimLine.visible = false;
         return;
       }
     }
 
-    const power = len < MIN_DRAG_PX ? 0.55 : powerFromDrag(len, MAX_DRAG_PX);
-    if (len < MIN_DRAG_PX) {
-      this.resetAimLock();
-    } else if (this.aimWorldTarget) {
-      this.applyBallisticAim(power);
-    }
+    const power = this.aimPowerFromDrag();
+    if (this.aimAnglesLocked) this.applyLockedAimAngles();
     this.aimLineMaterial.color.setHex(aimArcColorFromPower(power));
     const origin = muzzleWorldPosition(this.cannonMesh);
     const arc = simulateBallisticArc(origin, power, this.cannonMesh);
