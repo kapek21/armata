@@ -78,6 +78,23 @@
       {
         "importance": "structural",
         "isStatic": false,
+        "id": "court-w-1",
+        "type": "wall",
+        "material": "stone",
+        "position": [
+          -2.4,
+          0.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
         "id": "court-w-u-0",
         "type": "wall",
         "material": "wood",
@@ -95,46 +112,12 @@
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "court-e-0",
-        "type": "wall",
-        "material": "stone",
-        "position": [
-          1.3499999999999999,
-          0.5,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
         "id": "court-e-2",
         "type": "wall",
         "material": "stone",
         "position": [
           3.45,
           0.5,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "court-e-u-0",
-        "type": "wall",
-        "material": "wood",
-        "position": [
-          1.3499999999999999,
-          1.5,
           -2
         ],
         "size": [
@@ -180,13 +163,13 @@
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "keep-wing-r",
-        "type": "wall",
+        "id": "keep-1",
+        "type": "tower",
         "material": "wood",
         "position": [
-          1.1,
+          0,
           1.5,
-          -2.2
+          -2.25
         ],
         "size": [
           1,
@@ -201,9 +184,9 @@
         "type": "keystone",
         "material": "wood",
         "position": [
-          1.1,
+          0,
           2.41,
-          -2.2
+          -2
         ],
         "size": [
           0.8200000000000001,
@@ -219,9 +202,9 @@
         "type": "wall",
         "material": "wood",
         "position": [
-          1.1,
+          0,
           3.3200000000000003,
-          -2.2
+          -2
         ],
         "size": [
           1,
@@ -236,9 +219,9 @@
         "type": "tower",
         "material": "wood",
         "position": [
-          1.1,
+          0,
           4.32,
-          -2.2
+          -2
         ],
         "size": [
           1,

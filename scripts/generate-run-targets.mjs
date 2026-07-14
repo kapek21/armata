@@ -521,11 +521,13 @@ function findChokeAnchors(modules, count, difficulty, rng) {
   }
 
   while (picked.length < count) {
-    const anchor = scored[picked.length % scored.length];
+    const xs = keystoneSpreadXs(count);
+    const tx = xs[picked.length];
+    const template = scored[picked.length % scored.length];
     picked.push({
-      ...anchor,
-      x: anchor.x + DEEP_Z * picked.length,
-      z: anchor.z + (picked.length % 2 === 0 ? 0.55 : -0.55),
+      ...template,
+      x: tx,
+      z: Z,
     });
   }
   return picked.slice(0, count);
@@ -713,11 +715,14 @@ function bridgeRowOnKeystones(modules, keystones, rng) {
   const right = sorted[sorted.length - 1];
   const y = stackY(left.position[1], left.size[1], 1);
   const z = (left.position[2] + right.position[2]) / 2;
-  const span = Math.max(1, Math.round(Math.abs(right.position[0] - left.position[0]) / 1.05));
-  for (let i = 1; i < span; i++) {
-    const t = i / span;
-    const x = left.position[0] + (right.position[0] - left.position[0]) * t;
-    modules.push(brickAt(`ks-bridge-${i}`, x, y, z, pick(rng, ['wood', 'wood', 'glass']), 'wall'));
+  const gap = right.position[0] - left.position[0];
+  if (gap < COLUMN_STEP * 0.9) return;
+  for (let x = left.position[0] + COLUMN_STEP; x < right.position[0] - 0.45; x += COLUMN_STEP) {
+    const sx = Math.round(x * 20) / 20;
+    if (moduleSlotTaken(modules, sx, y, z)) continue;
+    modules.push(
+      brickAt(`ks-bridge-${Math.round(sx * 100)}`, sx, y, z, pick(rng, ['wood', 'wood', 'glass']), 'wall'),
+    );
   }
 }
 
@@ -1006,10 +1011,122 @@ function pruneIndependentSurvivors(modules, maxSurvivingRatio = MAX_SURVIVING_RA
   }
 }
 
+const COLUMN_STEP = 1.05;
+
 function keystoneSpreadXs(count) {
   if (count <= 1) return [0];
-  if (count === 2) return [-1.55, 1.55];
-  return [-2.1, 0, 2.1].slice(0, count);
+  if (count === 2) return [-COLUMN_STEP, COLUMN_STEP];
+  return [-COLUMN_STEP * 2, 0, COLUMN_STEP * 2].slice(0, count);
+}
+
+function isKeystoneColumnModule(mod) {
+  return /^ks-col-|^forced-col-|^ks-expand-|^castle-crown-|^ks-link-/.test(mod.id);
+}
+
+function moduleSlotTaken(modules, x, y, z, margin = 0.55) {
+  return modules.some(
+    (m) =>
+      !m.isStatic &&
+      m.type !== 'foundation' &&
+      Math.hypot(m.position[0] - x, m.position[2] - z) < margin &&
+      Math.abs(m.position[1] - y) < margin,
+  );
+}
+
+function shiftKeystoneColumn(modules, ks, dx, dz, colIndex) {
+  const ox = ks.position[0] - dx;
+  const oz = ks.position[2] - dz;
+  const colPrefixes =
+    colIndex >= 0 ? [`ks-col-${colIndex + 1}-`, `forced-col-${colIndex + 1}-`] : [];
+  const pedIds =
+    colIndex >= 0
+      ? [`forced-ped-${colIndex}`, `${ks.id}-pad`]
+      : [`${ks.id}-pad`];
+
+  for (const mod of modules) {
+    if (mod.isStatic || mod.type === 'foundation') continue;
+    if (mod.id === ks.id) continue;
+    if (pedIds.includes(mod.id)) {
+      mod.position[0] += dx;
+      mod.position[2] += dz;
+      continue;
+    }
+    if (colPrefixes.some((p) => mod.id.startsWith(p))) {
+      mod.position[0] += dx;
+      mod.position[2] += dz;
+      continue;
+    }
+    if (isKeystoneColumnModule(mod) && Math.hypot(mod.position[0] - ox, mod.position[2] - oz) < 0.85) {
+      mod.position[0] += dx;
+      mod.position[2] += dz;
+    }
+  }
+}
+
+/** Wyrównuje filary keystone w jednej linii fasady (obok siebie). */
+function alignKeystoneLayout(modules) {
+  const keystones = [...modules.filter(isKeystoneMod)].sort((a, b) => a.position[0] - b.position[0]);
+  if (keystones.length === 0) return;
+  const xs = keystoneSpreadXs(keystones.length);
+  for (let i = 0; i < keystones.length; i++) {
+    const ks = keystones[i];
+    const tx = xs[Math.min(i, xs.length - 1)];
+    const dx = tx - ks.position[0];
+    const dz = Z - ks.position[2];
+    if (Math.abs(dx) < 0.01 && Math.abs(dz) < 0.01) continue;
+    ks.position[0] = tx;
+    ks.position[2] = Z;
+    shiftKeystoneColumn(modules, ks, dx, dz, i);
+  }
+}
+
+/** Łączy sąsiednie filary bramą i poziomymi belkami (fizyczne klocki). */
+function connectKeystoneColumns(modules, difficulty, rng) {
+  const keystones = [...modules.filter(isKeystoneMod)].sort((a, b) => a.position[0] - b.position[0]);
+  if (keystones.length < 2) return;
+
+  const z = keystones[0].position[2];
+  const left = keystones[0];
+  const right = keystones[keystones.length - 1];
+  const spanX = right.position[0] - left.position[0];
+  if (spanX < COLUMN_STEP * 0.9) return;
+
+  if (
+    !modules.some(
+      (m) => m.type === 'gate' && Math.abs(m.position[0]) < 0.85 && Math.abs(m.position[2] - z) < 0.65,
+    )
+  ) {
+    modules.push(
+      m({
+        id: 'ks-gate',
+        type: 'gate',
+        material: 'stone',
+        position: [0, ROW.low, z],
+        size: [Math.min(1.5, spanX * 0.55), 1, 1],
+        isStatic: difficulty >= 9,
+      }),
+    );
+  }
+
+  const y = rowY(1);
+  for (let x = left.position[0] + COLUMN_STEP; x < right.position[0] - 0.45; x += COLUMN_STEP) {
+    const sx = Math.round(x * 20) / 20;
+    if (moduleSlotTaken(modules, sx, y, z)) continue;
+    modules.push(
+      brickAt(
+        `ks-link-${Math.round(sx * 100)}`,
+        sx,
+        y,
+        z,
+        pick(rng, ['stone', 'wood', 'stone']),
+        'wall',
+      ),
+    );
+  }
+
+  if (keystones.length === 2) {
+    bridgeRowOnKeystones(modules, keystones, rng);
+  }
 }
 
 function buildForcedLoadBearingTower(difficulty, variant, keyCount, hp) {
@@ -1429,6 +1546,8 @@ function buildCastle(difficulty, variant) {
     const rng = rngFor(difficulty, variant * 31 + attempt * 509);
     let modules = build(difficulty, variant, rng);
     modules = restructureAsLoadBearing(modules, keyCount, hp, difficulty, variant, rng);
+    alignKeystoneLayout(modules);
+    connectKeystoneColumns(modules, difficulty, rng);
     expandOnKeystoneTree(modules, difficulty, variant, rng);
     addCastleSuperstructure(modules, difficulty, rng);
     ensureCastleFootprint(modules, difficulty, rng);
@@ -1459,6 +1578,8 @@ function buildCastle(difficulty, variant) {
     difficulty <= 2
       ? buildForcedLoadBearingTower(difficulty, variant, keyCount, hp)
       : buildForcedLoadBearingCastle(difficulty, variant, keyCount, hp);
+  alignKeystoneLayout(modules);
+  connectKeystoneColumns(modules, difficulty, rngFor(difficulty, variant + 777));
   trimToMaxModules(modules);
   if (difficulty >= 3) clampKeystonesBelowPeak(modules);
   pruneIndependentSurvivors(modules);

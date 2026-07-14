@@ -61,23 +61,6 @@
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "court-s-1",
-        "type": "wall",
-        "material": "stone",
-        "position": [
-          0,
-          0.5,
-          -3.1
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
         "id": "court-w-0",
         "type": "wall",
         "material": "stone",
@@ -169,7 +152,7 @@
         "position": [
           0,
           1.4100000000000001,
-          -3.1
+          -2
         ],
         "size": [
           0.8200000000000001,
@@ -187,7 +170,7 @@
         "position": [
           0,
           2.3200000000000003,
-          -3.1
+          -2
         ],
         "size": [
           1,
@@ -204,7 +187,7 @@
         "position": [
           0,
           3.3200000000000003,
-          -3.1
+          -2
         ],
         "size": [
           1,
@@ -221,7 +204,7 @@
         "position": [
           0,
           4.32,
-          -3.1
+          -2
         ],
         "size": [
           1,
@@ -238,7 +221,7 @@
         "position": [
           0,
           5.32,
-          -3.1
+          -2
         ],
         "size": [
           1,
@@ -255,7 +238,7 @@
         "position": [
           0,
           6.32,
-          -3.1
+          -2
         ],
         "size": [
           1,
