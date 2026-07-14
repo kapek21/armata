@@ -78,6 +78,18 @@ export function updateGameplayCameraAspect(
   camera.updateProjectionMatrix();
 }
 
+function fovToFitCastle(goalFrame: GoalFrame, aspect: number): number {
+  const camDist = CAMERA_Z - GOAL_PLANE_Z;
+  const margin = 1.14;
+  const halfH = goalFrame.size.y * 0.5 * margin + 0.55;
+  const halfW = goalFrame.size.x * 0.5 * margin + 0.45;
+  const vFovRad = 2 * Math.atan(halfH / camDist);
+  const hFovRad = 2 * Math.atan(halfW / camDist);
+  const vFovFromH = 2 * Math.atan(Math.tan(hFovRad / 2) / aspect);
+  const fovRad = Math.max(vFovRad, vFovFromH);
+  return THREE.MathUtils.clamp(THREE.MathUtils.radToDeg(fovRad), CAMERA_FOV, 64);
+}
+
 export function frameGameplayCamera(
   camera: THREE.PerspectiveCamera,
   cannonRoot: THREE.Object3D,
@@ -90,12 +102,12 @@ export function frameGameplayCamera(
   cannonRoot.rotation.set(0, 0, 0);
   cannonRoot.scale.setScalar(CANNON_SCALE);
 
-  const lookAtY = THREE.MathUtils.lerp(2.1, goalFrame.center.y, 0.68);
+  const lookAtY = THREE.MathUtils.lerp(1.85, goalFrame.center.y, 0.62);
   const lookAt = new THREE.Vector3(0, lookAtY, GOAL_PLANE_Z);
 
   camera.position.set(CAMERA_X, CAMERA_Y, CAMERA_Z);
   camera.up.set(0, 1, 0);
-  camera.fov = CAMERA_FOV;
+  camera.fov = fovToFitCastle(goalFrame, aspect);
   camera.aspect = aspect;
   camera.near = 0.1;
   camera.far = 100;
@@ -159,6 +171,20 @@ function meshAimPoint(mesh: THREE.Object3D): THREE.Vector3 {
   return _center.clone();
 }
 
+function meshScreenCenter(
+  mesh: THREE.Object3D,
+  camera: THREE.PerspectiveCamera,
+  rect: DOMRect,
+): { x: number; y: number } {
+  _box.setFromObject(moduleRootFromObject(mesh));
+  _box.getCenter(_center);
+  _center.project(camera);
+  return {
+    x: (_center.x * 0.5 + 0.5) * rect.width + rect.left,
+    y: (-_center.y * 0.5 + 0.5) * rect.height + rect.top,
+  };
+}
+
 function screenDistToMesh(
   mesh: THREE.Object3D,
   camera: THREE.PerspectiveCamera,
@@ -166,12 +192,97 @@ function screenDistToMesh(
   clientY: number,
   rect: DOMRect,
 ): number {
-  _box.setFromObject(moduleRootFromObject(mesh));
-  _box.getCenter(_center);
-  _center.project(camera);
-  const sx = (_center.x * 0.5 + 0.5) * rect.width + rect.left;
-  const sy = (-_center.y * 0.5 + 0.5) * rect.height + rect.top;
-  return Math.hypot(sx - clientX, sy - clientY);
+  const sc = meshScreenCenter(mesh, camera, rect);
+  return Math.hypot(sc.x - clientX, sc.y - clientY);
+}
+
+function pickFromRaycast(
+  camera: THREE.PerspectiveCamera,
+  clientX: number,
+  clientY: number,
+  rect: DOMRect,
+  meshes: THREE.Object3D[],
+): AimTargetPick | null {
+  _ndc.set(
+    ((clientX - rect.left) / rect.width) * 2 - 1,
+    -((clientY - rect.top) / rect.height) * 2 + 1,
+  );
+  _raycaster.setFromCamera(_ndc, camera);
+  const hits = _raycaster.intersectObjects(meshes, true);
+  if (hits.length === 0) return null;
+
+  let best = hits[0];
+  let bestScreen = Infinity;
+  for (const hit of hits) {
+    const root = moduleRootFromObject(hit.object);
+    const d = screenDistToMesh(root, camera, clientX, clientY, rect);
+    if (d < bestScreen) {
+      bestScreen = d;
+      best = { ...hit, object: root };
+    }
+  }
+  return { point: meshAimPoint(best.object), mesh: best.object };
+}
+
+/** Kolumna pod dotykiem — trafienia w strefie armaty (lewo/prawo, nisko). */
+function pickColumnModule(
+  camera: THREE.PerspectiveCamera,
+  clientX: number,
+  clientY: number,
+  rect: DOMRect,
+  meshes: THREE.Object3D[],
+): THREE.Object3D | null {
+  const colTol = rect.width * 0.12;
+  let best: THREE.Object3D | null = null;
+  let bestScore = Infinity;
+  for (const mesh of meshes) {
+    const sc = meshScreenCenter(mesh, camera, rect);
+    const dx = Math.abs(sc.x - clientX);
+    if (dx > colTol) continue;
+    const score = dx * 2.2 + Math.abs(sc.y - clientY) * 0.85;
+    if (score < bestScore) {
+      bestScore = score;
+      best = moduleRootFromObject(mesh);
+    }
+  }
+  return best;
+}
+
+function pickNearestOnScreen(
+  camera: THREE.PerspectiveCamera,
+  clientX: number,
+  clientY: number,
+  rect: DOMRect,
+  meshes: THREE.Object3D[],
+  relY: number,
+): THREE.Object3D | null {
+  const radius = rect.width * (relY > 0.55 ? 0.28 : 0.17);
+  let best: THREE.Object3D | null = null;
+  let bestD = radius;
+  for (const mesh of meshes) {
+    const d = screenDistToMesh(mesh, camera, clientX, clientY, rect);
+    if (d < bestD) {
+      bestD = d;
+      best = moduleRootFromObject(mesh);
+    }
+  }
+  return best;
+}
+
+function pickGoalPlane(
+  camera: THREE.PerspectiveCamera,
+  clientX: number,
+  clientY: number,
+  rect: DOMRect,
+): AimTargetPick | null {
+  _ndc.set(
+    ((clientX - rect.left) / rect.width) * 2 - 1,
+    -((clientY - rect.top) / rect.height) * 2 + 1,
+  );
+  _raycaster.setFromCamera(_ndc, camera);
+  return _raycaster.ray.intersectPlane(_goalPlane, _hit)
+    ? { point: _hit.clone(), mesh: null }
+    : null;
 }
 
 /** Promień z ekranu — wybiera klocek najbliższy dotknięciu (nie pierwszy wzdłuż promienia). */
@@ -184,32 +295,22 @@ export function pickAimTarget(
 ): AimTargetPick | null {
   const rect = host.getBoundingClientRect();
   if (rect.width <= 0 || rect.height <= 0) return null;
-  _ndc.set(
-    ((clientX - rect.left) / rect.width) * 2 - 1,
-    -((clientY - rect.top) / rect.height) * 2 + 1,
-  );
-  _raycaster.setFromCamera(_ndc, camera);
+  const relY = (clientY - rect.top) / rect.height;
 
   if (meshes.length > 0) {
-    const hits = _raycaster.intersectObjects(meshes, true);
-    if (hits.length > 0) {
-      let best = hits[0];
-      let bestScreen = Infinity;
-      for (const hit of hits) {
-        const root = moduleRootFromObject(hit.object);
-        const d = screenDistToMesh(root, camera, clientX, clientY, rect);
-        if (d < bestScreen) {
-          bestScreen = d;
-          best = { ...hit, object: root };
-        }
-      }
-      return { point: meshAimPoint(best.object), mesh: best.object };
+    const rayPick = pickFromRaycast(camera, clientX, clientY, rect, meshes);
+    if (rayPick) return rayPick;
+
+    if (relY > 0.52) {
+      const column = pickColumnModule(camera, clientX, clientY, rect, meshes);
+      if (column) return { point: meshAimPoint(column), mesh: column };
     }
+
+    const nearest = pickNearestOnScreen(camera, clientX, clientY, rect, meshes, relY);
+    if (nearest) return { point: meshAimPoint(nearest), mesh: nearest };
   }
 
-  return _raycaster.ray.intersectPlane(_goalPlane, _hit)
-    ? { point: _hit.clone(), mesh: null }
-    : null;
+  return pickGoalPlane(camera, clientX, clientY, rect);
 }
 
 function worldDirFromAim(yaw: number, pitch: number, out: THREE.Vector3): THREE.Vector3 {
@@ -274,7 +375,12 @@ function selectBallisticPitch(
 
 export const MAX_AIM_PITCH_RAD = (48 * Math.PI) / 180;
 export const MAX_LOFT_PITCH_RAD = (58 * Math.PI) / 180;
-export const MIN_AIM_PITCH_RAD = (5 * Math.PI) / 180;
+export const MIN_AIM_PITCH_RAD = (2 * Math.PI) / 180;
+export const MIN_AIM_PITCH_DOWN_RAD = (-12 * Math.PI) / 180;
+export const MAX_AIM_YAW_RAD = (50 * Math.PI) / 180;
+export const MAX_AIM_YAW_HARD_RAD = (58 * Math.PI) / 180;
+/** Dolna część kadru — wizualna strefa armaty; podnosimy tylko Y, X zostaje. */
+export const AIM_CANNON_DEAD_ZONE_Y = 0.78;
 
 export function clampBallisticTarget(target: THREE.Vector3, muzzle: THREE.Vector3): THREE.Vector3 {
   const dx = target.x - muzzle.x;
@@ -312,7 +418,7 @@ export function ballisticPowerForTarget(
   return power;
 }
 
-/** Korekta współrzędnych dotyku — dolna strefa (armata) mapowana na pole celu. */
+/** Korekta dotyku w strefie armaty — podnieś Y do krawędzi celowania, zachowaj X (lewo/prawo). */
 export function sanitizeAimClientCoords(
   clientX: number,
   clientY: number,
@@ -321,10 +427,10 @@ export function sanitizeAimClientCoords(
   const rect = host.getBoundingClientRect();
   if (rect.width <= 0 || rect.height <= 0) return { x: clientX, y: clientY };
   const relY = (clientY - rect.top) / rect.height;
-  if (relY > 0.68) {
+  if (relY > AIM_CANNON_DEAD_ZONE_Y) {
     return {
-      x: rect.left + rect.width * 0.5,
-      y: rect.top + rect.height * 0.38,
+      x: clientX,
+      y: rect.top + rect.height * AIM_CANNON_DEAD_ZONE_Y,
     };
   }
   return { x: clientX, y: clientY };
@@ -364,7 +470,11 @@ export function aimCannonBallistic(
 
   let pitchWorld: number;
   if (disc < 0) {
-    pitchWorld = Math.min(Math.atan2(Math.max(dy, 0), dh), MAX_AIM_PITCH_RAD);
+    pitchWorld = THREE.MathUtils.clamp(
+      Math.atan2(dy, dh),
+      MIN_AIM_PITCH_DOWN_RAD,
+      MAX_AIM_PITCH_RAD,
+    );
   } else {
     const sqrtDisc = Math.sqrt(disc);
     const pitchLow = Math.atan((v2 - sqrtDisc) / (g * dh));
@@ -386,8 +496,13 @@ export function aimCannonBallistic(
   const wantLoft = arcPreference > 0.68;
   const maxPitch =
     wantLoft && obstacles.length > 0 ? MAX_LOFT_PITCH_RAD : MAX_AIM_PITCH_RAD;
-  pitchWorld = THREE.MathUtils.clamp(pitchWorld, MIN_AIM_PITCH_RAD, maxPitch);
-  const yaw = THREE.MathUtils.clamp(yawWorld, (-42 * Math.PI) / 180, (42 * Math.PI) / 180);
+  const minPitch = dy < -0.04 ? MIN_AIM_PITCH_DOWN_RAD : MIN_AIM_PITCH_RAD;
+  pitchWorld = THREE.MathUtils.clamp(pitchWorld, minPitch, maxPitch);
+  const yawClamp = Math.max(
+    MAX_AIM_YAW_RAD,
+    Math.min(MAX_AIM_YAW_HARD_RAD, Math.abs(yawWorld) + (4 * Math.PI) / 180),
+  );
+  const yaw = THREE.MathUtils.clamp(yawWorld, -yawClamp, yawClamp);
 
   applyCannonAim(cannonRoot, pitchWorld, yaw);
   cannonRoot.updateMatrixWorld(true);
@@ -407,8 +522,8 @@ export function aimCannonAtWorldPoint(cannonRoot: THREE.Object3D, target: THREE.
   let pitch = Math.atan2(_localDir.y, Math.hypot(_localDir.x, _localDir.z));
   let yaw = -Math.atan2(_localDir.x, -_localDir.z);
 
-  pitch = THREE.MathUtils.clamp(pitch, (3 * Math.PI) / 180, (74 * Math.PI) / 180);
-  yaw = THREE.MathUtils.clamp(yaw, (-42 * Math.PI) / 180, (42 * Math.PI) / 180);
+  pitch = THREE.MathUtils.clamp(pitch, MIN_AIM_PITCH_DOWN_RAD, (74 * Math.PI) / 180);
+  yaw = THREE.MathUtils.clamp(yaw, -MAX_AIM_YAW_HARD_RAD, MAX_AIM_YAW_HARD_RAD);
 
   applyCannonAim(cannonRoot, pitch, yaw);
 }

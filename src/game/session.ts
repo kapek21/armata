@@ -483,8 +483,14 @@ export class GameSession {
   }
 
   private lockAimTarget(clientX: number, clientY: number): void {
-    const pickCoords = sanitizeAimClientCoords(clientX, clientY, this.host);
-    const pick = pickAimTarget(this.camera, pickCoords.x, pickCoords.y, this.host, this.aimMeshes());
+    const meshes = this.aimMeshes();
+    let pick = pickAimTarget(this.camera, clientX, clientY, this.host, meshes);
+    if (!pick?.mesh) {
+      const lifted = sanitizeAimClientCoords(clientX, clientY, this.host);
+      if (lifted.x !== clientX || lifted.y !== clientY) {
+        pick = pickAimTarget(this.camera, lifted.x, lifted.y, this.host, meshes) ?? pick;
+      }
+    }
     if (pick) {
       this.aimWorldTarget = pick.point;
       this.aimTargetMesh = pick.mesh;
