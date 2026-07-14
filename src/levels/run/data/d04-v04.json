@@ -61,23 +61,6 @@
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "gate-base",
-        "type": "gate",
-        "material": "stone",
-        "position": [
-          0,
-          0.5,
-          -2
-        ],
-        "size": [
-          1.4,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
         "id": "wall-l-0",
         "type": "wall",
         "material": "stone",
@@ -238,23 +221,6 @@
         "position": [
           2.5,
           6.32,
-          -2.35
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "castle-crown-0-0",
-        "type": "tower",
-        "material": "wood",
-        "position": [
-          2.5,
-          7.32,
           -2.35
         ],
         "size": [

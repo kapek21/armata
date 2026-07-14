@@ -61,23 +61,6 @@
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "court-n-0",
-        "type": "wall",
-        "material": "stone",
-        "position": [
-          -1.05,
-          0.5,
-          -0.8999999999999999
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
         "id": "court-s-1",
         "type": "wall",
         "material": "stone",
@@ -267,96 +250,11 @@
         "importance": "structural",
         "isStatic": false,
         "id": "ks-col-1-4",
-        "type": "wall",
+        "type": "tower",
         "material": "wood",
         "position": [
           0,
           6.32,
-          -3.1
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "ks-col-1-5",
-        "type": "wall",
-        "material": "wood",
-        "position": [
-          0,
-          7.32,
-          -3.1
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "ks-col-1-6",
-        "type": "wall",
-        "material": "stone",
-        "position": [
-          0,
-          8.32,
-          -3.1
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "ks-col-1-7",
-        "type": "wall",
-        "material": "wood",
-        "position": [
-          0,
-          9.32,
-          -3.1
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "ks-col-1-8",
-        "type": "tower",
-        "material": "stone",
-        "position": [
-          0,
-          10.32,
-          -3.1
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "castle-crown-0-0",
-        "type": "tower",
-        "material": "stone",
-        "position": [
-          0,
-          11.32,
           -3.1
         ],
         "size": [

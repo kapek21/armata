@@ -95,23 +95,6 @@
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "curtain-base-6",
-        "type": "wall",
-        "material": "stone",
-        "position": [
-          3.1500000000000004,
-          0.5,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
         "id": "tower-l-0",
         "type": "tower",
         "material": "stone",
@@ -233,45 +216,11 @@
         "importance": "structural",
         "isStatic": false,
         "id": "ks-col-1-4",
-        "type": "wall",
+        "type": "tower",
         "material": "wood",
         "position": [
           -1.05,
           6.32,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "ks-col-1-5",
-        "type": "tower",
-        "material": "wood",
-        "position": [
-          -1.05,
-          7.32,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "castle-crown-0-0",
-        "type": "tower",
-        "material": "wood",
-        "position": [
-          -1.05,
-          8.32,
           -2
         ],
         "size": [

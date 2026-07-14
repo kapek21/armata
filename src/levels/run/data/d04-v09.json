@@ -61,23 +61,6 @@
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "wall-l-0",
-        "type": "wall",
-        "material": "stone",
-        "position": [
-          -2.625,
-          0.5,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
         "id": "wall-r-0",
         "type": "wall",
         "material": "stone",
@@ -221,23 +204,6 @@
         "position": [
           1.5750000000000002,
           6.32,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "castle-crown-0-0",
-        "type": "tower",
-        "material": "wood",
-        "position": [
-          1.5750000000000002,
-          7.32,
           -2
         ],
         "size": [

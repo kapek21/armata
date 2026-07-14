@@ -61,45 +61,11 @@
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "wall-l-0",
-        "type": "wall",
-        "material": "stone",
-        "position": [
-          -2.625,
-          0.5,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
         "id": "wall-r-0",
         "type": "wall",
         "material": "stone",
         "position": [
           1.5750000000000002,
-          0.5,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "wall-r-1",
-        "type": "wall",
-        "material": "stone",
-        "position": [
-          2.625,
           0.5,
           -2
         ],
@@ -233,79 +199,11 @@
         "importance": "structural",
         "isStatic": false,
         "id": "ks-col-1-4",
-        "type": "wall",
+        "type": "tower",
         "material": "stone",
         "position": [
           1.5750000000000002,
           6.32,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "ks-col-1-5",
-        "type": "wall",
-        "material": "wood",
-        "position": [
-          1.5750000000000002,
-          7.32,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "ks-col-1-6",
-        "type": "tower",
-        "material": "wood",
-        "position": [
-          1.5750000000000002,
-          8.32,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "ks-expand-1",
-        "type": "wall",
-        "material": "stone",
-        "position": [
-          1.5750000000000002,
-          9.32,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "castle-crown-0-0",
-        "type": "tower",
-        "material": "wood",
-        "position": [
-          1.5750000000000002,
-          10.32,
           -2
         ],
         "size": [

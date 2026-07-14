@@ -297,23 +297,6 @@
           1,
           1
         ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "castle-crown-1-0",
-        "type": "tower",
-        "material": "wood",
-        "position": [
-          0,
-          6.32,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
       }
     ]
   }
