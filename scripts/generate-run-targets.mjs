@@ -186,8 +186,7 @@ function separateKeystoneAnchors(ksList) {
     const count = seen.get(key) ?? 0;
     seen.set(key, count + 1);
     if (count === 0) continue;
-    ks.position[2] += DEEP_Z * count;
-    if (count > 1) ks.position[0] += 0.5 * (count % 2 === 0 ? 1 : -1);
+    ks.position[0] += 1.55 * (count % 2 === 0 ? 1 : -1) * Math.ceil(count / 2);
   }
 }
 
@@ -203,12 +202,10 @@ function finalizeKeystones(modules) {
     }
     const [ox, , oz] = ks.position;
     const nudges = [
-      [0, DEEP_Z],
-      [0, -DEEP_Z],
       [0.55, 0],
       [-0.55, 0],
-      [0.55, DEEP_Z],
-      [-0.55, DEEP_Z],
+      [1.1, 0],
+      [-1.1, 0],
     ];
     let fixed = false;
     for (const [dx, dz] of nudges) {
@@ -1322,9 +1319,6 @@ function buildCurtainWall(d, variant, rng) {
   addWallRow(modules, 'curtain-upper', 0, Z, span, 2, pick(rng, ['wood', 'wood', 'glass']));
   addColumn(modules, 'tower-l', -(span / 2) * 1.05 - 0.5, Z, 2 + (d >= 6 ? 1 : 0), 'stone', 'tower');
   addColumn(modules, 'tower-r', (span / 2) * 1.05 + 0.5, Z, 2 + (d >= 6 ? 1 : 0), 'stone', 'tower');
-  if (variant >= 5) {
-    modules.push(brickAt('merlon-c', 0, rowY(3), Z, 'wood', 'wall'));
-  }
   return modules;
 }
 

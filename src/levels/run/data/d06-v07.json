@@ -78,11 +78,11 @@
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "curtain-base-4",
+        "id": "curtain-base-2",
         "type": "wall",
         "material": "stone",
         "position": [
-          0.525,
+          -1.5750000000000002,
           0.5,
           -2
         ],
@@ -133,7 +133,7 @@
         "type": "keystone",
         "material": "wood",
         "position": [
-          0.525,
+          -1.5750000000000002,
           1.4100000000000001,
           -2
         ],
@@ -149,9 +149,9 @@
         "isStatic": false,
         "id": "ks-col-1-0",
         "type": "wall",
-        "material": "stone",
+        "material": "wood",
         "position": [
-          0.525,
+          -1.5750000000000002,
           2.3200000000000003,
           -2
         ],
@@ -168,7 +168,7 @@
         "type": "wall",
         "material": "wood",
         "position": [
-          0.525,
+          -1.5750000000000002,
           3.3200000000000003,
           -2
         ],
@@ -185,7 +185,7 @@
         "type": "wall",
         "material": "wood",
         "position": [
-          0.525,
+          -1.5750000000000002,
           4.32,
           -2
         ],
@@ -202,7 +202,7 @@
         "type": "wall",
         "material": "wood",
         "position": [
-          0.525,
+          -1.5750000000000002,
           5.32,
           -2
         ],
@@ -219,7 +219,7 @@
         "type": "tower",
         "material": "wood",
         "position": [
-          0.525,
+          -1.5750000000000002,
           6.32,
           -2
         ],

@@ -79,34 +79,6 @@ function makeAddMesh(
   return (geo, mat, pos, rot) => addMesh(group, geo, mat, pos, tier, rot);
 }
 
-function addCrenellations(
-  group: THREE.Group,
-  w: number,
-  h: number,
-  d: number,
-  mat: THREE.MeshStandardMaterial,
-  tier: QualityTier,
-): void {
-  const merlonW = Math.min(0.28, w * 0.24);
-  const merlonH = Math.min(0.18, h * 0.22);
-  const gap = merlonW * 0.5;
-  const count = Math.max(2, Math.floor((w + gap) / (merlonW + gap)));
-  const span = count * merlonW + (count - 1) * gap;
-  const startX = -span / 2 + merlonW / 2;
-  const y = h / 2 + merlonH / 2 - 0.02;
-
-  for (let i = 0; i < count; i++) {
-    const broken = i % 4 === 2;
-    addMesh(
-      group,
-      new THREE.BoxGeometry(merlonW, broken ? merlonH * 0.55 : merlonH, d * 0.92),
-      mat,
-      [startX + i * (merlonW + gap), y - (broken ? merlonH * 0.2 : 0), 0],
-      tier,
-    );
-  }
-}
-
 function addDecorations(
   group: THREE.Group,
   mod: CastleModule,
@@ -131,24 +103,9 @@ function addDecorations(
       );
       break;
     }
-    case 'wall': {
-      if (mod.material === 'stone' || mod.material === 'wood') {
-        addCrenellations(group, w, h, d, stoneAccent, tier);
-      }
+    case 'wall':
       break;
-    }
     case 'tower': {
-      const capW = w * 0.92;
-      const capH = Math.min(0.2, h * 0.22);
-      const capD = d * 0.92;
-      addMesh(
-        group,
-        new THREE.BoxGeometry(capW, capH, capD),
-        stoneAccent,
-        [0, h / 2 + capH / 2 - 0.02, 0],
-        tier,
-      );
-      addCrenellations(group, capW, capH, capD, stoneAccent, tier);
       addMesh(
         group,
         new THREE.BoxGeometry(w * 0.15, h * 0.55, d * 0.12),

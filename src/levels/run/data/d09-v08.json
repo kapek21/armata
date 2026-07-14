@@ -235,9 +235,9 @@
         "type": "keystone",
         "material": "wood",
         "position": [
-          -2.1,
+          -1.55,
           1.41,
-          -1.65
+          -2
         ],
         "size": [
           0.82,
@@ -305,9 +305,9 @@
         "type": "keystone",
         "material": "wood",
         "position": [
-          2.1,
+          1.55,
           1.41,
-          -1.65
+          -2
         ],
         "size": [
           0.82,
@@ -323,9 +323,9 @@
         "type": "wall",
         "material": "wood",
         "position": [
-          -2.1,
+          -1.55,
           2.32,
-          -1.65
+          -2
         ],
         "size": [
           1,
@@ -340,9 +340,9 @@
         "type": "wall",
         "material": "wood",
         "position": [
-          -2.1,
+          -1.55,
           3.32,
-          -1.65
+          -2
         ],
         "size": [
           1,
@@ -357,9 +357,9 @@
         "type": "wall",
         "material": "stone",
         "position": [
-          -2.1,
+          -1.55,
           4.32,
-          -1.65
+          -2
         ],
         "size": [
           1,
@@ -374,9 +374,9 @@
         "type": "wall",
         "material": "stone",
         "position": [
-          -2.1,
+          -1.55,
           5.32,
-          -1.65
+          -2
         ],
         "size": [
           1,
@@ -391,9 +391,9 @@
         "type": "tower",
         "material": "wood",
         "position": [
-          -2.1,
+          -1.55,
           6.32,
-          -1.65
+          -2
         ],
         "size": [
           1,
@@ -493,9 +493,9 @@
         "type": "wall",
         "material": "wood",
         "position": [
-          2.1,
+          1.55,
           2.32,
-          -1.65
+          -2
         ],
         "size": [
           1,
@@ -510,9 +510,9 @@
         "type": "wall",
         "material": "wood",
         "position": [
-          2.1,
+          1.55,
           3.32,
-          -1.65
+          -2
         ],
         "size": [
           1,
@@ -527,9 +527,9 @@
         "type": "wall",
         "material": "stone",
         "position": [
-          2.1,
+          1.55,
           4.32,
-          -1.65
+          -2
         ],
         "size": [
           1,
@@ -544,9 +544,9 @@
         "type": "wall",
         "material": "wood",
         "position": [
-          2.1,
+          1.55,
           5.32,
-          -1.65
+          -2
         ],
         "size": [
           1,
@@ -561,9 +561,9 @@
         "type": "tower",
         "material": "wood",
         "position": [
-          2.1,
+          1.55,
           6.32,
-          -1.65
+          -2
         ],
         "size": [
           1,
