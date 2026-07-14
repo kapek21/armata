@@ -59,193 +59,6 @@
         ]
       },
       {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "outer-gate",
-        "type": "gate",
-        "material": "stone",
-        "position": [
-          0,
-          0.5,
-          -1.65
-        ],
-        "size": [
-          1.5,
-          1.1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "flank-l-1",
-        "type": "tower",
-        "material": "stone",
-        "position": [
-          -2.2,
-          1.5,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "flank-r-0",
-        "type": "tower",
-        "material": "stone",
-        "position": [
-          2.2,
-          0.5,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "flank-r-1",
-        "type": "tower",
-        "material": "stone",
-        "position": [
-          2.2,
-          1.5,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "rampart-0",
-        "type": "wall",
-        "material": "wood",
-        "position": [
-          -2.1,
-          1.5,
-          -2.15
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "rampart-1",
-        "type": "wall",
-        "material": "wood",
-        "position": [
-          -1.05,
-          1.5,
-          -2.15
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "rampart-2",
-        "type": "wall",
-        "material": "wood",
-        "position": [
-          0,
-          1.5,
-          -2.15
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "rampart-3",
-        "type": "wall",
-        "material": "wood",
-        "position": [
-          1.05,
-          1.5,
-          -2.15
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "rampart-4",
-        "type": "wall",
-        "material": "wood",
-        "position": [
-          2.1,
-          1.5,
-          -2.15
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "keep-core-0",
-        "type": "wall",
-        "material": "stone",
-        "position": [
-          0,
-          0.5,
-          -2.35
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "keep-core-1",
-        "type": "wall",
-        "material": "wood",
-        "position": [
-          0,
-          1.5,
-          -2.35
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
         "importance": "critical",
         "isStatic": false,
         "id": "keystone",
@@ -253,7 +66,7 @@
         "material": "wood",
         "position": [
           -1.05,
-          2.41,
+          0.41000000000000003,
           -2.15
         ],
         "size": [
@@ -271,7 +84,7 @@
         "material": "wood",
         "position": [
           1.05,
-          2.38,
+          0.38,
           -2.15
         ],
         "size": [
@@ -289,7 +102,7 @@
         "material": "wood",
         "position": [
           -1.05,
-          3.3000000000000003,
+          1.32,
           -2.15
         ],
         "size": [
@@ -306,7 +119,7 @@
         "material": "wood",
         "position": [
           -1.05,
-          4.300000000000001,
+          2.3200000000000003,
           -2.15
         ],
         "size": [
@@ -323,7 +136,7 @@
         "material": "wood",
         "position": [
           -1.05,
-          5.300000000000001,
+          3.3200000000000003,
           -2.15
         ],
         "size": [
@@ -340,7 +153,7 @@
         "material": "wood",
         "position": [
           -1.05,
-          6.300000000000001,
+          4.32,
           -2.15
         ],
         "size": [
@@ -357,7 +170,7 @@
         "material": "stone",
         "position": [
           1.05,
-          3.27,
+          1.26,
           -2.15
         ],
         "size": [
@@ -374,7 +187,7 @@
         "material": "stone",
         "position": [
           1.05,
-          4.27,
+          2.26,
           -2.15
         ],
         "size": [
@@ -391,7 +204,7 @@
         "material": "stone",
         "position": [
           1.05,
-          5.27,
+          3.26,
           -2.15
         ],
         "size": [
@@ -408,24 +221,7 @@
         "material": "stone",
         "position": [
           1.05,
-          6.27,
-          -2.15
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "ks-bridge-1",
-        "type": "wall",
-        "material": "wood",
-        "position": [
-          0,
-          3.3000000000000003,
+          4.26,
           -2.15
         ],
         "size": [
@@ -442,7 +238,7 @@
         "material": "wood",
         "position": [
           -1.05,
-          7.300000000000001,
+          5.32,
           -2.15
         ],
         "size": [
@@ -456,10 +252,10 @@
         "isStatic": false,
         "id": "ks-col-2-3-top-0",
         "type": "wall",
-        "material": "stone",
+        "material": "wood",
         "position": [
           1.05,
-          7.27,
+          5.26,
           -2.15
         ],
         "size": [

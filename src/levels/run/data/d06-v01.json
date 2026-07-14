@@ -65,7 +65,7 @@
         "type": "wall",
         "material": "stone",
         "position": [
-          -0.525,
+          0,
           0.5,
           -2
         ],
@@ -78,11 +78,11 @@
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "curtain-base-4",
+        "id": "curtain-base-5",
         "type": "wall",
         "material": "stone",
         "position": [
-          0.525,
+          0,
           0.5,
           -2
         ],
@@ -118,7 +118,7 @@
         "material": "wood",
         "position": [
           1.5750000000000002,
-          1.38,
+          0.38,
           -2
         ],
         "size": [
@@ -136,7 +136,7 @@
         "material": "wood",
         "position": [
           -0.525,
-          2.3000000000000003,
+          2.3200000000000003,
           -2
         ],
         "size": [
@@ -153,7 +153,7 @@
         "material": "stone",
         "position": [
           -0.525,
-          3.3000000000000003,
+          3.3200000000000003,
           -2
         ],
         "size": [
@@ -170,7 +170,7 @@
         "material": "stone",
         "position": [
           -0.525,
-          4.300000000000001,
+          4.32,
           -2
         ],
         "size": [
@@ -187,7 +187,7 @@
         "material": "wood",
         "position": [
           1.5750000000000002,
-          2.27,
+          1.26,
           -2
         ],
         "size": [
@@ -204,7 +204,7 @@
         "material": "wood",
         "position": [
           1.5750000000000002,
-          3.27,
+          2.26,
           -2
         ],
         "size": [
@@ -221,7 +221,7 @@
         "material": "stone",
         "position": [
           1.5750000000000002,
-          4.27,
+          3.26,
           -2
         ],
         "size": [

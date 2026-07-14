@@ -59,40 +59,6 @@
         ]
       },
       {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "gate-base",
-        "type": "gate",
-        "material": "stone",
-        "position": [
-          0,
-          0.5,
-          -2
-        ],
-        "size": [
-          1.4,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "wall-r-0",
-        "type": "wall",
-        "material": "stone",
-        "position": [
-          1.5750000000000002,
-          0.5,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
         "importance": "critical",
         "isStatic": false,
         "id": "keystone",
@@ -100,7 +66,7 @@
         "material": "wood",
         "position": [
           -1.5750000000000002,
-          1.4100000000000001,
+          0.41000000000000003,
           -2
         ],
         "size": [
@@ -118,7 +84,7 @@
         "material": "wood",
         "position": [
           -1.5750000000000002,
-          2.3000000000000003,
+          1.32,
           -2
         ],
         "size": [
@@ -135,7 +101,7 @@
         "material": "wood",
         "position": [
           -1.5750000000000002,
-          3.3000000000000003,
+          2.3200000000000003,
           -2
         ],
         "size": [
@@ -152,7 +118,7 @@
         "material": "stone",
         "position": [
           -1.5750000000000002,
-          4.300000000000001,
+          3.3200000000000003,
           -2
         ],
         "size": [
@@ -169,7 +135,7 @@
         "material": "wood",
         "position": [
           -1.5750000000000002,
-          5.300000000000001,
+          4.32,
           -2
         ],
         "size": [
@@ -186,7 +152,7 @@
         "material": "wood",
         "position": [
           -1.5750000000000002,
-          6.300000000000001,
+          5.32,
           -2
         ],
         "size": [

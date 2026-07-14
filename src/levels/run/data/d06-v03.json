@@ -61,11 +61,11 @@
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "curtain-base-3",
+        "id": "curtain-base-2",
         "type": "wall",
         "material": "stone",
         "position": [
-          -0.525,
+          0,
           0.5,
           -2
         ],
@@ -82,24 +82,7 @@
         "type": "wall",
         "material": "stone",
         "position": [
-          0.525,
-          0.5,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "curtain-base-5",
-        "type": "wall",
-        "material": "stone",
-        "position": [
-          1.5750000000000002,
+          0,
           0.5,
           -2
         ],
@@ -135,7 +118,7 @@
         "material": "wood",
         "position": [
           -1.5750000000000002,
-          1.38,
+          0.38,
           -2
         ],
         "size": [
@@ -153,7 +136,7 @@
         "material": "stone",
         "position": [
           0.525,
-          2.3000000000000003,
+          2.3200000000000003,
           -2
         ],
         "size": [
@@ -170,7 +153,7 @@
         "material": "wood",
         "position": [
           0.525,
-          3.3000000000000003,
+          3.3200000000000003,
           -2
         ],
         "size": [
@@ -187,7 +170,7 @@
         "material": "stone",
         "position": [
           0.525,
-          4.300000000000001,
+          4.32,
           -2
         ],
         "size": [
@@ -204,7 +187,7 @@
         "material": "wood",
         "position": [
           -1.5750000000000002,
-          2.27,
+          1.26,
           -2
         ],
         "size": [
@@ -221,7 +204,7 @@
         "material": "stone",
         "position": [
           -1.5750000000000002,
-          3.27,
+          2.26,
           -2
         ],
         "size": [
@@ -238,58 +221,7 @@
         "material": "wood",
         "position": [
           -1.5750000000000002,
-          4.27,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "ks-bridge-1",
-        "type": "wall",
-        "material": "wood",
-        "position": [
-          -0.5250000000000001,
-          2.27,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "ks-col-1-2-top-0",
-        "type": "wall",
-        "material": "wood",
-        "position": [
-          0.525,
-          5.300000000000001,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "ks-col-2-2-top-0",
-        "type": "wall",
-        "material": "wood",
-        "position": [
-          -1.5750000000000002,
-          5.27,
+          3.26,
           -2
         ],
         "size": [

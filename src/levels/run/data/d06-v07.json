@@ -61,45 +61,11 @@
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "curtain-base-3",
-        "type": "wall",
-        "material": "stone",
-        "position": [
-          -0.525,
-          0.5,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
         "id": "curtain-base-4",
         "type": "wall",
         "material": "stone",
         "position": [
-          0.525,
-          0.5,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "curtain-base-5",
-        "type": "wall",
-        "material": "stone",
-        "position": [
-          1.5750000000000002,
+          0,
           0.5,
           -2
         ],
@@ -135,7 +101,7 @@
         "material": "stone",
         "position": [
           0.525,
-          2.3000000000000003,
+          2.3200000000000003,
           -2
         ],
         "size": [
@@ -152,7 +118,7 @@
         "material": "wood",
         "position": [
           0.525,
-          3.3000000000000003,
+          3.3200000000000003,
           -2
         ],
         "size": [
@@ -169,7 +135,7 @@
         "material": "wood",
         "position": [
           0.525,
-          4.300000000000001,
+          4.32,
           -2
         ],
         "size": [
@@ -186,7 +152,7 @@
         "material": "wood",
         "position": [
           0.525,
-          5.300000000000001,
+          5.32,
           -2
         ],
         "size": [
@@ -203,7 +169,7 @@
         "material": "wood",
         "position": [
           0.525,
-          6.300000000000001,
+          6.32,
           -2
         ],
         "size": [
@@ -220,7 +186,7 @@
         "material": "stone",
         "position": [
           0.525,
-          7.300000000000001,
+          7.32,
           -2
         ],
         "size": [
@@ -237,7 +203,7 @@
         "material": "wood",
         "position": [
           0.525,
-          8.3,
+          8.32,
           -2
         ],
         "size": [

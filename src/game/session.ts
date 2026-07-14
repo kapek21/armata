@@ -795,10 +795,15 @@ export class GameSession {
   private settlePhysicsOnLoad(): void {
     const dt = 1 / 60;
     this.world.integrationParameters.dt = dt;
-    for (let i = 0; i < 120; i++) {
+    for (let i = 0; i < 180; i++) {
       this.world.step();
       this.syncMeshes();
     }
+    this.world.forEachRigidBody((body) => {
+      if (!body.isFixed() && body.isEnabled()) {
+        body.sleep();
+      }
+    });
   }
 
   private areDynamicBodiesSettled(): boolean {
