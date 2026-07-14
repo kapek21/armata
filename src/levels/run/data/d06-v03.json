@@ -61,11 +61,45 @@
       {
         "importance": "structural",
         "isStatic": false,
+        "id": "curtain-base-0",
+        "type": "wall",
+        "material": "stone",
+        "position": [
+          -3.6750000000000003,
+          0.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "curtain-base-1",
+        "type": "wall",
+        "material": "stone",
+        "position": [
+          -2.625,
+          0.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
         "id": "curtain-base-2",
         "type": "wall",
         "material": "stone",
         "position": [
-          0,
+          -1.5750000000000002,
           0.5,
           -2
         ],
@@ -82,7 +116,58 @@
         "type": "wall",
         "material": "stone",
         "position": [
-          0,
+          0.525,
+          0.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "curtain-base-7",
+        "type": "wall",
+        "material": "stone",
+        "position": [
+          3.6750000000000003,
+          0.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "tower-l-0",
+        "type": "tower",
+        "material": "stone",
+        "position": [
+          -4.7,
+          0.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "tower-r-0",
+        "type": "tower",
+        "material": "stone",
+        "position": [
+          4.7,
           0.5,
           -2
         ],
@@ -118,7 +203,7 @@
         "material": "wood",
         "position": [
           -1.5750000000000002,
-          0.38,
+          1.38,
           -2
         ],
         "size": [
@@ -187,7 +272,7 @@
         "material": "wood",
         "position": [
           -1.5750000000000002,
-          1.26,
+          2.26,
           -2
         ],
         "size": [
@@ -204,7 +289,7 @@
         "material": "stone",
         "position": [
           -1.5750000000000002,
-          2.26,
+          3.26,
           -2
         ],
         "size": [
@@ -221,7 +306,41 @@
         "material": "wood",
         "position": [
           -1.5750000000000002,
-          3.26,
+          4.26,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "castle-crown-0-0",
+        "type": "tower",
+        "material": "stone",
+        "position": [
+          0.525,
+          5.32,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "castle-crown-1-0",
+        "type": "tower",
+        "material": "wood",
+        "position": [
+          -1.5750000000000002,
+          5.26,
           -2
         ],
         "size": [

@@ -61,11 +61,79 @@
       {
         "importance": "structural",
         "isStatic": false,
+        "id": "curtain-base-0",
+        "type": "wall",
+        "material": "stone",
+        "position": [
+          -3.6750000000000003,
+          0.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
         "id": "curtain-base-3",
         "type": "wall",
         "material": "stone",
         "position": [
-          0,
+          -0.525,
+          0.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "curtain-base-7",
+        "type": "wall",
+        "material": "stone",
+        "position": [
+          3.6750000000000003,
+          0.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "tower-l-0",
+        "type": "tower",
+        "material": "stone",
+        "position": [
+          -4.7,
+          0.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "tower-r-0",
+        "type": "tower",
+        "material": "stone",
+        "position": [
+          4.7,
           0.5,
           -2
         ],
@@ -204,6 +272,23 @@
         "position": [
           -0.525,
           8.32,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "castle-crown-0-0",
+        "type": "tower",
+        "material": "wood",
+        "position": [
+          -0.525,
+          9.32,
           -2
         ],
         "size": [

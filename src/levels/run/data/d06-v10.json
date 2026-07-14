@@ -61,6 +61,40 @@
       {
         "importance": "structural",
         "isStatic": false,
+        "id": "tower-l-0",
+        "type": "tower",
+        "material": "stone",
+        "position": [
+          -2.2,
+          0.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "tower-r-0",
+        "type": "tower",
+        "material": "stone",
+        "position": [
+          2.2,
+          0.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
         "id": "gate-front",
         "type": "gate",
         "material": "stone",
@@ -323,6 +357,23 @@
         "position": [
           0,
           15.32,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "castle-crown-0-0",
+        "type": "tower",
+        "material": "wood",
+        "position": [
+          0,
+          16.32,
           -2
         ],
         "size": [
