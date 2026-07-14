@@ -17,6 +17,8 @@ const ROW = { low: 0.5, mid: 1.5, high: 2.5, top: 3.5 };
 const DEEP_Z = -0.35;
 const MAX_MODULES = 50;
 const MAX_KEYSTONES = 3;
+const MIN_COLLAPSE_RATIO = 0.7;
+const MAX_SURVIVING_RATIO = 1 - MIN_COLLAPSE_RATIO;
 
 const BLUEPRINT_LABELS = {
   watchtower: 'Wieża strażnicza',
@@ -300,6 +302,17 @@ function topKeystoneAnchors(anchors) {
   return top.length > 0 ? top : anchors;
 }
 
+/** Kotwice na głównej osi zamku (d1–d2: tarcza widoczna na wieży, nie na boku). */
+function isCentralKeystoneAnchor(anchor) {
+  return Math.abs(anchor.x) <= 1.6 && Math.abs(anchor.z - Z) <= 0.75;
+}
+
+function centralTopKeystoneAnchors(anchors) {
+  const central = anchors.filter(isCentralKeystoneAnchor);
+  if (central.length === 0) return topKeystoneAnchors(anchors);
+  return topKeystoneAnchors(central);
+}
+
 /** Usuwa kotwice na szczycie konstrukcji (d3+). */
 function excludeTopKeystoneAnchors(anchors) {
   if (anchors.length === 0) return anchors;
@@ -317,6 +330,364 @@ function excludeTopKeystoneAnchors(anchors) {
 
 function structuralModules(modules) {
   return modules.filter((mod) => !isKeystoneMod(mod) && mod.type !== 'foundation');
+}
+
+function dynamicStructuralModules(modules) {
+  return modules.filter(
+    (mod) => !mod.isStatic && mod.type !== 'foundation' && !isKeystoneMod(mod),
+  );
+}
+
+function modTopY(mod) {
+  return mod.position[1] + mod.size[1] / 2;
+}
+
+function modBottomY(mod) {
+  return mod.position[1] - mod.size[1] / 2;
+}
+
+function createKeystone(id, x, y, z, hp, size = 0.82) {
+  return m({
+    id,
+    type: 'keystone',
+    material: 'wood',
+    position: [x, y, z],
+    size: [size, size, size],
+    importance: 'critical',
+    hitPoints: hp,
+  });
+}
+
+/** Bezpośrednie podpory modułu (kontakt od góry, zgodnie z grawitacją Rapier). */
+function directSupporters(mod, modules, excludedIds = new Set()) {
+  if (mod.isStatic || mod.type === 'foundation') return [];
+  const box = modAabb(mod);
+  const supporters = [];
+  for (const other of modules) {
+    if (other.id === mod.id || excludedIds.has(other.id)) continue;
+    if (isRestingOn(box, modAabb(other))) supporters.push(other);
+  }
+  return supporters;
+}
+
+/** Moduły zakotwiczone do fundamentu / statyki (transitive closure). */
+function computeAnchoredIds(modules, excludedIds = new Set()) {
+  const anchored = new Set();
+  for (const mod of modules) {
+    if (mod.isStatic || mod.type === 'foundation') anchored.add(mod.id);
+  }
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const mod of modules) {
+      if (anchored.has(mod.id) || excludedIds.has(mod.id) || isKeystoneMod(mod)) continue;
+      const supporters = directSupporters(mod, modules, excludedIds);
+      if (supporters.some((s) => anchored.has(s.id))) {
+        anchored.add(mod.id);
+        changed = true;
+      }
+    }
+  }
+  return anchored;
+}
+
+/** Po zniszczeniu wszystkich keystone — jaki ułamek konstrukcji (bez fundamentu) by runął. */
+function collapseRatioWhenKeystonesRemoved(modules) {
+  const dynamic = [
+    ...modules.filter(isKeystoneMod),
+    ...dynamicStructuralModules(modules),
+  ];
+  if (dynamic.length === 0) return 1;
+
+  const ksIds = new Set(modules.filter(isKeystoneMod).map((k) => k.id));
+  const anchored = computeAnchoredIds(modules, ksIds);
+  let collapsed = modules.filter(isKeystoneMod).length;
+  for (const mod of dynamicStructuralModules(modules)) {
+    if (!anchored.has(mod.id)) collapsed += 1;
+  }
+  return collapsed / dynamic.length;
+}
+
+function stripKeystones(modules) {
+  return modules.filter((mod) => !isKeystoneMod(mod));
+}
+
+/** Szacuje masę konstrukcji zależną od danego filaru (kolumna XZ + wszystko powyżej). */
+function estimateColumnMass(anchor, modules) {
+  const [ax, , az] = anchor.mod.position;
+  const minY = modTopY(anchor.mod) - 0.05;
+  const inColumn = modules.filter((mod) => {
+    if (mod.isStatic || mod.type === 'foundation' || isKeystoneMod(mod)) return false;
+    const [x, , z] = mod.position;
+    if (Math.hypot(x - ax, z - az) > 0.72) return false;
+    return modBottomY(mod) >= minY - 0.08;
+  });
+  const ids = new Set(inColumn.map((m) => m.id));
+  let added = true;
+  while (added) {
+    added = false;
+    for (const mod of modules) {
+      if (mod.isStatic || mod.type === 'foundation' || isKeystoneMod(mod) || ids.has(mod.id)) {
+        continue;
+      }
+      const supporters = directSupporters(mod, modules);
+      if (supporters.some((s) => ids.has(s.id))) {
+        ids.add(mod.id);
+        added = true;
+      }
+    }
+  }
+  return ids.size;
+}
+
+function findChokeAnchors(modules, count, difficulty, rng) {
+  let anchors = collectKeystoneAnchors(modules);
+  if (difficulty <= 2) {
+    anchors = centralTopKeystoneAnchors(anchors);
+  } else {
+    anchors = excludeTopKeystoneAnchors(anchors);
+    anchors = preferInteriorAnchors(anchors, modules, rng);
+  }
+  if (anchors.length === 0) {
+    return [
+      {
+        mod: modules.find((mod) => !mod.isStatic && mod.type !== 'foundation') ?? modules[0],
+        x: 0,
+        z: Z,
+        restY: stackY(ROW.low, 1, 0.82),
+      },
+    ];
+  }
+
+  const scored = anchors
+    .map((a) => ({ ...a, score: estimateColumnMass(a, modules) + interiorScore(a, modules) * 0.5 }))
+    .sort((a, b) => b.score - a.score);
+
+  const picked = [];
+  for (const anchor of scored) {
+    if (picked.length >= count) break;
+    const tooClose = picked.some(
+      (p) => Math.hypot(p.x - anchor.x, p.z - anchor.z) < 1.35,
+    );
+    if (tooClose) continue;
+    picked.push(anchor);
+  }
+
+  while (picked.length < count) {
+    const anchor = scored[picked.length % scored.length];
+    picked.push({
+      ...anchor,
+      x: anchor.x + DEEP_Z * picked.length,
+      z: anchor.z + (picked.length % 2 === 0 ? 0.55 : -0.55),
+    });
+  }
+  return picked.slice(0, count);
+}
+
+function stackColumnOnSupport(modules, support, rows, idPrefix, rng) {
+  let current = support;
+  for (let i = 0; i < rows; i++) {
+    const y = stackY(current.position[1], current.size[1], 1);
+    const mod = brickAt(
+      `${idPrefix}-${i}`,
+      current.position[0],
+      y,
+      current.position[2],
+      pick(rng, ['wood', 'stone', 'wood']),
+      i === rows - 1 && rows > 1 ? 'tower' : 'wall',
+    );
+    modules.push(mod);
+    current = mod;
+  }
+  return current;
+}
+
+function bridgeRowOnKeystones(modules, keystones, rng) {
+  if (keystones.length < 2) return;
+  const sorted = [...keystones].sort((a, b) => a.position[0] - b.position[0]);
+  const left = sorted[0];
+  const right = sorted[sorted.length - 1];
+  const y = stackY(left.position[1], left.size[1], 1);
+  const z = (left.position[2] + right.position[2]) / 2;
+  const span = Math.max(1, Math.round(Math.abs(right.position[0] - left.position[0]) / 1.05));
+  for (let i = 1; i < span; i++) {
+    const t = i / span;
+    const x = left.position[0] + (right.position[0] - left.position[0]) * t;
+    modules.push(brickAt(`ks-bridge-${i}`, x, y, z, pick(rng, ['wood', 'wood', 'glass']), 'wall'));
+  }
+}
+
+/**
+ * Przebudowuje zamek: fundament + niska baza, keystone jako węzeł nośny,
+ * reszta konstrukcji tylko powyżej keystone'ów.
+ */
+function restructureAsLoadBearing(modules, keyCount, hp, difficulty, variant, rng) {
+  const base = stripKeystones(modules);
+  const anchors = findChokeAnchors(base, keyCount, difficulty, rng);
+  const anchorTops = anchors.map((a) => modTopY(a.mod));
+  const splitY = Math.min(...anchorTops) + 0.02;
+
+  const kept = base.filter((mod) => {
+    if (mod.isStatic || mod.type === 'foundation') return true;
+    return modTopY(mod) <= splitY + 0.06;
+  });
+
+  const keystones = [];
+  for (let i = 0; i < keyCount; i++) {
+    const anchor = anchors[i];
+    const size = 0.76 + (i === 0 ? 0.06 : 0);
+    const ks = createKeystone(
+      i === 0 ? 'keystone' : `keystone-${i + 1}`,
+      anchor.x,
+      anchor.restY,
+      anchor.z,
+      hp,
+      size,
+    );
+    keystones.push(ks);
+    kept.push(ks);
+  }
+
+  const target = targetModuleCount(difficulty);
+  const rowsPerKey = Math.max(
+    1,
+    Math.ceil((target - kept.length) / Math.max(1, keystones.length * 1.15)),
+  );
+  const caps = [];
+  for (let i = 0; i < keystones.length; i++) {
+    const cap = stackColumnOnSupport(kept, keystones[i], rowsPerKey, `ks-col-${i + 1}`, rng);
+    caps.push(cap);
+  }
+
+  if (keystones.length >= 2 && variant >= 3) {
+    bridgeRowOnKeystones(kept, keystones, rng);
+    if (difficulty >= 5) {
+      for (const cap of caps) {
+        stackColumnOnSupport(kept, cap, 1, `${cap.id ?? 'cap'}-top`, rng);
+      }
+    }
+  }
+
+  return kept;
+}
+
+function topKeystoneModules(modules) {
+  return modules.filter(isKeystoneMod).map((ks) => {
+    let top = ks;
+    let found = true;
+    while (found) {
+      found = false;
+      for (const mod of modules) {
+        if (mod.isStatic || isKeystoneMod(mod)) continue;
+        if (
+          Math.hypot(mod.position[0] - top.position[0], mod.position[2] - top.position[2]) < 0.75 &&
+          Math.abs(modBottomY(mod) - modTopY(top)) < 0.06
+        ) {
+          top = mod;
+          found = true;
+          break;
+        }
+      }
+    }
+    return top;
+  });
+}
+
+/** Dokłada moduły wyłącznie na wierzchołkach drzew keystone (nie obok fundamentu). */
+function expandOnKeystoneTree(modules, d, variant, rng) {
+  const target = targetModuleCount(d);
+  let guard = 0;
+  while (modules.length < target && guard < 36) {
+    guard++;
+    const caps = topKeystoneModules(modules);
+    if (caps.length === 0) break;
+    const cap = caps[guard % caps.length];
+    const y = stackY(cap.position[1], cap.size[1], 1);
+    const jitterX = (rng() - 0.5) * 0.15;
+    const jitterZ = (rng() - 0.5) * 0.15;
+    modules.push(
+      brickAt(
+        `ks-expand-${guard}`,
+        cap.position[0] + jitterX,
+        y,
+        cap.position[2] + jitterZ,
+        pick(rng, ['wood', 'stone', 'wood']),
+        guard % 5 === 0 ? 'tower' : 'wall',
+      ),
+    );
+    if (variant >= 6 && guard % 4 === 0 && modules.length < target) {
+      const side = guard % 2 === 0 ? 1.05 : -1.05;
+      modules.push(
+        brickAt(
+          `ks-expand-${guard}-s`,
+          cap.position[0] + side,
+          y,
+          cap.position[2] + jitterZ,
+          pick(rng, ['wood', 'glass']),
+          'wall',
+        ),
+      );
+    }
+  }
+}
+
+/** Usuwa moduły, które przetrwałyby bez keystone (max 30% konstrukcji). */
+function pruneIndependentSurvivors(modules, maxSurvivingRatio = MAX_SURVIVING_RATIO) {
+  const ksIds = new Set(modules.filter(isKeystoneMod).map((k) => k.id));
+  let guard = 0;
+  while (guard < 40) {
+    guard++;
+    const dynamic = dynamicStructuralModules(modules);
+    if (dynamic.length === 0) break;
+    const anchored = computeAnchoredIds(modules, ksIds);
+    const survivors = dynamic.filter((mod) => anchored.has(mod.id));
+    if (survivors.length / dynamic.length <= maxSurvivingRatio) break;
+
+    survivors.sort((a, b) => {
+      const score = (mod) => {
+        let s = Math.hypot(mod.position[0], mod.position[2] - Z);
+        if (mod.id.startsWith('expand-')) s += 5;
+        if (mod.id.startsWith('ks-')) s -= 3;
+        return s;
+      };
+      return score(b) - score(a);
+    });
+
+    const victim = survivors[0];
+    const idx = modules.findIndex((mod) => mod.id === victim.id);
+    if (idx < 0) break;
+    modules.splice(idx, 1);
+  }
+}
+
+function buildForcedLoadBearingTower(difficulty, variant, keyCount, hp) {
+  const rng = rngFor(difficulty, variant + 999);
+  const modules = [foundation(8 + difficulty * 0.3)];
+  addColumn(modules, 'forced-base', 0, Z, 1 + Math.min(2, Math.floor(difficulty / 4)), 'stone', 'wall');
+
+  const anchors = findChokeAnchors(modules, keyCount, difficulty, rng);
+  const kept = [...modules];
+  const keystones = [];
+  for (let i = 0; i < keyCount; i++) {
+    const anchor = anchors[i];
+    const ks = createKeystone(
+      i === 0 ? 'keystone' : `keystone-${i + 1}`,
+      anchor.x,
+      anchor.restY,
+      anchor.z,
+      hp,
+    );
+    keystones.push(ks);
+    kept.push(ks);
+  }
+
+  const rows = Math.max(2, Math.ceil(targetModuleCount(difficulty) / keyCount) - 2);
+  for (let i = 0; i < keystones.length; i++) {
+    stackColumnOnSupport(kept, keystones[i], rows, `forced-col-${i + 1}`, rng);
+  }
+  if (keyCount >= 2) bridgeRowOnKeystones(kept, keystones, rng);
+  finalizeKeystones(kept);
+  return kept;
 }
 
 function globalMaxSupportTop(modules) {
@@ -423,7 +794,7 @@ function preferInteriorAnchors(anchors, modules, rng) {
 function placeKeystones(modules, count, hp, rng, difficulty) {
   let anchors = collectKeystoneAnchors(modules);
   if (difficulty <= 2) {
-    anchors = topKeystoneAnchors(anchors);
+    anchors = centralTopKeystoneAnchors(anchors);
   } else {
     anchors = excludeTopKeystoneAnchors(anchors);
     anchors = preferInteriorAnchors(anchors, modules, rng);
@@ -648,50 +1019,42 @@ function targetModuleCount(d) {
   return Math.min(MAX_MODULES - 3, 4 + Math.floor(d * 2.6));
 }
 
-function expandCastleToBudget(modules, d, variant, rng) {
-  const target = targetModuleCount(d);
-  let guard = 0;
-  while (modules.length < target && guard < 28) {
-    guard++;
-    const ring = 2.6 + (guard % 3) * 0.55 + d * 0.05;
-    const side = guard % 2 === 0 ? -1 : 1;
-    const row = 1 + (guard % 3);
-    const z = Z + (guard % 2 === 0 ? 0 : DEEP_Z * 2);
-    modules.push(
-      brickAt(
-        `expand-${guard}`,
-        side * ring,
-        rowY(row),
-        z,
-        pick(rng, ['wood', 'stone', 'wood']),
-        guard % 4 === 0 ? 'tower' : 'wall',
-      ),
-    );
-    if (variant >= 5 && guard % 3 === 0 && modules.length < MAX_MODULES - 3) {
-      modules.push(
-        brickAt(`expand-${guard}-b`, side * (ring - 0.5), rowY(row), z - DEEP_Z, 'wood', 'wall'),
-      );
-    }
-  }
-}
-
 function buildCastle(difficulty, variant) {
-  const rng = rngFor(difficulty, variant);
   const blueprint = blueprintForDifficulty(difficulty, variant);
   const build = BUILDERS[blueprint];
-  const modules = build(difficulty, variant, rng);
-  expandCastleToBudget(modules, difficulty, variant, rng);
-  trimToMaxModules(modules);
-  const keyCount = Math.min(MAX_KEYSTONES, keystoneCountFor(difficulty, variant, rng));
+  const keyCount = Math.min(MAX_KEYSTONES, keystoneCountFor(difficulty, variant, rngFor(difficulty, variant)));
   const hp = runKeystoneHp(difficulty, variant);
-  placeKeystones(modules, keyCount, hp, rng, difficulty);
-  trimToMaxModules(modules);
-  finalizeKeystones(modules);
-  if (difficulty >= 3) {
-    clampKeystonesBelowPeak(modules);
+
+  for (let attempt = 0; attempt < 16; attempt++) {
+    const rng = rngFor(difficulty, variant * 31 + attempt * 509);
+    let modules = build(difficulty, variant, rng);
+    modules = restructureAsLoadBearing(modules, keyCount, hp, difficulty, variant, rng);
+    expandOnKeystoneTree(modules, difficulty, variant, rng);
+    trimToMaxModules(modules);
+    finalizeKeystones(modules);
+    if (difficulty >= 3) {
+      clampKeystonesBelowPeak(modules);
+    }
+    pruneIndependentSurvivors(modules);
+    trimToMaxModules(modules);
+
+    const ksCount = modules.filter(isKeystoneMod).length;
+    const collapse = collapseRatioWhenKeystonesRemoved(modules);
+    if (ksCount >= 1 && collapse >= MIN_COLLAPSE_RATIO) {
+      return { modules, blueprint, keyCount: ksCount, collapse };
+    }
   }
+
+  const modules = buildForcedLoadBearingTower(difficulty, variant, keyCount, hp);
   trimToMaxModules(modules);
-  return { modules, blueprint, keyCount };
+  if (difficulty >= 3) clampKeystonesBelowPeak(modules);
+  pruneIndependentSurvivors(modules);
+  return {
+    modules,
+    blueprint,
+    keyCount: modules.filter(isKeystoneMod).length,
+    collapse: collapseRatioWhenKeystonesRemoved(modules),
+  };
 }
 
 function cannonForDifficulty(d) {
@@ -706,7 +1069,7 @@ let warnings = 0;
 
 for (let d = 1; d <= 10; d++) {
   for (let v = 1; v <= 10; v++) {
-    const { modules, blueprint, keyCount } = buildCastle(d, v);
+    const { modules, blueprint, keyCount, collapse } = buildCastle(d, v);
     const label = BLUEPRINT_LABELS[blueprint] ?? blueprint;
     const clearReward = runClearReward(d, v);
     const ammoLimit = runAmmoLimit(d, v, keyCount);
@@ -722,6 +1085,12 @@ for (let d = 1; d <= 10; d++) {
     }
     if (ksCount < 1) {
       console.warn(`WARN d${d} v${v}: brak keystone`);
+      warnings++;
+    }
+    if (collapse < MIN_COLLAPSE_RATIO) {
+      console.warn(
+        `WARN d${d} v${v}: zapadnięcie ${(collapse * 100).toFixed(0)}% (min ${MIN_COLLAPSE_RATIO * 100}%)`,
+      );
       warnings++;
     }
 

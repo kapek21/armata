@@ -61,23 +61,6 @@
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "core-0",
-        "type": "gate",
-        "material": "stone",
-        "position": [
-          0,
-          0.5,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
         "id": "core-1",
         "type": "gate",
         "material": "wood",
@@ -93,82 +76,14 @@
         ]
       },
       {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "expand-1",
-        "type": "wall",
-        "material": "wood",
-        "position": [
-          3.2,
-          1.5,
-          -2.7
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "expand-2",
-        "type": "wall",
-        "material": "wood",
-        "position": [
-          -3.75,
-          2.5,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "expand-3",
-        "type": "wall",
-        "material": "wood",
-        "position": [
-          2.65,
-          0.5,
-          -2.7
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "expand-3-b",
-        "type": "wall",
-        "material": "wood",
-        "position": [
-          2.15,
-          0.5,
-          -2.35
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
         "importance": "critical",
         "isStatic": false,
         "id": "keystone",
         "type": "keystone",
         "material": "wood",
         "position": [
-          -3.75,
-          3.41,
+          0,
+          2.41,
           -2
         ],
         "size": [
@@ -177,6 +92,40 @@
           0.8200000000000001
         ],
         "hitPoints": 97
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "ks-col-1-0",
+        "type": "wall",
+        "material": "stone",
+        "position": [
+          0,
+          3.3000000000000003,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "ks-col-1-1",
+        "type": "tower",
+        "material": "wood",
+        "position": [
+          0,
+          4.300000000000001,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
       }
     ]
   }

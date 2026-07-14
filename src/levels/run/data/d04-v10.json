@@ -78,57 +78,6 @@
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "gate-upper",
-        "type": "gate",
-        "material": "wood",
-        "position": [
-          0,
-          1.5,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "wall-l-0",
-        "type": "wall",
-        "material": "stone",
-        "position": [
-          -2.625,
-          0.5,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "wall-l-1",
-        "type": "wall",
-        "material": "stone",
-        "position": [
-          -1.5750000000000002,
-          0.5,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
         "id": "wall-r-0",
         "type": "wall",
         "material": "stone",
@@ -136,176 +85,6 @@
           1.5750000000000002,
           0.5,
           -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "wall-r-1",
-        "type": "wall",
-        "material": "stone",
-        "position": [
-          2.625,
-          0.5,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "tower-l-0",
-        "type": "tower",
-        "material": "stone",
-        "position": [
-          -2.5,
-          0.5,
-          -2.35
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "tower-l-1",
-        "type": "tower",
-        "material": "wood",
-        "position": [
-          -2.5,
-          1.5,
-          -2.35
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "tower-r-0",
-        "type": "tower",
-        "material": "stone",
-        "position": [
-          2.5,
-          0.5,
-          -2.35
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "tower-r-1",
-        "type": "tower",
-        "material": "wood",
-        "position": [
-          2.5,
-          1.5,
-          -2.35
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "parapet-0",
-        "type": "wall",
-        "material": "wood",
-        "position": [
-          -2.1,
-          1.5,
-          -2.2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "parapet-1",
-        "type": "wall",
-        "material": "wood",
-        "position": [
-          -1.05,
-          1.5,
-          -2.2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "parapet-2",
-        "type": "wall",
-        "material": "wood",
-        "position": [
-          0,
-          1.5,
-          -2.2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "parapet-3",
-        "type": "wall",
-        "material": "wood",
-        "position": [
-          1.05,
-          1.5,
-          -2.2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "parapet-4",
-        "type": "wall",
-        "material": "wood",
-        "position": [
-          2.1,
-          1.5,
-          -2.2
         ],
         "size": [
           1,
@@ -348,6 +127,108 @@
           0.76
         ],
         "hitPoints": 133
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "ks-col-1-0",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          -1.5750000000000002,
+          2.3000000000000003,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "ks-col-1-1",
+        "type": "tower",
+        "material": "stone",
+        "position": [
+          -1.5750000000000002,
+          3.3000000000000003,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "ks-col-2-0",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          1.5750000000000002,
+          2.27,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "ks-col-2-1",
+        "type": "tower",
+        "material": "stone",
+        "position": [
+          1.5750000000000002,
+          3.27,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "ks-bridge-1",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          -0.5250000000000001,
+          2.3000000000000003,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "ks-bridge-2",
+        "type": "wall",
+        "material": "glass",
+        "position": [
+          0.5249999999999999,
+          2.3000000000000003,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
       }
     ]
   }
