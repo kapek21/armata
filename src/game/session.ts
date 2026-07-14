@@ -792,15 +792,25 @@ export class GameSession {
     }
   }
 
+  private wakeAllDynamicBodies(): void {
+    this.world.forEachRigidBody((body) => {
+      if (!body.isFixed() && body.isEnabled()) {
+        body.wakeUp();
+      }
+    });
+  }
+
   private settlePhysicsOnLoad(): void {
     const dt = 1 / 60;
     this.world.integrationParameters.dt = dt;
-    for (let i = 0; i < 180; i++) {
+    for (let step = 0; step < 400; step++) {
       this.world.step();
       this.syncMeshes();
+      if (step > 80 && step % 20 === 0 && this.areDynamicBodiesSettled()) break;
     }
     this.world.forEachRigidBody((body) => {
       if (!body.isFixed() && body.isEnabled()) {
+        body.wakeUp();
         body.sleep();
       }
     });
@@ -933,6 +943,14 @@ export class GameSession {
     if (body) this.world.removeRigidBody(body);
     this.scene.remove(entry.mesh);
     disposeModuleVisual(entry.mesh);
+
+    this.wakeAllDynamicBodies();
+    const settleDt = 1 / 60;
+    this.world.integrationParameters.dt = settleDt;
+    for (let i = 0; i < 45; i++) {
+      this.world.step();
+      this.syncMeshes();
+    }
   }
 
   private refreshKeystoneHud(): void {

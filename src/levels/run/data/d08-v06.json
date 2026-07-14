@@ -78,23 +78,6 @@
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "court-s-1",
-        "type": "wall",
-        "material": "stone",
-        "position": [
-          0,
-          0.5,
-          -3.1
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
         "id": "court-w-0",
         "type": "wall",
         "material": "stone",

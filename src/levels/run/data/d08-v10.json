@@ -178,23 +178,6 @@
         ]
       },
       {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "keep-wing-r",
-        "type": "wall",
-        "material": "wood",
-        "position": [
-          1.1,
-          1.5,
-          -2.2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
         "importance": "critical",
         "isStatic": false,
         "id": "keystone",

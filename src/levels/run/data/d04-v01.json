@@ -78,57 +78,6 @@
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "wall-l-0",
-        "type": "wall",
-        "material": "stone",
-        "position": [
-          -2.625,
-          0.5,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "wall-l-1",
-        "type": "wall",
-        "material": "stone",
-        "position": [
-          -1.5750000000000002,
-          0.5,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "wall-r-1",
-        "type": "wall",
-        "material": "stone",
-        "position": [
-          2.625,
-          0.5,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
         "id": "tower-l-0",
         "type": "tower",
         "material": "stone",

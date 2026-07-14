@@ -65,24 +65,7 @@
         "type": "wall",
         "material": "stone",
         "position": [
-          -2.625,
-          0.5,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "forced-wall-l-1",
-        "type": "wall",
-        "material": "stone",
-        "position": [
-          -1.5750000000000002,
+          -3.65,
           0.5,
           -2
         ],
@@ -99,7 +82,7 @@
         "type": "wall",
         "material": "stone",
         "position": [
-          1.5750000000000002,
+          3.65,
           0.5,
           -2
         ],
@@ -163,28 +146,11 @@
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "forced-tower-r-1",
-        "type": "tower",
-        "material": "stone",
-        "position": [
-          2.5,
-          1.5,
-          -2.35
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
         "id": "forced-ped-0",
         "type": "wall",
         "material": "stone",
         "position": [
-          -1.55,
+          -1.5,
           0.5,
           -2
         ],
@@ -201,7 +167,7 @@
         "type": "keystone",
         "material": "wood",
         "position": [
-          -1.55,
+          -1.5,
           1.41,
           -2
         ],
@@ -219,7 +185,7 @@
         "type": "wall",
         "material": "stone",
         "position": [
-          1.55,
+          1.5,
           0.5,
           -2
         ],
@@ -236,7 +202,7 @@
         "type": "keystone",
         "material": "wood",
         "position": [
-          1.55,
+          1.5,
           1.41,
           -2
         ],
@@ -254,7 +220,7 @@
         "type": "wall",
         "material": "stone",
         "position": [
-          -1.55,
+          -1.5,
           2.32,
           -2
         ],
@@ -271,7 +237,7 @@
         "type": "wall",
         "material": "wood",
         "position": [
-          -1.55,
+          -1.5,
           3.32,
           -2
         ],
@@ -288,7 +254,7 @@
         "type": "wall",
         "material": "wood",
         "position": [
-          -1.55,
+          -1.5,
           4.32,
           -2
         ],
@@ -305,7 +271,7 @@
         "type": "wall",
         "material": "wood",
         "position": [
-          -1.55,
+          -1.5,
           5.32,
           -2
         ],
@@ -322,7 +288,7 @@
         "type": "tower",
         "material": "stone",
         "position": [
-          -1.55,
+          -1.5,
           6.32,
           -2
         ],
@@ -339,7 +305,7 @@
         "type": "wall",
         "material": "stone",
         "position": [
-          1.55,
+          1.5,
           2.32,
           -2
         ],
@@ -356,7 +322,7 @@
         "type": "wall",
         "material": "wood",
         "position": [
-          1.55,
+          1.5,
           3.32,
           -2
         ],
@@ -373,7 +339,7 @@
         "type": "wall",
         "material": "wood",
         "position": [
-          1.55,
+          1.5,
           4.32,
           -2
         ],
@@ -390,7 +356,7 @@
         "type": "wall",
         "material": "wood",
         "position": [
-          1.55,
+          1.5,
           5.32,
           -2
         ],
@@ -407,7 +373,7 @@
         "type": "tower",
         "material": "wood",
         "position": [
-          1.55,
+          1.5,
           6.32,
           -2
         ],

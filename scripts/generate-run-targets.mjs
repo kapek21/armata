@@ -20,6 +20,8 @@ const MAX_MODULES = 50;
 const MAX_KEYSTONES = 3;
 const MIN_COLLAPSE_RATIO = 0.7;
 const MAX_SURVIVING_RATIO = 1 - MIN_COLLAPSE_RATIO;
+/** Promień wybuchu — zsynchronizowany z src/game/powerups.ts (EXPLOSIVE_RADIUS). */
+const EXPLOSIVE_RADIUS = 1.8;
 
 /** Max klocków w pionowej kolumnie nad keystone (d1–2: 4, d3+: 5). */
 function maxBlocksAboveKeystone(difficulty) {
@@ -179,58 +181,109 @@ function snapKeystoneToBestSupport(modules, ks, resolvedKeystones = []) {
   return false;
 }
 
-function separateKeystoneAnchors(ksList) {
-  const seen = new Map();
-  for (const ks of ksList) {
-    const key = `${ks.position[0].toFixed(2)}:${ks.position[2].toFixed(2)}`;
-    const count = seen.get(key) ?? 0;
-    seen.set(key, count + 1);
-    if (count === 0) continue;
-    ks.position[2] += DEEP_Z * count;
-    if (count > 1) ks.position[0] += 0.5 * (count % 2 === 0 ? 1 : -1);
+function isKeystoneColumnModule(mod) {
+  return /^ks-col-|^forced-col-|^ks-expand-|^castle-crown-/.test(mod.id);
+}
+
+/** Wyrównuje kolumnę nad keystone do tego samego XZ (bez „wiszenia” po snapie). */
+function realignKeystoneColumns(modules) {
+  for (const ks of modules.filter(isKeystoneMod)) {
+    const [kx, , kz] = ks.position;
+    for (const mod of modules) {
+      if (mod.id === ks.id || mod.isStatic || mod.type === 'foundation') continue;
+      if (!isKeystoneColumnModule(mod)) continue;
+      if (Math.hypot(mod.position[0] - kx, mod.position[2] - kz) > 0.85) continue;
+      mod.position[0] = kx;
+      mod.position[2] = kz;
+    }
+  }
+}
+
+function countModulePenetrations(modules) {
+  const dynamic = modules.filter((mod) => !mod.isStatic);
+  let count = 0;
+  for (let i = 0; i < dynamic.length; i++) {
+    for (let j = i + 1; j < dynamic.length; j++) {
+      const a = modAabb(dynamic[i]);
+      const b = modAabb(dynamic[j]);
+      if (!aabbOverlap(a, b)) continue;
+      if (isRestingOn(a, b) || isRestingOn(b, a)) continue;
+      const xzOverlap =
+        a.minX < b.maxX && a.maxX > b.minX && a.minZ < b.maxZ && a.maxZ > b.minZ;
+      const yTouch =
+        Math.abs(a.minY - b.maxY) < 0.06 || Math.abs(b.minY - a.maxY) < 0.06;
+      if (xzOverlap && yTouch) continue;
+      count += 1;
+    }
+  }
+  return count;
+}
+
+/** Usuwa luźne podkładki keystone, jeśli keystone już nie przenika. */
+function pruneRedundantKeystonePads(modules) {
+  for (const pad of modules.filter((mod) => /-pad$/.test(mod.id))) {
+    const ksId = pad.id.replace(/-pad$/, '');
+    const ks = modules.find((mod) => mod.id === ksId);
+    if (!ks || keystonePenetrates(modules, ks)) continue;
+    const idx = modules.findIndex((mod) => mod.id === pad.id);
+    if (idx >= 0) modules.splice(idx, 1);
+  }
+}
+
+function resolvePenetrations(modules) {
+  for (let round = 0; round < 10; round++) {
+    if (countModulePenetrations(modules) === 0) break;
+    const dynamic = modules.filter((mod) => !mod.isStatic && mod.type !== 'foundation');
+    let removed = false;
+    for (let i = dynamic.length - 1; i >= 0; i--) {
+      for (let j = i - 1; j >= 0; j--) {
+        const a = dynamic[i];
+        const b = dynamic[j];
+        const ab = modAabb(a);
+        const bb = modAabb(b);
+        if (!aabbOverlap(ab, bb)) continue;
+        if (isRestingOn(ab, bb) || isRestingOn(bb, ab)) continue;
+        const xzOverlap =
+          ab.minX < bb.maxX && ab.maxX > bb.minX && ab.minZ < bb.maxZ && ab.maxZ > bb.minZ;
+        const yTouch =
+          Math.abs(ab.minY - bb.maxY) < 0.06 || Math.abs(bb.minY - ab.maxY) < 0.06;
+        if (xzOverlap && yTouch) continue;
+        if (isKeystoneMod(a) || isKeystoneMod(b)) continue;
+        if (a.type === 'gate' || b.type === 'gate') continue;
+
+        const drop =
+          castleBaseScore(a) >= castleBaseScore(b)
+            ? b
+            : a;
+        const idx = modules.findIndex((mod) => mod.id === drop.id);
+        if (idx >= 0) {
+          modules.splice(idx, 1);
+          removed = true;
+          break;
+        }
+      }
+      if (removed) break;
+    }
+    if (!removed) break;
   }
 }
 
 function finalizeKeystones(modules) {
-  const ksList = modules.filter(isKeystoneMod);
-  separateKeystoneAnchors(ksList);
-  const resolved = [];
-  for (const ks of ksList) {
-    snapKeystoneToBestSupport(modules, ks, resolved);
-    if (!keystonePenetrates(modules, ks, resolved)) {
-      resolved.push(ks);
-      continue;
-    }
+  for (const ks of modules.filter(isKeystoneMod)) {
     const [ox, , oz] = ks.position;
-    const nudges = [
-      [0, DEEP_Z],
-      [0, -DEEP_Z],
-      [0.55, 0],
-      [-0.55, 0],
-      [0.55, DEEP_Z],
-      [-0.55, DEEP_Z],
-    ];
-    let fixed = false;
-    for (const [dx, dz] of nudges) {
-      ks.position[0] = ox + dx;
-      ks.position[2] = oz + dz;
-      snapKeystoneToBestSupport(modules, ks, resolved);
-      if (!keystonePenetrates(modules, ks, resolved)) {
-        fixed = true;
-        break;
-      }
-    }
-    if (!fixed) {
-      ks.position[0] = ox;
-      ks.position[2] = oz;
+    snapKeystoneToBestSupport(modules, ks, []);
+    ks.position[0] = ox;
+    ks.position[2] = oz;
+    snapKeystoneToBestSupport(modules, ks, []);
+    if (keystonePenetrates(modules, ks)) {
       const padId = `${ks.id}-pad`;
       if (!modules.some((mod) => mod.id === padId)) {
         modules.push(brickAt(padId, ox, ROW.low, oz, 'wood'));
       }
-      snapKeystoneToBestSupport(modules, ks, resolved);
+      snapKeystoneToBestSupport(modules, ks, []);
     }
-    resolved.push(ks);
   }
+  realignKeystoneColumns(modules);
 }
 
 function blueprintForDifficulty(d, variant) {
@@ -632,7 +685,7 @@ function keystoneBeltTop(modules) {
 }
 
 function shouldPreserveLateralPlacement(mod, modules) {
-  if (/^ks-col-|^forced-col-|^ks-expand-/.test(mod.id)) return false;
+  if (isKeystoneColumnModule(mod)) return false;
   return modBottomY(mod) <= keystoneBeltTop(modules) + 0.12;
 }
 
@@ -692,11 +745,12 @@ function startupStabilityReport(modules) {
     !structure.has(mod.id) && modBottomY(mod) <= belt + 0.12 && anchored.has(mod.id);
   const orphans = dynamic.filter((mod) => !structure.has(mod.id) && !allowedBase(mod));
   const unanchored = dynamic.filter((mod) => !anchored.has(mod.id));
+  const penetrating = countModulePenetrations(modules);
   const ksCount = modules.filter(isKeystoneMod).length;
   return {
-    ok: ksCount >= 1 && orphans.length === 0 && unanchored.length === 0,
+    ok: ksCount >= 1 && orphans.length === 0 && unanchored.length === 0 && penetrating === 0,
     unanchored: orphans.length + unanchored.length,
-    penetrating: 0,
+    penetrating,
     ksCount,
   };
 }
@@ -704,9 +758,14 @@ function startupStabilityReport(modules) {
 /** Fizyczna stabilność startowa — pionowe filary, bez luźnych klocków. */
 function finalizeStructurePhysics(modules) {
   finalizeKeystones(modules);
-  for (let pass = 0; pass < 3; pass++) {
+  for (let pass = 0; pass < 4; pass++) {
     snapAllModulesToSupports(modules);
+    realignKeystoneColumns(modules);
   }
+  pruneRedundantKeystonePads(modules);
+  resolvePenetrations(modules);
+  snapAllModulesToSupports(modules);
+  realignKeystoneColumns(modules);
 }
 
 function bridgeRowOnKeystones(modules, keystones, rng) {
@@ -913,10 +972,42 @@ function castleLayoutReport(modules) {
   return { singleColumn, spanX, spanZ, columnCount: buckets.size };
 }
 
+function towerExplosiveReachOk(modules) {
+  const keystones = modules.filter(isKeystoneMod);
+  if (keystones.length < 2) return true;
+  if (modules.some((mod) => mod.type === 'gate')) return true;
+
+  const belt = keystoneBeltTop(modules);
+  const lowBase = modules.filter(
+    (mod) =>
+      !mod.isStatic &&
+      !isKeystoneMod(mod) &&
+      modBottomY(mod) <= belt + 0.12 &&
+      !isKeystoneColumnModule(mod),
+  );
+  const layout = castleLayoutReport(modules);
+  const towerOnly = layout.spanX >= 1.8 && lowBase.length <= keystones.length * 2 + 3;
+  if (!towerOnly) return true;
+
+  const reach = EXPLOSIVE_RADIUS * 0.96;
+  let best = Infinity;
+  for (let i = 0; i < keystones.length; i++) {
+    for (let j = i + 1; j < keystones.length; j++) {
+      const a = keystones[i].position;
+      const b = keystones[j].position;
+      best = Math.min(
+        best,
+        Math.hypot(a[0] - b[0], a[2] - b[2]),
+      );
+    }
+  }
+  return best <= reach * 2;
+}
+
 function layoutOkForDifficulty(modules, difficulty) {
   const layout = castleLayoutReport(modules);
-  if (difficulty <= 2) return true;
-  return !layout.singleColumn && layout.spanX >= 1.8;
+  if (difficulty <= 2) return towerExplosiveReachOk(modules);
+  return !layout.singleColumn && layout.spanX >= 1.8 && towerExplosiveReachOk(modules);
 }
 
 /** Dokłada skrzydła / mury boczne, gdy konstrukcja jest zbyt wąska (d3+). */
@@ -1009,10 +1100,46 @@ function pruneIndependentSurvivors(modules, maxSurvivingRatio = MAX_SURVIVING_RA
   }
 }
 
-function keystoneSpreadXs(count) {
-  if (count <= 1) return [0];
-  if (count === 2) return [-1.55, 1.55];
-  return [-2.1, 0, 2.1].slice(0, count);
+function keystoneSpreadXs(count, opts = {}) {
+  const { gateAtCenter = false } = opts;
+  if (count <= 1) return [gateAtCenter ? 1.5 : 0];
+
+  const maxSpan = EXPLOSIVE_RADIUS * 2 * 0.95;
+  const half = Math.min(1.5, maxSpan / 2 - 0.04);
+
+  if (count === 2) return [-half, half];
+  if (gateAtCenter) return [-half, half];
+  return [-half, 0, half].slice(0, count);
+}
+
+function placeKeystoneOnSupport(modules, id, x, z, hp, pedIndex, size = 0.82) {
+  const towerCap = modules
+    .filter(
+      (mod) =>
+        mod.type !== 'foundation' &&
+        !isKeystoneMod(mod) &&
+        Math.hypot(mod.position[0] - x, mod.position[2] - z) < 0.72 &&
+        modTopY(mod) >= ROW.low,
+    )
+    .sort((a, b) => modTopY(b) - modTopY(a))[0];
+  if (towerCap && modTopY(towerCap) > ROW.low + 0.4) {
+    const ks = createKeystone(id, x, stackY(towerCap.position[1], towerCap.size[1], size), z, hp, size);
+    modules.push(ks);
+    return ks;
+  }
+
+  const pedestal = brickAt(`forced-ped-${pedIndex}`, x, rowY(1), z, 'stone', 'wall');
+  modules.push(pedestal);
+  const ks = createKeystone(
+    id,
+    x,
+    stackY(pedestal.position[1], pedestal.size[1], size),
+    z,
+    hp,
+    size,
+  );
+  modules.push(ks);
+  return ks;
 }
 
 function buildForcedLoadBearingTower(difficulty, variant, keyCount, hp) {
@@ -1023,17 +1150,16 @@ function buildForcedLoadBearingTower(difficulty, variant, keyCount, hp) {
 
   for (let i = 0; i < keyCount; i++) {
     const x = xs[i];
-    const pedestal = brickAt(`forced-ped-${i}`, x, rowY(1), Z, 'stone', 'wall');
-    modules.push(pedestal);
-    const ks = createKeystone(
-      i === 0 ? 'keystone' : `keystone-${i + 1}`,
-      x,
-      stackY(pedestal.position[1], pedestal.size[1], 0.82),
-      Z,
-      hp,
+    keystones.push(
+      placeKeystoneOnSupport(
+        modules,
+        i === 0 ? 'keystone' : `keystone-${i + 1}`,
+        x,
+        Z,
+        hp,
+        i,
+      ),
     );
-    keystones.push(ks);
-    modules.push(ks);
   }
 
   const colCap = maxBlocksAboveKeystone(difficulty);
@@ -1061,28 +1187,34 @@ function buildForcedLoadBearingCastle(difficulty, variant, keyCount, hp) {
       size: [1.4, 1, 1],
     }),
   );
-  addWallRow(modules, 'forced-wall-l', -2.1, Z, 2, 1, 'stone');
-  addWallRow(modules, 'forced-wall-r', 2.1, Z, 2, 1, 'stone');
+  addWallRow(modules, 'forced-wall-l', -3.65, Z, 1, 1, 'stone');
+  addWallRow(modules, 'forced-wall-r', 3.65, Z, 1, 1, 'stone');
   if (difficulty >= 5) {
     addColumn(modules, 'forced-tower-l', -2.5, Z + DEEP_Z, 2, 'stone', 'tower');
     addColumn(modules, 'forced-tower-r', 2.5, Z + DEEP_Z, 2, 'stone', 'tower');
   }
 
-  const xs = keystoneSpreadXs(effectiveKeys);
+  const flankKeys = Math.min(effectiveKeys, 2);
+  const xs = keystoneSpreadXs(flankKeys, { gateAtCenter: true });
   const keystones = [];
-  for (let i = 0; i < effectiveKeys; i++) {
-    const x = xs[i];
-    const pedestal = brickAt(`forced-ped-${i}`, x, rowY(1), Z, 'stone', 'wall');
-    modules.push(pedestal);
-    const ks = createKeystone(
-      i === 0 ? 'keystone' : `keystone-${i + 1}`,
-      x,
-      stackY(pedestal.position[1], pedestal.size[1], 0.82),
-      Z,
-      hp,
+  for (let i = 0; i < flankKeys; i++) {
+    keystones.push(
+      placeKeystoneOnSupport(
+        modules,
+        i === 0 ? 'keystone' : `keystone-${i + 1}`,
+        xs[i],
+        Z,
+        hp,
+        i,
+      ),
     );
-    keystones.push(ks);
-    modules.push(ks);
+  }
+  if (effectiveKeys > 2) {
+    const rearX = difficulty >= 5 ? 2.5 : 1.5;
+    const rearZ = difficulty >= 5 ? Z + DEEP_Z : Z - 0.35;
+    keystones.push(
+      placeKeystoneOnSupport(modules, 'keystone-3', rearX, rearZ, hp, 2),
+    );
   }
 
   const colCap = maxBlocksAboveKeystone(difficulty);
