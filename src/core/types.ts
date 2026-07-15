@@ -7,7 +7,12 @@ export type CastleModuleType =
   | 'wall'
   | 'tower'
   | 'gate'
-  | 'keystone';
+  | 'keystone'
+  | 'lintel'
+  | 'gable';
+
+/** Geometria collisji i mesha — domyślnie box; `wedge` = trójkątny pryzmat (szczyt). */
+export type ModuleShape = 'box' | 'wedge';
 
 export type ModuleImportance = 'critical' | 'structural' | 'decorative';
 
@@ -41,6 +46,8 @@ export interface CastleModule {
   position: [number, number, number];
   size: [number, number, number];
   importance: ModuleImportance;
+  /** Domyślnie `box`; `gable` bez `shape` ⇒ `wedge`. */
+  shape?: ModuleShape;
   isStatic?: boolean;
   hitPoints?: number;
 }

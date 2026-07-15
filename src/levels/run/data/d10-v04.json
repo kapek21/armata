@@ -416,6 +416,24 @@
           1,
           1
         ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": true,
+        "id": "ks-lintel-0",
+        "type": "lintel",
+        "material": "stone",
+        "position": [
+          0,
+          1.26,
+          -2
+        ],
+        "size": [
+          1.2000000000000002,
+          0.52,
+          0.95
+        ],
+        "shape": "box"
       }
     ]
   }

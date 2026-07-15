@@ -948,17 +948,37 @@ function ensureCastleFootprint(modules, difficulty, rng) {
   }
 }
 
-/** Korony wież nad filarami keystone (d3+, w limicie kolumny). */
+/** Korony wież — trójkątne szczyty (klin) z fizyką Rapier. */
 function addCastleSuperstructure(modules, difficulty, rng) {
-  if (difficulty < 3) return;
+  if (difficulty < 2) return;
   const colCap = maxBlocksAboveKeystone(difficulty);
   modules.filter(isKeystoneMod).forEach((ks, idx) => {
     if (countBlocksAboveKeystone(modules, ks) >= colCap) return;
     const cap = keystoneColumnHead(modules, ks);
-    if (modules.some((m) => m.id.startsWith(`castle-crown-${idx}-`))) return;
-    const y = stackY(cap.position[1], cap.size[1], 1);
+    if (modules.some((m) => m.id === `gable-${idx}` || m.id.startsWith(`castle-crown-${idx}-`))) {
+      return;
+    }
+
+    const gableW = Math.min(1.15, Math.max(0.95, cap.size[0] * 1.15));
+    const gableH = 0.72;
+    const gableD = Math.min(1.05, Math.max(0.85, cap.size[2] * 1.05));
+    const y = stackY(cap.position[1], cap.size[1], gableH);
+    const candidate = {
+      id: `gable-${idx}`,
+      position: [cap.position[0], y, cap.position[2]],
+      size: [gableW, gableH, gableD],
+    };
+    if (modulePenetrates(modules, candidate)) return;
+
     modules.push(
-      brickAt(`castle-crown-${idx}-0`, cap.position[0], y, cap.position[2], pick(rng, ['wood', 'stone']), 'tower'),
+      m({
+        id: `gable-${idx}`,
+        type: 'gable',
+        material: pick(rng, ['wood', 'stone', 'wood']),
+        position: candidate.position,
+        size: candidate.size,
+        shape: 'wedge',
+      }),
     );
   });
 }
@@ -1020,7 +1040,9 @@ function keystoneSpreadXs(count) {
 }
 
 function isKeystoneColumnModule(mod) {
-  return /^ks-col-|^forced-col-|^ks-expand-|^castle-crown-|^ks-link-/.test(mod.id);
+  return /^ks-col-|^forced-col-|^ks-expand-|^castle-crown-|^ks-link-|^ks-lintel-|^gable-/.test(
+    mod.id,
+  );
 }
 
 function moduleSlotTaken(modules, x, y, z, margin = 0.55) {
@@ -1080,7 +1102,58 @@ function alignKeystoneLayout(modules) {
   }
 }
 
-/** Łączy sąsiednie filary bramą i poziomymi belkami (fizyczne klocki). */
+/** Jedno centralne nadproże nad bramą (musi spoczywać na gate — z fizyką). */
+function addSpanningLintels(modules, keystones, difficulty, rng) {
+  const sorted = [...keystones].sort((a, b) => a.position[0] - b.position[0]);
+  if (sorted.length < 2) return;
+
+  const left = sorted[0];
+  const right = sorted[sorted.length - 1];
+  const z = (left.position[2] + right.position[2]) / 2;
+  const support = modules.find(
+    (mod) =>
+      (mod.type === 'gate' || mod.id === 'ks-gate' || mod.id === 'forced-gate') &&
+      Math.abs(mod.position[2] - z) < 0.85,
+  );
+  if (!support) return;
+
+  const lintelH = 0.52;
+  const lintelD = Math.min(0.95, support.size[2] * 0.95);
+  const pad = 0.04;
+  const innerLeft = left.position[0] + left.size[0] / 2 + pad;
+  const innerRight = right.position[0] - right.size[0] / 2 - pad;
+  const gap = innerRight - innerLeft;
+  if (gap < 0.55) return;
+
+  // Nadproże nie szersze niż brama + mały zapas — pewne oparcie AABB na gate.
+  const width = Math.min(gap, support.size[0] * 1.05);
+  if (width < 0.55) return;
+  const cx = support.position[0];
+  const y = stackY(support.position[1], support.size[1], lintelH);
+  const id = 'ks-lintel-0';
+  if (modules.some((mod) => mod.id === id)) return;
+
+  const candidate = {
+    id,
+    position: [cx, y, support.position[2]],
+    size: [width, lintelH, lintelD],
+  };
+  if (modulePenetrates(modules, candidate)) return;
+
+  modules.push(
+    m({
+      id,
+      type: 'lintel',
+      material: pick(rng, ['stone', 'wood', 'stone']),
+      position: candidate.position,
+      size: candidate.size,
+      shape: 'box',
+      isStatic: difficulty >= 10,
+    }),
+  );
+}
+
+/** Łączy sąsiednie filary bramą i nadprożem (fizyczne klocki). */
 function connectKeystoneColumns(modules, difficulty, rng) {
   const keystones = [...modules.filter(isKeystoneMod)].sort((a, b) => a.position[0] - b.position[0]);
   if (keystones.length < 2) return;
@@ -1108,21 +1181,7 @@ function connectKeystoneColumns(modules, difficulty, rng) {
     );
   }
 
-  const y = rowY(1);
-  for (let x = left.position[0] + COLUMN_STEP; x < right.position[0] - 0.45; x += COLUMN_STEP) {
-    const sx = Math.round(x * 20) / 20;
-    if (moduleSlotTaken(modules, sx, y, z)) continue;
-    modules.push(
-      brickAt(
-        `ks-link-${Math.round(sx * 100)}`,
-        sx,
-        y,
-        z,
-        pick(rng, ['stone', 'wood', 'stone']),
-        'wall',
-      ),
-    );
-  }
+  addSpanningLintels(modules, keystones, difficulty, rng);
 
   if (keystones.length === 2) {
     bridgeRowOnKeystones(modules, keystones, rng);

@@ -6,6 +6,8 @@ const DEFAULT_HP: Record<string, number> = {
   gate: 60,
   wall: 80,
   tower: 90,
+  lintel: 75,
+  gable: 65,
   foundation: 9999,
 };
 

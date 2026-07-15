@@ -45,6 +45,7 @@ import { useHudStore } from '../ui/hud-store.js';
 import { setupCastleScene } from './castle-assets.js';
 import { pulseKeystoneAssembly } from './siege-visuals.js';
 import { createModuleMesh, disposeModuleVisual, getCastleMaterials } from './castle-renderer.js';
+import { createModuleCollider } from './module-shapes.js';
 import {
   BREACH_STATIC_DAMAGE,
   EXPLOSIVE_IMPULSE,
@@ -331,15 +332,11 @@ export class GameSession {
 
     this.scene.add(mesh);
 
-    const [w, h, d] = mod.size;
     const desc = isStatic
       ? RAPIER.RigidBodyDesc.fixed()
       : RAPIER.RigidBodyDesc.dynamic().setCanSleep(true);
     const body = this.world.createRigidBody(desc.setTranslation(pos[0], pos[1], pos[2]));
-    const collider = RAPIER.ColliderDesc.cuboid(w / 2, h / 2, d / 2)
-      .setDensity(isStatic ? 0 : mat.density)
-      .setFriction(mat.friction)
-      .setRestitution(mat.restitution);
+    const collider = createModuleCollider(mod, mat, isStatic);
     this.world.createCollider(collider, body);
     mesh.userData.bodyHandle = body.handle;
 

@@ -194,6 +194,24 @@
           1,
           1
         ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "gable-0",
+        "type": "gable",
+        "material": "wood",
+        "position": [
+          0,
+          6.180000000000001,
+          -2
+        ],
+        "size": [
+          1.15,
+          0.72,
+          1.05
+        ],
+        "shape": "wedge"
       }
     ]
   }

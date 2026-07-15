@@ -164,19 +164,20 @@
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "castle-crown-0-0",
-        "type": "tower",
-        "material": "stone",
+        "id": "gable-0",
+        "type": "gable",
+        "material": "wood",
         "position": [
           0,
-          4.32,
+          4.180000000000001,
           -2
         ],
         "size": [
-          1,
-          1,
-          1
-        ]
+          1.15,
+          0.72,
+          1.05
+        ],
+        "shape": "wedge"
       }
     ]
   }

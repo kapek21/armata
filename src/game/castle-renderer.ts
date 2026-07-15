@@ -7,6 +7,7 @@ import {
   buildKeystoneAssembly,
   keystoneMaterialFromAssembly,
 } from './siege-visuals.js';
+import { createWedgeGeometry, resolveModuleShape } from './module-shapes.js';
 
 let sharedMaterials: CastleMaterials | null = null;
 
@@ -135,6 +136,18 @@ function addDecorations(
       );
       break;
     }
+    case 'lintel': {
+      addMesh(
+        group,
+        new THREE.BoxGeometry(w * 1.02, Math.min(0.1, h * 0.18), d * 1.02),
+        stoneAccent,
+        [0, h / 2 - 0.04, 0],
+        tier,
+      );
+      break;
+    }
+    case 'gable':
+      break;
     default:
       break;
   }
@@ -163,20 +176,25 @@ export function createModuleMesh(mod: CastleModule, tier: QualityTier): THREE.Gr
     buildKeystoneAssembly(group, mod, mats, tier, push);
   } else {
     const mat = makeModuleMaterial(mats, mod);
-    const body = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+    const shape = resolveModuleShape(mod);
+    const geo =
+      shape === 'wedge' ? createWedgeGeometry(w, h, d) : new THREE.BoxGeometry(w, h, d);
+    const body = new THREE.Mesh(geo, mat);
     body.userData.moduleId = mod.id;
     body.castShadow = tier !== 'low';
     body.receiveShadow = tier !== 'low';
     group.add(body);
 
-    const gap = 0.018;
-    const seamMat = new THREE.MeshStandardMaterial({
-      color: 0x2a2420,
-      roughness: 1,
-      metalness: 0,
-    });
-    addMesh(group, new THREE.BoxGeometry(w + gap, gap, d + gap), seamMat, [0, h / 2 - gap / 2, 0], tier);
-    addMesh(group, new THREE.BoxGeometry(w + gap, gap, d + gap), seamMat, [0, -h / 2 + gap / 2, 0], tier);
+    if (shape === 'box') {
+      const gap = 0.018;
+      const seamMat = new THREE.MeshStandardMaterial({
+        color: 0x2a2420,
+        roughness: 1,
+        metalness: 0,
+      });
+      addMesh(group, new THREE.BoxGeometry(w + gap, gap, d + gap), seamMat, [0, h / 2 - gap / 2, 0], tier);
+      addMesh(group, new THREE.BoxGeometry(w + gap, gap, d + gap), seamMat, [0, -h / 2 + gap / 2, 0], tier);
+    }
 
     addBattleScars(group, mod, mats, tier, push);
     addSiegeMachineDecor(group, mod, mats, tier, push);
