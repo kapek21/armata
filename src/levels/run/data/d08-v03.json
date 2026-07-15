@@ -283,12 +283,29 @@
       {
         "importance": "structural",
         "isStatic": false,
+        "id": "ks-col-1-4",
+        "type": "tower",
+        "material": "stone",
+        "position": [
+          0,
+          7.32,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
         "id": "gable-0",
         "type": "gable",
         "material": "stone",
         "position": [
           0,
-          7.180000000000001,
+          8.18,
           -2
         ],
         "size": [

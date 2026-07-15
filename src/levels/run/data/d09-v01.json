@@ -387,6 +387,23 @@
       {
         "importance": "structural",
         "isStatic": false,
+        "id": "forced-col-1-4",
+        "type": "tower",
+        "material": "stone",
+        "position": [
+          -1.55,
+          6.32,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
         "id": "forced-col-2-0",
         "type": "wall",
         "material": "stone",
@@ -444,6 +461,23 @@
         "position": [
           0,
           5.32,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "forced-col-2-4",
+        "type": "tower",
+        "material": "stone",
+        "position": [
+          0,
+          6.32,
           -2
         ],
         "size": [
@@ -523,6 +557,23 @@
       {
         "importance": "structural",
         "isStatic": false,
+        "id": "forced-col-3-4",
+        "type": "tower",
+        "material": "wood",
+        "position": [
+          1.55,
+          6.32,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
         "id": "ks-lintel-0",
         "type": "lintel",
         "material": "stone",
@@ -561,10 +612,10 @@
         "isStatic": false,
         "id": "gable-0",
         "type": "gable",
-        "material": "wood",
+        "material": "stone",
         "position": [
           -1.55,
-          6.180000000000001,
+          7.180000000000001,
           -2
         ],
         "size": [
@@ -579,10 +630,10 @@
         "isStatic": false,
         "id": "gable-1",
         "type": "gable",
-        "material": "stone",
+        "material": "wood",
         "position": [
           0,
-          6.180000000000001,
+          7.180000000000001,
           -2
         ],
         "size": [
@@ -597,10 +648,10 @@
         "isStatic": false,
         "id": "gable-2",
         "type": "gable",
-        "material": "wood",
+        "material": "stone",
         "position": [
           1.55,
-          6.180000000000001,
+          7.180000000000001,
           -2
         ],
         "size": [

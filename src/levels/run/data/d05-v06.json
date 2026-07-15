@@ -267,57 +267,6 @@
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "ks-col-2-0",
-        "type": "wall",
-        "material": "stone",
-        "position": [
-          1.05,
-          2.26,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "ks-col-2-1",
-        "type": "wall",
-        "material": "stone",
-        "position": [
-          1.05,
-          3.26,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "ks-col-2-2",
-        "type": "tower",
-        "material": "stone",
-        "position": [
-          1.05,
-          4.26,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
         "id": "ks-gate",
         "type": "gate",
         "material": "stone",
@@ -359,24 +308,6 @@
         "position": [
           -1.05,
           5.180000000000001,
-          -2
-        ],
-        "size": [
-          1.15,
-          0.72,
-          1.05
-        ],
-        "shape": "wedge"
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "gable-1",
-        "type": "gable",
-        "material": "stone",
-        "position": [
-          1.05,
-          5.12,
           -2
         ],
         "size": [

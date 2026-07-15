@@ -78,6 +78,23 @@
       {
         "importance": "structural",
         "isStatic": false,
+        "id": "wall-l-0",
+        "type": "wall",
+        "material": "stone",
+        "position": [
+          -2.625,
+          0.5,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
         "id": "tower-l-0",
         "type": "tower",
         "material": "stone",
@@ -198,12 +215,29 @@
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "gable-0",
-        "type": "gable",
-        "material": "wood",
+        "id": "ks-col-1-4",
+        "type": "tower",
+        "material": "stone",
         "position": [
           0,
-          6.180000000000001,
+          6.32,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "gable-0",
+        "type": "gable",
+        "material": "stone",
+        "position": [
+          0,
+          7.180000000000001,
           -2
         ],
         "size": [
