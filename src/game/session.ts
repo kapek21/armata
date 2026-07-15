@@ -398,7 +398,12 @@ export class GameSession {
 
   private aimMeshes(): THREE.Object3D[] {
     return this.entries
-      .filter((e) => !e.isStatic && !e.cleared && e.mesh.parent !== null)
+      .filter((e) => {
+        if (e.cleared || e.mesh.parent === null) return false;
+        if (!e.isStatic) return true;
+        // Architektura wskazywalna także gdy legacy JSON ma isStatic.
+        return e.moduleType === 'lintel' || e.moduleType === 'gable' || e.moduleType === 'gate';
+      })
       .map((e) => e.mesh);
   }
 
@@ -863,7 +868,11 @@ export class GameSession {
 
     for (const entry of this.entries) {
       if (entry.cleared) continue;
-      if (entry.isStatic) {
+      const aimableDecor =
+        entry.moduleType === 'lintel' ||
+        entry.moduleType === 'gable' ||
+        entry.moduleType === 'gate';
+      if (entry.isStatic && !aimableDecor) {
         if (!this.lastBreachShot || entry.moduleType === 'foundation') continue;
       }
       if (this.ballHitCooldown.has(entry.moduleId)) continue;
@@ -872,7 +881,7 @@ export class GameSession {
       if (!ballIntersectsBox(ballPos, BALL_RADIUS, box)) continue;
 
       const dmg =
-        this.lastBreachShot && entry.isStatic
+        this.lastBreachShot && entry.isStatic && !aimableDecor
           ? BREACH_STATIC_DAMAGE
           : ballHitDamage(this.lastShotPower, heavyShot);
 

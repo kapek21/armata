@@ -890,6 +890,7 @@ function pruneOrphanModules(modules) {
   for (let i = modules.length - 1; i >= 0; i--) {
     const mod = modules[i];
     if (mod.isStatic || mod.type === 'foundation') continue;
+    if (mod.type === 'lintel' || mod.type === 'gable' || mod.type === 'gate') continue;
     if (keep.has(mod.id) || baseKeepIds.has(mod.id)) continue;
     modules.splice(i, 1);
   }
@@ -953,15 +954,39 @@ function addCastleSuperstructure(modules, difficulty, rng) {
   if (difficulty < 2) return;
   const colCap = maxBlocksAboveKeystone(difficulty);
   modules.filter(isKeystoneMod).forEach((ks, idx) => {
-    if (countBlocksAboveKeystone(modules, ks) >= colCap) return;
-    const cap = keystoneColumnHead(modules, ks);
     if (modules.some((m) => m.id === `gable-${idx}` || m.id.startsWith(`castle-crown-${idx}-`))) {
       return;
     }
+    const cap = keystoneColumnHead(modules, ks);
+    if (isKeystoneMod(cap) && countBlocksAboveKeystone(modules, ks) >= colCap) return;
 
     const gableW = Math.min(1.15, Math.max(0.95, cap.size[0] * 1.15));
     const gableH = 0.72;
     const gableD = Math.min(1.05, Math.max(0.85, cap.size[2] * 1.05));
+
+    // Kolumna pełna — zamień wierzchołek na szczyt, żeby d10+ też miał trójkąt.
+    if (countBlocksAboveKeystone(modules, ks) >= colCap && !isKeystoneMod(cap)) {
+      const idxCap = modules.findIndex((mod) => mod.id === cap.id);
+      if (idxCap < 0) return;
+      // Usuń stary wierzchołek i postaw szczyt na nowym head — poprawne oparcie AABB.
+      const [cx, , cz] = cap.position;
+      modules.splice(idxCap, 1);
+      const support = keystoneColumnHead(modules, ks);
+      const h = Math.min(gableH, 0.72);
+      const y = stackY(support.position[1], support.size[1], h);
+      modules.push(
+        m({
+          id: `gable-${idx}`,
+          type: 'gable',
+          material: pick(rng, ['wood', 'stone', 'wood']),
+          position: [cx, y, cz],
+          size: [gableW, h, gableD],
+          shape: 'wedge',
+        }),
+      );
+      return;
+    }
+
     const y = stackY(cap.position[1], cap.size[1], gableH);
     const candidate = {
       id: `gable-${idx}`,
@@ -1102,55 +1127,102 @@ function alignKeystoneLayout(modules) {
   }
 }
 
-/** Jedno centralne nadproże nad bramą (musi spoczywać na gate — z fizyką). */
+/** Gwarantuje bramę pod nadprożem przy ≥2 keystone. */
+function ensureGateForLintels(modules, keystones) {
+  const sorted = [...keystones].sort((a, b) => a.position[0] - b.position[0]);
+  if (sorted.length < 2) return null;
+  const existing = modules.find(
+    (mod) => mod.type === 'gate' || mod.id === 'ks-gate' || mod.id === 'forced-gate',
+  );
+  if (existing) return existing;
+
+  const z = (sorted[0].position[2] + sorted[sorted.length - 1].position[2]) / 2;
+  const spanX = sorted[sorted.length - 1].position[0] - sorted[0].position[0];
+  const gate = m({
+    id: 'ks-gate',
+    type: 'gate',
+    material: 'stone',
+    position: [0, ROW.low, z],
+    size: [Math.min(1.5, Math.max(1.1, spanX * 0.45)), 1, 1],
+  });
+  modules.push(gate);
+  return gate;
+}
+
+function clearLintelOccupants(modules, candidate) {
+  const kb = modAabb(candidate);
+  for (let i = modules.length - 1; i >= 0; i--) {
+    const mod = modules[i];
+    if (mod.isStatic || mod.type === 'foundation') continue;
+    if (isKeystoneMod(mod) || mod.type === 'gate' || mod.type === 'lintel' || mod.type === 'gable') {
+      continue;
+    }
+    if (/^ks-col-|^forced-col-|^ks-expand-|^forced-ped-/.test(mod.id)) continue;
+    if (!aabbOverlap(kb, modAabb(mod))) continue;
+    // Ramparty / wypełnienie w pasie bramy — ustępują nadprożu.
+    modules.splice(i, 1);
+  }
+}
+
+/**
+ * Nadproża między sąsiednimi keystone — zawsze dynamiczne (celowanie + kula).
+ * Osobny belk na każdą szczelinę, żeby nie kolidować ze środkowym filarem.
+ */
 function addSpanningLintels(modules, keystones, difficulty, rng) {
   const sorted = [...keystones].sort((a, b) => a.position[0] - b.position[0]);
   if (sorted.length < 2) return;
 
-  const left = sorted[0];
-  const right = sorted[sorted.length - 1];
-  const z = (left.position[2] + right.position[2]) / 2;
-  const support = modules.find(
-    (mod) =>
-      (mod.type === 'gate' || mod.id === 'ks-gate' || mod.id === 'forced-gate') &&
-      Math.abs(mod.position[2] - z) < 0.85,
-  );
-  if (!support) return;
+  const gate = ensureGateForLintels(modules, sorted);
+  if (!gate) return;
 
-  const lintelH = 0.52;
-  const lintelD = Math.min(0.95, support.size[2] * 0.95);
-  const pad = 0.04;
-  const innerLeft = left.position[0] + left.size[0] / 2 + pad;
-  const innerRight = right.position[0] - right.size[0] / 2 - pad;
-  const gap = innerRight - innerLeft;
-  if (gap < 0.55) return;
+  for (let i = 0; i < sorted.length - 1; i++) {
+    const left = sorted[i];
+    const right = sorted[i + 1];
+    const z = (left.position[2] + right.position[2]) / 2;
+    const lintelH = 0.4;
+    const lintelD = Math.min(0.8, gate.size[2] * 0.9);
+    // Przy ciasnych filarach (fallback d9–10 ~1.55) pad musi być mniejszy, inaczej width < progu.
+    const span = right.position[0] - left.position[0];
+    const pad = span < 1.8 ? 0.1 : 0.16;
+    const innerLeft = left.position[0] + left.size[0] / 2 + pad;
+    const innerRight = right.position[0] - right.size[0] / 2 - pad;
+    let width = innerRight - innerLeft;
+    if (width < 0.32) continue;
 
-  // Nadproże nie szersze niż brama + mały zapas — pewne oparcie AABB na gate.
-  const width = Math.min(gap, support.size[0] * 1.05);
-  if (width < 0.55) return;
-  const cx = support.position[0];
-  const y = stackY(support.position[1], support.size[1], lintelH);
-  const id = 'ks-lintel-0';
-  if (modules.some((mod) => mod.id === id)) return;
+    const cx = (innerLeft + innerRight) / 2;
+    // Częściowe oparcie na bramie wystarczy (belka może wystawać poza gate w X).
+    const lintelLeft = cx - width / 2;
+    const lintelRight = cx + width / 2;
+    const gateLeft = gate.position[0] - gate.size[0] / 2;
+    const gateRight = gate.position[0] + gate.size[0] / 2;
+    const overlapX = Math.min(lintelRight, gateRight) - Math.max(lintelLeft, gateLeft);
+    // Z bramy może lekko odbiegać od fasady — wystarczy jakikolwiek overlap X albo bliskość.
+    if (Math.abs(gate.position[2] - z) >= 1.2 || (overlapX < 0.12 && Math.abs(cx - gate.position[0]) > gate.size[0])) {
+      continue;
+    }
 
-  const candidate = {
-    id,
-    position: [cx, y, support.position[2]],
-    size: [width, lintelH, lintelD],
-  };
-  if (modulePenetrates(modules, candidate)) return;
+    const y = stackY(gate.position[1], gate.size[1], lintelH);
+    const id = `ks-lintel-${i}`;
+    if (modules.some((mod) => mod.id === id)) continue;
+    const candidate = { id, position: [cx, y, gate.position[2]], size: [width, lintelH, lintelD] };
+    clearLintelOccupants(modules, candidate);
+    // Blokują tylko keystone — resztę czyścimy albo pomijamy (ramparty).
+    const hitsKeystone = modules.some(
+      (mod) => isKeystoneMod(mod) && aabbOverlap(modAabb(candidate), modAabb(mod)),
+    );
+    if (hitsKeystone) continue;
 
-  modules.push(
-    m({
-      id,
-      type: 'lintel',
-      material: pick(rng, ['stone', 'wood', 'stone']),
-      position: candidate.position,
-      size: candidate.size,
-      shape: 'box',
-      isStatic: difficulty >= 10,
-    }),
-  );
+    modules.push(
+      m({
+        id,
+        type: 'lintel',
+        material: pick(rng, ['stone', 'wood', 'stone']),
+        position: candidate.position,
+        size: candidate.size,
+        shape: 'box',
+      }),
+    );
+  }
 }
 
 /** Łączy sąsiednie filary bramą i nadprożem (fizyczne klocki). */
@@ -1176,7 +1248,7 @@ function connectKeystoneColumns(modules, difficulty, rng) {
         material: 'stone',
         position: [0, ROW.low, z],
         size: [Math.min(1.5, spanX * 0.55), 1, 1],
-        isStatic: difficulty >= 9,
+        // Dynamiczna jak reszta architektury — da się wskazać i zwykłą kulą rozwalić.
       }),
     );
   }
@@ -1432,19 +1504,21 @@ function placeKeystones(modules, count, hp, rng, difficulty) {
 }
 
 function trimToMaxModules(modules, max = MAX_MODULES) {
+  const protectedType = (mod) =>
+    mod.isStatic ||
+    mod.type === 'foundation' ||
+    isKeystoneMod(mod) ||
+    mod.type === 'lintel' ||
+    mod.type === 'gable' ||
+    mod.type === 'gate';
+
   while (modules.length > max) {
     const idx = modules.findIndex(
-      (mod) =>
-        !mod.isStatic &&
-        mod.type !== 'foundation' &&
-        !isKeystoneMod(mod) &&
-        mod.material === 'glass',
+      (mod) => !protectedType(mod) && mod.material === 'glass',
     );
     if (idx >= 0) modules.splice(idx, 1);
     else {
-      const idx2 = modules.findIndex(
-        (mod) => !mod.isStatic && mod.type !== 'foundation' && !isKeystoneMod(mod),
-      );
+      const idx2 = modules.findIndex((mod) => !protectedType(mod));
       if (idx2 < 0) break;
       modules.splice(idx2, 1);
     }
@@ -1472,7 +1546,6 @@ function buildGatehouse(d, variant, rng) {
       material: 'stone',
       position: [0, ROW.low, Z],
       size: [1.4, 1, 1],
-      isStatic: d >= 8,
     }),
   );
   modules.push(brickAt('gate-upper', 0, ROW.mid, Z, variant % 2 === 0 ? 'wood' : 'glass', 'gate'));
@@ -1505,7 +1578,7 @@ function buildTwinTowers(d, variant, rng) {
   addColumn(modules, 'tower-r', 2.2, Z, h, 'wood', 'tower');
   addWallRow(modules, 'bridge', 0, Z + DEEP_Z, 3, h, pick(rng, ['wood', 'glass']));
   if (d >= 6) {
-    modules.push(brickAt('gate-front', 0, ROW.low, Z, 'stone', 'gate', { isStatic: d >= 9 }));
+    modules.push(brickAt('gate-front', 0, ROW.low, Z, 'stone', 'gate'));
   }
   return modules;
 }
@@ -1539,7 +1612,6 @@ function buildBastion(d, variant, rng) {
       material: 'stone',
       position: [0, ROW.low, Z + 0.35],
       size: [1.5, 1.1, 1],
-      isStatic: d >= 9,
     }),
   );
   for (const side of [-2.2, 2.2]) {
@@ -1616,6 +1688,9 @@ function buildCastle(difficulty, variant) {
     }
     pruneIndependentSurvivors(modules);
     enforceKeystoneColumnCap(modules, difficulty);
+    // Nadproża po prune — nie znikają z bazy; gable dokłada / poprawia po cap.
+    addSpanningLintels(modules, modules.filter(isKeystoneMod), difficulty, rng);
+    addCastleSuperstructure(modules, difficulty, rng);
     finalizeStructurePhysics(modules);
     trimToMaxModules(modules);
 
@@ -1633,16 +1708,21 @@ function buildCastle(difficulty, variant) {
     }
   }
 
+  const fallbackRng = rngFor(difficulty, variant + 777);
   let modules =
     difficulty <= 2
       ? buildForcedLoadBearingTower(difficulty, variant, keyCount, hp)
       : buildForcedLoadBearingCastle(difficulty, variant, keyCount, hp);
   alignKeystoneLayout(modules);
-  connectKeystoneColumns(modules, difficulty, rngFor(difficulty, variant + 777));
+  connectKeystoneColumns(modules, difficulty, fallbackRng);
+  expandOnKeystoneTree(modules, difficulty, variant, fallbackRng);
+  addCastleSuperstructure(modules, difficulty, fallbackRng);
   trimToMaxModules(modules);
   if (difficulty >= 3) clampKeystonesBelowPeak(modules);
   pruneIndependentSurvivors(modules);
   enforceKeystoneColumnCap(modules, difficulty);
+  addSpanningLintels(modules, modules.filter(isKeystoneMod), difficulty, fallbackRng);
+  addCastleSuperstructure(modules, difficulty, fallbackRng);
   finalizeStructurePhysics(modules);
   return {
     modules,
@@ -1667,6 +1747,10 @@ let warnings = 0;
 for (let d = 1; d <= 10; d++) {
   for (let v = 1; v <= 10; v++) {
     const { modules, blueprint, keyCount, collapse, stability, layout } = buildCastle(d, v);
+    // Finalny pass — celowalne nadproża / szczyty nawet gdy prune wcześniej je wyciął.
+    const finishRng = rngFor(d, v + 4242);
+    if (d >= 2) addCastleSuperstructure(modules, d, finishRng);
+    addSpanningLintels(modules, modules.filter(isKeystoneMod), d, finishRng);
     const label = BLUEPRINT_LABELS[blueprint] ?? blueprint;
     const clearReward = runClearReward(d, v);
     const ammoLimit = runAmmoLimit(d, v, keyCount);
