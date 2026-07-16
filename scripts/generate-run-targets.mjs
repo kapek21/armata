@@ -26,15 +26,33 @@ function maxBlocksAboveKeystone(difficulty) {
   return difficulty <= 2 ? 4 : 5;
 }
 
-/** Rozstaw środków bliźniaczych wież na jednej płycie (≈ COLUMN_STEP). */
-const TWIN_TOWER_SPAN = 1.05;
+/** Rozstaw środków bliźniaczych kolumn na belce-keystone. */
+const TWIN_TOWER_SPAN = 1.15;
+/** Szeroka belka = sam keystone (nie osobna płyta). */
+const WIDE_KEYSTONE_BEAM = [2.35, 0.52, 0.95];
 
-/** Czy na danym keystone stawiać dwie wieże (płyta + 2 filary). */
-function shouldBuildTwinTowers(difficulty, variant, keyIndex) {
+/** Niska twin-wieża na pierwszym keystone (d3+) — stabilniejsza niż samotny wysoki słup. */
+function shouldBuildTwinTowers(difficulty, _variant, keyIndex, _keyCount = 1) {
   if (difficulty < 3) return false;
-  // Jedna „podwójna” wieża na cel — zwykle na pierwszym keystone.
-  if (keyIndex !== 0) return false;
-  return variant % 3 !== 0;
+  return keyIndex === 0;
+}
+
+function shortTwinRows(difficulty) {
+  return Math.max(1, Math.min(2, maxBlocksAboveKeystone(difficulty) - 2));
+}
+
+function tallCompanionRows(difficulty) {
+  return maxBlocksAboveKeystone(difficulty);
+}
+
+function isWideBeamKeystone(ks) {
+  return isKeystoneMod(ks) && (ks.size?.[0] ?? 0) >= 1.6;
+}
+
+/** Wysokość keystone (sześcian: size[0]; belka: size[1]). */
+function keystoneHeight(ks) {
+  if (!ks?.size) return 0.82;
+  return Array.isArray(ks.size) && ks.size.length >= 2 ? ks.size[1] : ks.size[0];
 }
 
 const BLUEPRINT_LABELS = {
@@ -120,7 +138,7 @@ function isRestingOn(ksBox, supportBox) {
   return xz && onTop && ksBox.minY >= supportBox.maxY - 0.05;
 }
 
-function xzOnSupportFootprint(ksX, ksZ, mod, size) {
+function xzOnSupportFootprint(ksX, ksZ, mod, _size) {
   const b = modAabb(mod);
   const margin = 0.04;
   return (
@@ -128,6 +146,19 @@ function xzOnSupportFootprint(ksX, ksZ, mod, size) {
     ksX <= b.maxX + margin &&
     ksZ >= b.minZ - margin &&
     ksZ <= b.maxZ + margin
+  );
+}
+
+/** Czy podpora leży pod obrysem XZ keystone (belka: dowolny fragment, nie tylko środek). */
+function supportUnderKeystoneFootprint(ks, mod) {
+  const kb = modAabb(ks);
+  const b = modAabb(mod);
+  const margin = 0.04;
+  return (
+    kb.minX < b.maxX + margin &&
+    kb.maxX > b.minX - margin &&
+    kb.minZ < b.maxZ + margin &&
+    kb.maxZ > b.minZ - margin
   );
 }
 
@@ -158,7 +189,13 @@ function keystonePenetrates(modules, ks, resolvedKeystones = []) {
 
 function isKeystoneChokeSupport(mod, ks) {
   if (mod.type === 'foundation') return true;
-  if (/ped|gate-base|core-|forced-ped|forced-gate/.test(mod.id)) return true;
+  if (/ped|gate-base|core-|forced-ped|forced-gate|beam-pad/.test(mod.id)) return true;
+  if (isWideBeamKeystone(ks)) {
+    // Filar pod belką twin — w zasięgu rozstawu nóżek.
+    const dx = Math.abs(mod.position[0] - ks.position[0]);
+    const dz = Math.abs(mod.position[2] - ks.position[2]);
+    return dx < TWIN_TOWER_SPAN / 2 + 0.55 && dz < 0.55;
+  }
   const dx = Math.abs(mod.position[0] - ks.position[0]);
   const dz = Math.abs(mod.position[2] - ks.position[2]);
   return dx < 0.42 && dz < 0.42;
@@ -166,25 +203,36 @@ function isKeystoneChokeSupport(mod, ks) {
 
 function snapKeystoneToBestSupport(modules, ks, resolvedKeystones = []) {
   const [x, , z] = ks.position;
-  const size = ks.size[0];
+  const height = keystoneHeight(ks);
   const intendedY = ks.position[1];
+  const wide = isWideBeamKeystone(ks);
   const candidates = [];
   for (const mod of modules) {
     if (mod.id === ks.id || isKeystoneMod(mod)) continue;
     if (!isKeystoneChokeSupport(mod, ks)) continue;
-    if (!xzOnSupportFootprint(x, z, mod, size)) continue;
-    const restY = stackY(mod.position[1], mod.size[1], size);
+    const onFoot = wide
+      ? supportUnderKeystoneFootprint(ks, mod)
+      : xzOnSupportFootprint(x, z, mod, height);
+    if (!onFoot) continue;
+    const restY = stackY(mod.position[1], mod.size[1], height);
     if (restY > intendedY + 0.25) continue;
+    // Nie sadzaj belki na fundamencie, gdy wycelowano wyżej (pedestał).
+    if (mod.type === 'foundation' && restY < intendedY - 0.3) continue;
     candidates.push({ mod, restY });
   }
-  candidates.sort((a, b) => Math.abs(a.restY - intendedY) - Math.abs(b.restY - intendedY));
+  candidates.sort((a, b) => {
+    const af = a.mod.type === 'foundation' ? 1 : 0;
+    const bf = b.mod.type === 'foundation' ? 1 : 0;
+    if (af !== bf) return af - bf;
+    return Math.abs(a.restY - intendedY) - Math.abs(b.restY - intendedY);
+  });
   for (const { mod } of candidates) {
-    ks.position[1] = stackY(mod.position[1], mod.size[1], size);
+    ks.position[1] = stackY(mod.position[1], mod.size[1], height);
     if (!keystonePenetrates(modules, ks, resolvedKeystones)) return true;
   }
   if (candidates.length > 0) {
     const { mod } = candidates[0];
-    ks.position[1] = stackY(mod.position[1], mod.size[1], size);
+    ks.position[1] = stackY(mod.position[1], mod.size[1], height);
     return true;
   }
   return false;
@@ -371,12 +419,13 @@ function modBottomY(mod) {
 }
 
 function createKeystone(id, x, y, z, hp, size = 0.82) {
+  const dims = Array.isArray(size) ? size : [size, size, size];
   return m({
     id,
     type: 'keystone',
     material: 'wood',
     position: [x, y, z],
-    size: [size, size, size],
+    size: dims,
     importance: 'critical',
     hitPoints: hp,
   });
@@ -545,6 +594,7 @@ function findChokeAnchors(modules, count, difficulty, rng) {
 }
 
 function isDeckModule(mod) {
+  // Legacy: stare poziomy z osobną płytą — nadal obsługujemy.
   return /^ks-deck-|^forced-deck-/.test(mod.id);
 }
 
@@ -552,15 +602,17 @@ function isTwinLegModule(mod) {
   return /^ks-col-\d+[ab]-|^forced-col-\d+[ab]-|^ks-expand-[ab]-/.test(mod.id);
 }
 
-function findKeystoneDeck(modules, ks) {
-  return (
-    modules.find(
-      (mod) =>
-        isDeckModule(mod) &&
-        Math.hypot(mod.position[0] - ks.position[0], mod.position[2] - ks.position[2]) < 0.45 &&
-        Math.abs(modBottomY(mod) - modTopY(ks)) < 0.12,
-    ) ?? null
+/** Platforma twin: szeroki keystone-belka albo legacy deck. */
+function twinSupportPlatform(modules, ks) {
+  const deck = modules.find(
+    (mod) =>
+      isDeckModule(mod) &&
+      Math.hypot(mod.position[0] - ks.position[0], mod.position[2] - ks.position[2]) < 0.45 &&
+      Math.abs(modBottomY(mod) - modTopY(ks)) < 0.12,
   );
+  if (deck) return deck;
+  if (isWideBeamKeystone(ks)) return ks;
+  return null;
 }
 
 /** Następny klocek pionowo nad `top` (jedna gałąź). */
@@ -599,28 +651,29 @@ function columnChainHead(modules, base) {
   return top;
 }
 
-/** Bazy filarów spoczywające na płycie twin. */
-function twinTowerBasesOnDeck(modules, deck) {
+/** Bazy filarów spoczywające na belce / płycie twin. */
+function twinTowerBasesOnPlatform(modules, platform) {
   return modules.filter((mod) => {
     if (mod.isStatic || isKeystoneMod(mod) || isDeckModule(mod)) return false;
-    if (!isRestingOn(modAabb(mod), modAabb(deck))) return false;
+    if (!isRestingOn(modAabb(mod), modAabb(platform))) return false;
     if (isTwinLegModule(mod)) return true;
-    // Pierwsze klocki nóg: nie na środku płyty.
-    return Math.abs(mod.position[0] - deck.position[0]) > 0.3;
+    return Math.abs(mod.position[0] - platform.position[0]) > 0.3;
   });
 }
 
 function keystoneTowerHeads(modules, ks) {
-  const deck = findKeystoneDeck(modules, ks);
-  if (!deck) return [columnChainHead(modules, ks)].filter((h) => h && h.id !== ks.id);
-  const bases = twinTowerBasesOnDeck(modules, deck);
-  if (bases.length === 0) return [deck];
+  const platform = twinSupportPlatform(modules, ks);
+  if (!platform) return [columnChainHead(modules, ks)].filter((h) => h && h.id !== ks.id);
+  const bases = twinTowerBasesOnPlatform(modules, platform);
+  if (bases.length === 0) {
+    return platform === ks ? [] : [platform];
+  }
   return bases.map((base) => columnChainHead(modules, base));
 }
 
 function countBlocksAboveKeystone(modules, ks) {
-  const deck = findKeystoneDeck(modules, ks);
-  if (!deck) {
+  const platform = twinSupportPlatform(modules, ks);
+  if (!platform) {
     let count = 0;
     let top = ks;
     let next = nextBlockAbove(modules, top);
@@ -631,9 +684,11 @@ function countBlocksAboveKeystone(modules, ks) {
     }
     return count;
   }
-  const bases = twinTowerBasesOnDeck(modules, deck);
-  if (bases.length === 0) return 1;
-  return 1 + Math.max(...bases.map((base) => columnChainLength(modules, base)));
+  const bases = twinTowerBasesOnPlatform(modules, platform);
+  if (bases.length === 0) return platform === ks ? 0 : 1;
+  const maxLeg = Math.max(...bases.map((base) => columnChainLength(modules, base)));
+  // Belka=keystone nie liczy się jako klocek „nad” sobą; legacy deck +1.
+  return platform === ks ? maxLeg : 1 + maxLeg;
 }
 
 function keystoneColumnHead(modules, ks) {
@@ -644,23 +699,10 @@ function keystoneColumnHead(modules, ks) {
 
 function findKeystoneForColumn(modules, support) {
   if (isKeystoneMod(support)) return support;
-  const byProx = modules.find(
-    (mod) =>
-      isKeystoneMod(mod) &&
-      Math.hypot(mod.position[0] - support.position[0], mod.position[2] - support.position[2]) < 1.2,
-  );
-  if (byProx) return byProx;
-  // Twin leg — szukaj deck → keystone.
-  const deck = modules.find(
-    (mod) =>
-      isDeckModule(mod) &&
-      Math.hypot(mod.position[0] - support.position[0], mod.position[2] - support.position[2]) < 1.2,
-  );
-  if (!deck) return undefined;
   return modules.find(
     (mod) =>
       isKeystoneMod(mod) &&
-      Math.hypot(mod.position[0] - deck.position[0], mod.position[2] - deck.position[2]) < 0.45,
+      Math.hypot(mod.position[0] - support.position[0], mod.position[2] - support.position[2]) < 1.25,
   );
 }
 
@@ -669,7 +711,9 @@ function stackColumnOnSupport(modules, support, rows, idPrefix, rng, difficulty)
   const cap = maxBlocksAboveKeystone(difficulty);
   let allowedRows = rows;
   if (ksRoot) {
-    allowedRows = Math.min(rows, Math.max(0, cap - countBlocksAboveKeystone(modules, ksRoot)));
+    // Twin (szeroka belka): nie rozrastaj ponad shortTwinRows przy expand/stack.
+    const twinCap = isWideBeamKeystone(ksRoot) ? shortTwinRows(difficulty) : cap;
+    allowedRows = Math.min(rows, Math.max(0, twinCap - countBlocksAboveKeystone(modules, ksRoot)));
   }
   let current = support;
   for (let i = 0; i < allowedRows; i++) {
@@ -689,37 +733,30 @@ function stackColumnOnSupport(modules, support, rows, idPrefix, rng, difficulty)
 }
 
 /**
- * Dwie wieże na jednym keystone: płyta (oparota pionowo) + dwa filary.
- * Zawalenie keystone → upadek płyty → obie wieże (Rapier / grawitacja).
+ * Niska wieża twin: 2 kolumny na szerokiej belce-keystone (bez osobnej płyty).
+ * Zniszczenie keystone → obie kolumny spadają (grawitacja Rapier).
  */
-function stackTwinTowersOnKeystone(modules, ks, rows, idPrefix, rng, difficulty, deckId) {
-  const colCap = maxBlocksAboveKeystone(difficulty);
-  const deckH = 0.48;
-  const deckW = TWIN_TOWER_SPAN * 2 + 0.05;
-  const deckD = 0.95;
+function stackTwinTowersOnKeystone(modules, ks, rows, idPrefix, rng, difficulty) {
+  if (!isWideBeamKeystone(ks)) {
+    // Upewnij belkę — gdy ks był kwadratowy — i zachowaj oparcie od spodu.
+    const oldH = keystoneHeight(ks);
+    const bot = ks.position[1] - oldH / 2;
+    ks.size = [...WIDE_KEYSTONE_BEAM];
+    ks.position[1] = bot + keystoneHeight(ks) / 2;
+  }
+  const twinCap = shortTwinRows(difficulty);
   const already = countBlocksAboveKeystone(modules, ks);
-  const room = Math.max(0, colCap - already);
-  if (room < 2) return null;
+  const room = Math.max(0, twinCap - already);
+  if (room < 1) return null;
 
-  const towerRows = Math.min(rows, Math.max(1, room - 1));
-  const deckY = stackY(ks.position[1], ks.size[1], deckH);
-  const deck = m({
-    id: deckId,
-    type: 'lintel',
-    material: 'stone',
-    position: [ks.position[0], deckY, ks.position[2]],
-    size: [deckW, deckH, deckD],
-    shape: 'box',
-  });
-  if (modulePenetrates(modules, deck)) return null;
-  modules.push(deck);
-
+  const towerRows = Math.min(rows, Math.max(1, room));
   const half = TWIN_TOWER_SPAN / 2;
+  let placed = 0;
   for (const [leg, dx] of [
     ['a', -half],
     ['b', half],
   ]) {
-    let current = deck;
+    let current = ks;
     for (let i = 0; i < towerRows; i++) {
       const y = stackY(current.position[1], current.size[1], 1);
       const x = i === 0 ? ks.position[0] + dx : current.position[0];
@@ -735,9 +772,10 @@ function stackTwinTowersOnKeystone(modules, ks, rows, idPrefix, rng, difficulty,
       if (modulePenetrates(modules, mod)) break;
       modules.push(mod);
       current = mod;
+      placed += 1;
     }
   }
-  return deck;
+  return placed > 0 ? ks : null;
 }
 
 function modulePenetrates(modules, mod) {
@@ -835,11 +873,189 @@ function startupStabilityReport(modules) {
   };
 }
 
+/** Usuwa klocki nachodzące na filary belki twin (bramy/mury z finish pass). */
+function clearWideBeamSupportOverlaps(modules) {
+  const pads = modules.filter((mod) => /beam-pad/.test(mod.id));
+  if (pads.length === 0) return;
+  for (const pad of pads) {
+    const pb = modAabb(pad);
+    for (let i = modules.length - 1; i >= 0; i--) {
+      const mod = modules[i];
+      if (mod.id === pad.id || isKeystoneMod(mod)) continue;
+      if (mod.isStatic || mod.type === 'foundation') continue;
+      if (/beam-pad/.test(mod.id)) continue;
+      // Kolumny twin / gable nad belką — nie ruszaj.
+      if (isTwinLegModule(mod) || mod.type === 'gable' || /^ks-col-1/.test(mod.id)) continue;
+      if (mod.position[1] > pad.position[1] + 0.65) continue;
+      const b = modAabb(mod);
+      if (!aabbOverlap(pb, b, 0.03)) continue;
+      if (isRestingOn(pb, b) || isRestingOn(b, pb)) continue;
+      modules.splice(i, 1);
+    }
+  }
+}
+
 /** Fizyczna stabilność startowa — pionowe filary, bez luźnych klocków. */
 function finalizeStructurePhysics(modules) {
   finalizeKeystones(modules);
+  clearWideBeamSupportOverlaps(modules);
   for (let pass = 0; pass < 3; pass++) {
     snapAllModulesToSupports(modules);
+  }
+}
+
+/**
+ * Podpory pod szeroką belką: dwa filary pod nóżkami twin (nie jedna szeroka płyta).
+ * Unika penetracji bramy / murów przy starcie Rapier.
+ */
+function ensureWideBeamPedestal(modules, ks) {
+  const y = rowY(1);
+  const half = TWIN_TOWER_SPAN / 2;
+  const legSize = [0.95, 1, 0.95];
+  const pads = [];
+
+  // Usuń stary monolityczny pad (kolidował z bramą).
+  const legacy = modules.findIndex((mod) => mod.id === `${ks.id}-beam-pad`);
+  if (legacy >= 0) modules.splice(legacy, 1);
+  const tinyPad = modules.findIndex((mod) => mod.id === `${ks.id}-pad`);
+  if (tinyPad >= 0) modules.splice(tinyPad, 1);
+
+  for (const [tag, dx] of [
+    ['a', -half],
+    ['b', half],
+  ]) {
+    const padId = `${ks.id}-beam-pad-${tag}`;
+    const x = ks.position[0] + dx;
+    const z = ks.position[2];
+    let pad = modules.find((mod) => mod.id === padId);
+    if (!pad) {
+      pad = m({
+        id: padId,
+        type: 'wall',
+        material: 'stone',
+        position: [x, y, z],
+        size: [...legSize],
+      });
+      modules.push(pad);
+    } else {
+      pad.position[0] = x;
+      pad.position[1] = y;
+      pad.position[2] = z;
+      pad.size = [...legSize];
+    }
+    // Wyczyść klocki nachodzące na filar (ta sama półka Y).
+    const pb = modAabb(pad);
+    for (let i = modules.length - 1; i >= 0; i--) {
+      const mod = modules[i];
+      if (mod.id === pad.id || mod.id === ks.id) continue;
+      if (mod.isStatic || mod.type === 'foundation' || isKeystoneMod(mod)) continue;
+      if (/beam-pad/.test(mod.id)) continue;
+      if (mod.position[1] > y + 0.55) continue;
+      const b = modAabb(mod);
+      if (!aabbOverlap(pb, b, 0.04)) continue;
+      if (isRestingOn(pb, b) || isRestingOn(b, pb)) continue;
+      modules.splice(i, 1);
+    }
+    pads.push(pad);
+  }
+
+  ks.position[1] = stackY(pads[0].position[1], pads[0].size[1], keystoneHeight(ks));
+  return pads[0];
+}
+
+/**
+ * Przy ≥2 keystone: niska twin na szerokiej belce + wyższa wieża na drugim KS.
+ * Naprawia straty po align/prune.
+ */
+function ensureAsymmetricTwinLayout(modules, difficulty, variant, rng) {
+  const keystones = modules.filter(isKeystoneMod);
+  if (keystones.length < 2 && !shouldBuildTwinTowers(difficulty, variant, 0, keystones.length)) {
+    return;
+  }
+  let wide = keystones.find(isWideBeamKeystone);
+  if (!wide && keystones.length >= 2) {
+    // Zrób pierwszą (lewą) belką.
+    const ordered = [...keystones].sort((a, b) => a.position[0] - b.position[0]);
+    wide = ordered[0];
+    const bot = wide.position[1] - keystoneHeight(wide) / 2;
+    wide.size = [...WIDE_KEYSTONE_BEAM];
+    wide.position[1] = bot + keystoneHeight(wide) / 2;
+  }
+  if (!wide) return;
+
+  ensureWideBeamPedestal(modules, wide);
+
+  // Wyczyść wszystko nad / na belce (mostki, stare filary, gable) — twin od zera.
+  const beamHalf = WIDE_KEYSTONE_BEAM[0] / 2 + 0.15;
+  for (let i = modules.length - 1; i >= 0; i--) {
+    const mod = modules[i];
+    if (
+      mod.id === wide.id ||
+      mod.id === `${wide.id}-beam-pad` ||
+      mod.id === `${wide.id}-beam-pad-a` ||
+      mod.id === `${wide.id}-beam-pad-b` ||
+      mod.id === `${wide.id}-pad`
+    ) {
+      continue;
+    }
+    if (isKeystoneMod(mod) || mod.isStatic || mod.type === 'foundation' || mod.type === 'gate') {
+      continue;
+    }
+    const onBeam =
+      isRestingOn(modAabb(mod), modAabb(wide)) ||
+      (mod.position[1] > wide.position[1] - 0.05 &&
+        Math.abs(mod.position[0] - wide.position[0]) < beamHalf &&
+        Math.abs(mod.position[2] - wide.position[2]) < 0.75);
+    if (onBeam) modules.splice(i, 1);
+  }
+
+  stackTwinTowersOnKeystone(
+    modules,
+    wide,
+    shortTwinRows(difficulty),
+    'ks-col-1',
+    rng,
+    difficulty,
+  );
+
+  const hasLeg = (leg) => modules.some((mod) => mod.id.startsWith(`ks-col-1${leg}-`));
+  if (!hasLeg('a') || !hasLeg('b')) {
+    // Usuń niepełne nóżki i postaw obie od zera (bez testu penetracji).
+    for (let i = modules.length - 1; i >= 0; i--) {
+      if (/^ks-col-1[ab]-/.test(modules[i].id)) modules.splice(i, 1);
+    }
+    const half = TWIN_TOWER_SPAN / 2;
+    const rows = shortTwinRows(difficulty);
+    for (const [leg, dx] of [
+      ['a', -half],
+      ['b', half],
+    ]) {
+      let current = wide;
+      for (let i = 0; i < rows; i++) {
+        const x = i === 0 ? wide.position[0] + dx : current.position[0];
+        const y = stackY(current.position[1], current.size[1], 1);
+        const mod = brickAt(
+          `ks-col-1${leg}-${i}`,
+          x,
+          y,
+          wide.position[2],
+          pick(rng, ['wood', 'stone', 'wood']),
+          i === rows - 1 ? 'tower' : 'wall',
+        );
+        modules.push(mod);
+        current = mod;
+      }
+    }
+  }
+
+  const companions = keystones.filter((ks) => ks.id !== wide.id);
+  for (let i = 0; i < companions.length; i++) {
+    const ks = companions[i];
+    if (countBlocksAboveKeystone(modules, ks) >= tallCompanionRows(difficulty) - 1) continue;
+    const need = tallCompanionRows(difficulty) - countBlocksAboveKeystone(modules, ks);
+    if (need > 0) {
+      stackColumnOnSupport(modules, ks, need, `ks-col-${i + 2}`, rng, difficulty);
+    }
   }
 }
 
@@ -876,14 +1092,18 @@ function restructureAsLoadBearing(modules, keyCount, hp, difficulty, variant, rn
     return modTopY(mod) <= splitY + 0.06;
   });
 
+  const twinOnFirst = shouldBuildTwinTowers(difficulty, variant, 0, keyCount);
   const keystones = [];
   for (let i = 0; i < keyCount; i++) {
     const anchor = anchors[i];
-    const size = 0.76 + (i === 0 ? 0.06 : 0);
+    const twin = twinOnFirst && i === 0;
+    const size = twin ? WIDE_KEYSTONE_BEAM : 0.76 + (i === 0 ? 0.06 : 0);
+    const beamH = Array.isArray(size) ? size[1] : size;
+    const restY = stackY(anchor.mod.position[1], anchor.mod.size[1], beamH);
     const ks = createKeystone(
       i === 0 ? 'keystone' : `keystone-${i + 1}`,
       anchor.x,
-      anchor.restY,
+      restY,
       anchor.z,
       hp,
       size,
@@ -900,19 +1120,28 @@ function restructureAsLoadBearing(modules, keyCount, hp, difficulty, variant, rn
     Math.max(minRows, Math.ceil((target - kept.length) / Math.max(1, keystones.length * 1.15))),
   );
   for (let i = 0; i < keystones.length; i++) {
-    if (shouldBuildTwinTowers(difficulty, variant, i)) {
-      const deck = stackTwinTowersOnKeystone(
+    if (twinOnFirst && i === 0) {
+      const ok = stackTwinTowersOnKeystone(
         kept,
         keystones[i],
-        rowsPerKey,
+        shortTwinRows(difficulty),
         `ks-col-${i + 1}`,
         rng,
         difficulty,
-        `ks-deck-${i}`,
       );
-      if (!deck) {
+      if (!ok) {
         stackColumnOnSupport(kept, keystones[i], rowsPerKey, `ks-col-${i + 1}`, rng, difficulty);
       }
+    } else if (twinOnFirst && i === 1) {
+      // Wyższa wieża towarzysząca niskiej twin.
+      stackColumnOnSupport(
+        kept,
+        keystones[i],
+        tallCompanionRows(difficulty),
+        `ks-col-${i + 1}`,
+        rng,
+        difficulty,
+      );
     } else {
       stackColumnOnSupport(kept, keystones[i], rowsPerKey, `ks-col-${i + 1}`, rng, difficulty);
     }
@@ -937,20 +1166,26 @@ function expandOnKeystoneTree(modules, d, variant, rng) {
       (ks) => countBlocksAboveKeystone(modules, ks) < colCap,
     );
     if (keystones.length === 0) break;
-    const ks = keystones[guard % keystones.length];
-    const deck = findKeystoneDeck(modules, ks);
+    // Preferuj rozrost wyższej wieży; twin na belce ma niższy limit.
+    const preferTall = [...keystones].sort((a, b) => {
+      const aTwin = isWideBeamKeystone(a) ? 1 : 0;
+      const bTwin = isWideBeamKeystone(b) ? 1 : 0;
+      return aTwin - bTwin;
+    });
+    const ks = preferTall[guard % preferTall.length];
+    const platform = twinSupportPlatform(modules, ks);
     let attach = keystoneColumnHead(modules, ks);
     let expandId = `ks-expand-${guard}`;
-    if (deck) {
+    if (platform) {
       const heads = keystoneTowerHeads(modules, ks);
       if (heads.length > 0) {
-        // Rosnij najniższy filar twin — równomierna wysokość / stabilny stos.
         attach = heads.reduce((a, b) => (modTopY(a) <= modTopY(b) ? a : b));
-        const leg = attach.position[0] < deck.position[0] ? 'a' : 'b';
+        const leg = attach.position[0] < platform.position[0] ? 'a' : 'b';
         expandId = `ks-expand-${leg}-${guard}`;
-      } else {
-        attach = deck;
+      } else if (platform !== ks) {
+        attach = platform;
       }
+      if (countBlocksAboveKeystone(modules, ks) >= shortTwinRows(d)) continue;
     }
     const y = stackY(attach.position[1], attach.size[1], 1);
     const mod = brickAt(
@@ -1176,11 +1411,11 @@ function addCastleSuperstructure(modules, difficulty, rng) {
   if (difficulty < 2) return;
   modules.filter(isKeystoneMod).forEach((ks, idx) => {
     if (countBlocksAboveKeystone(modules, ks) < 1) return;
-    const deck = findKeystoneDeck(modules, ks);
-    if (deck) {
+    const platform = twinSupportPlatform(modules, ks);
+    if (platform && (isWideBeamKeystone(ks) || isDeckModule(platform))) {
       for (const head of keystoneTowerHeads(modules, ks)) {
         if (head.type === 'gable') continue;
-        const leg = head.position[0] < deck.position[0] - 0.05 ? 'a' : 'b';
+        const leg = head.position[0] < platform.position[0] - 0.05 ? 'a' : 'b';
         const gid = `gable-${idx}-${leg}`;
         if (modules.some((m) => m.id === gid)) continue;
         placeGableOnHead(modules, head, gid, rng);
@@ -1201,8 +1436,9 @@ function addCastleSuperstructure(modules, difficulty, rng) {
 function enforceKeystoneColumnCap(modules, difficulty) {
   const colCap = maxBlocksAboveKeystone(difficulty);
   for (const ks of modules.filter(isKeystoneMod)) {
+    const limit = isWideBeamKeystone(ks) ? shortTwinRows(difficulty) : colCap;
     let guard = 0;
-    while (countBlocksAboveKeystone(modules, ks) > colCap && guard < 20) {
+    while (countBlocksAboveKeystone(modules, ks) > limit && guard < 20) {
       guard++;
       const top = keystoneColumnHead(modules, ks);
       if (isKeystoneMod(top) || isDeckModule(top)) break;
@@ -1250,9 +1486,10 @@ function pruneIndependentSurvivors(modules, maxSurvivingRatio = MAX_SURVIVING_RA
 const COLUMN_STEP = 1.05;
 
 function keystoneSpreadXs(count) {
+  // Szerszy rozstaw: filary belki twin nie wchodzą w bramę (środek).
   if (count <= 1) return [0];
-  if (count === 2) return [-COLUMN_STEP, COLUMN_STEP];
-  return [-COLUMN_STEP * 2, 0, COLUMN_STEP * 2].slice(0, count);
+  if (count === 2) return [-COLUMN_STEP * 2.05, COLUMN_STEP * 2.05];
+  return [-COLUMN_STEP * 2.55, 0, COLUMN_STEP * 2.55].slice(0, count);
 }
 
 function isKeystoneColumnModule(mod) {
@@ -1271,66 +1508,79 @@ function moduleSlotTaken(modules, x, y, z, margin = 0.55) {
   );
 }
 
-function shiftKeystoneColumn(modules, ks, dx, dz, colIndex) {
-  const ox = ks.position[0] - dx;
-  const oz = ks.position[2] - dz;
-  const colPrefixes =
-    colIndex >= 0
-      ? [
-          `ks-col-${colIndex + 1}-`,
-          `ks-col-${colIndex + 1}a-`,
-          `ks-col-${colIndex + 1}b-`,
-          `forced-col-${colIndex + 1}-`,
-          `forced-col-${colIndex + 1}a-`,
-          `forced-col-${colIndex + 1}b-`,
-          `ks-deck-${colIndex}`,
-          `forced-deck-${colIndex}`,
-          `gable-${colIndex}`,
-        ]
-      : [];
-  const pedIds =
-    colIndex >= 0
-      ? [`forced-ped-${colIndex}`, `${ks.id}-pad`]
-      : [`${ks.id}-pad`];
-
+/** Filary / gable / dekki oparte na danym keystone (przed przesunięciem KS). */
+function collectColumnForKeystone(modules, ks) {
+  const related = new Set();
+  const ids = new Set([ks.id]);
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const mod of modules) {
+      if (ids.has(mod.id) || mod.isStatic || mod.type === 'foundation') continue;
+      if (directSupporters(mod, modules).some((s) => ids.has(s.id))) {
+        ids.add(mod.id);
+        related.add(mod.id);
+        changed = true;
+      }
+    }
+  }
+  // Podpory bezpośrednio pod belką (pedestał).
   for (const mod of modules) {
-    if (mod.isStatic || mod.type === 'foundation') continue;
-    if (mod.id === ks.id) continue;
-    if (pedIds.includes(mod.id)) {
-      mod.position[0] += dx;
-      mod.position[2] += dz;
-      continue;
-    }
+    if (mod.isStatic || mod.type === 'foundation' || isKeystoneMod(mod)) continue;
     if (
-      colPrefixes.some(
-        (p) => mod.id === p || mod.id.startsWith(p) || mod.id.startsWith(`${p}-`),
-      )
+      mod.id === `${ks.id}-pad` ||
+      /^forced-ped-/.test(mod.id) ||
+      /beam-pad/.test(mod.id)
     ) {
-      mod.position[0] += dx;
-      mod.position[2] += dz;
-      continue;
+      if (Math.hypot(mod.position[0] - ks.position[0], mod.position[2] - ks.position[2]) < 1.4) {
+        related.add(mod.id);
+      }
     }
-    if (isKeystoneColumnModule(mod) && Math.hypot(mod.position[0] - ox, mod.position[2] - oz) < 1.25) {
-      mod.position[0] += dx;
-      mod.position[2] += dz;
+    if (isRestingOn(modAabb(ks), modAabb(mod))) related.add(mod.id);
+  }
+  // Twin legs / gable przy belce (na wypadek luźnego kontaktu).
+  const reach = isWideBeamKeystone(ks) ? 1.45 : 1.05;
+  for (const mod of modules) {
+    if (related.has(mod.id) || mod.id === ks.id) continue;
+    if (!isKeystoneColumnModule(mod) && !isTwinLegModule(mod) && mod.type !== 'gable') continue;
+    if (Math.hypot(mod.position[0] - ks.position[0], mod.position[2] - ks.position[2]) < reach) {
+      related.add(mod.id);
     }
+  }
+  return modules.filter((mod) => related.has(mod.id));
+}
+
+function shiftKeystoneColumn(modules, ks, dx, dz) {
+  if (Math.abs(dx) < 0.001 && Math.abs(dz) < 0.001) return;
+  for (const mod of collectColumnForKeystone(modules, ks)) {
+    mod.position[0] += dx;
+    mod.position[2] += dz;
   }
 }
 
-/** Wyrównuje filary keystone w jednej linii fasady (obok siebie). */
+/** Wyrównuje filary: niska twin-belka zawsze po lewej, reszta w prawo. */
 function alignKeystoneLayout(modules) {
-  const keystones = [...modules.filter(isKeystoneMod)].sort((a, b) => a.position[0] - b.position[0]);
-  if (keystones.length === 0) return;
+  const all = modules.filter(isKeystoneMod);
+  if (all.length === 0) return;
+  const wide = all.filter(isWideBeamKeystone);
+  const rest = all
+    .filter((ks) => !isWideBeamKeystone(ks))
+    .sort((a, b) => a.position[0] - b.position[0]);
+  const keystones = [...wide, ...rest];
   const xs = keystoneSpreadXs(keystones.length);
   for (let i = 0; i < keystones.length; i++) {
     const ks = keystones[i];
     const tx = xs[Math.min(i, xs.length - 1)];
     const dx = tx - ks.position[0];
     const dz = Z - ks.position[2];
-    if (Math.abs(dx) < 0.01 && Math.abs(dz) < 0.01) continue;
+    if (Math.abs(dx) < 0.01 && Math.abs(dz) < 0.01) {
+      ks.position[2] = Z;
+      continue;
+    }
+    // Najpierw kolumna (przy starej pozycji KS), potem sam keystone.
+    shiftKeystoneColumn(modules, ks, dx, dz);
     ks.position[0] = tx;
     ks.position[2] = Z;
-    shiftKeystoneColumn(modules, ks, dx, dz, i);
   }
 }
 
@@ -1472,18 +1722,31 @@ function buildForcedLoadBearingTower(difficulty, variant, keyCount, hp) {
   const rng = rngFor(difficulty, variant + 999);
   const modules = [foundation(8 + difficulty * 0.3)];
   const xs = keystoneSpreadXs(keyCount);
+  const twinOnFirst = shouldBuildTwinTowers(difficulty, variant, 0, keyCount);
   const keystones = [];
 
   for (let i = 0; i < keyCount; i++) {
     const x = xs[i];
-    const pedestal = brickAt(`forced-ped-${i}`, x, rowY(1), Z, 'stone', 'wall');
+    const twin = twinOnFirst && i === 0;
+    const pedestal = twin
+      ? m({
+          id: `forced-ped-${i}`,
+          type: 'wall',
+          material: 'stone',
+          position: [x, rowY(1), Z],
+          size: [WIDE_KEYSTONE_BEAM[0] * 0.92, 1, 1],
+        })
+      : brickAt(`forced-ped-${i}`, x, rowY(1), Z, 'stone', 'wall');
     modules.push(pedestal);
+    const size = twin ? WIDE_KEYSTONE_BEAM : 0.82;
+    const beamH = Array.isArray(size) ? size[1] : size;
     const ks = createKeystone(
       i === 0 ? 'keystone' : `keystone-${i + 1}`,
       x,
-      stackY(pedestal.position[1], pedestal.size[1], 0.82),
+      stackY(pedestal.position[1], pedestal.size[1], beamH),
       Z,
       hp,
+      size,
     );
     keystones.push(ks);
     modules.push(ks);
@@ -1495,19 +1758,27 @@ function buildForcedLoadBearingTower(difficulty, variant, keyCount, hp) {
     Math.max(2, Math.ceil(targetModuleCount(difficulty) / keyCount) - 1),
   );
   for (let i = 0; i < keystones.length; i++) {
-    if (shouldBuildTwinTowers(difficulty, variant, i)) {
-      const deck = stackTwinTowersOnKeystone(
+    if (twinOnFirst && i === 0) {
+      const ok = stackTwinTowersOnKeystone(
         modules,
         keystones[i],
-        rows,
+        shortTwinRows(difficulty),
         `forced-col-${i + 1}`,
         rng,
         difficulty,
-        `forced-deck-${i}`,
       );
-      if (!deck) {
+      if (!ok) {
         stackColumnOnSupport(modules, keystones[i], rows, `forced-col-${i + 1}`, rng, difficulty);
       }
+    } else if (twinOnFirst && i === 1) {
+      stackColumnOnSupport(
+        modules,
+        keystones[i],
+        tallCompanionRows(difficulty),
+        `forced-col-${i + 1}`,
+        rng,
+        difficulty,
+      );
     } else {
       stackColumnOnSupport(modules, keystones[i], rows, `forced-col-${i + 1}`, rng, difficulty);
     }
@@ -1537,17 +1808,30 @@ function buildForcedLoadBearingCastle(difficulty, variant, keyCount, hp) {
   }
 
   const xs = keystoneSpreadXs(effectiveKeys);
+  const twinOnFirst = shouldBuildTwinTowers(difficulty, variant, 0, effectiveKeys);
   const keystones = [];
   for (let i = 0; i < effectiveKeys; i++) {
     const x = xs[i];
-    const pedestal = brickAt(`forced-ped-${i}`, x, rowY(1), Z, 'stone', 'wall');
+    const twin = twinOnFirst && i === 0;
+    const pedestal = twin
+      ? m({
+          id: `forced-ped-${i}`,
+          type: 'wall',
+          material: 'stone',
+          position: [x, rowY(1), Z],
+          size: [WIDE_KEYSTONE_BEAM[0] * 0.92, 1, 1],
+        })
+      : brickAt(`forced-ped-${i}`, x, rowY(1), Z, 'stone', 'wall');
     modules.push(pedestal);
+    const size = twin ? WIDE_KEYSTONE_BEAM : 0.82;
+    const beamH = Array.isArray(size) ? size[1] : size;
     const ks = createKeystone(
       i === 0 ? 'keystone' : `keystone-${i + 1}`,
       x,
-      stackY(pedestal.position[1], pedestal.size[1], 0.82),
+      stackY(pedestal.position[1], pedestal.size[1], beamH),
       Z,
       hp,
+      size,
     );
     keystones.push(ks);
     modules.push(ks);
@@ -1559,19 +1843,27 @@ function buildForcedLoadBearingCastle(difficulty, variant, keyCount, hp) {
     Math.max(2, Math.ceil(targetModuleCount(difficulty) / effectiveKeys) - 2),
   );
   for (let i = 0; i < keystones.length; i++) {
-    if (shouldBuildTwinTowers(difficulty, variant, i)) {
-      const deck = stackTwinTowersOnKeystone(
+    if (twinOnFirst && i === 0) {
+      const ok = stackTwinTowersOnKeystone(
         modules,
         keystones[i],
-        rows,
+        shortTwinRows(difficulty),
         `forced-col-${i + 1}`,
         rng,
         difficulty,
-        `forced-deck-${i}`,
       );
-      if (!deck) {
+      if (!ok) {
         stackColumnOnSupport(modules, keystones[i], rows, `forced-col-${i + 1}`, rng, difficulty);
       }
+    } else if (twinOnFirst && i === 1) {
+      stackColumnOnSupport(
+        modules,
+        keystones[i],
+        tallCompanionRows(difficulty),
+        `forced-col-${i + 1}`,
+        rng,
+        difficulty,
+      );
     } else {
       stackColumnOnSupport(modules, keystones[i], rows, `forced-col-${i + 1}`, rng, difficulty);
     }
@@ -1592,14 +1884,14 @@ function clampKeystonesBelowPeak(modules) {
   const resolved = [];
 
   for (const ks of modules.filter(isKeystoneMod)) {
-    const ksSupportTop = ks.position[1] - ks.size[0] / 2;
+    const height = keystoneHeight(ks);
+    const ksSupportTop = ks.position[1] - height / 2;
     if (ksSupportTop < maxTop - 0.45) {
       resolved.push(ks);
       continue;
     }
 
     const [ox, , oz] = ks.position;
-    const size = ks.size[0];
     let placed = false;
 
     const lowerSupports = struct
@@ -1612,7 +1904,7 @@ function clampKeystonesBelowPeak(modules) {
     for (const mod of lowerSupports) {
       ks.position[0] = mod.position[0];
       ks.position[2] = mod.position[2];
-      ks.position[1] = stackY(mod.position[1], mod.size[1], size);
+      ks.position[1] = stackY(mod.position[1], mod.size[1], height);
       if (!keystonePenetrates(modules, ks, resolved)) {
         placed = true;
         break;
@@ -1625,7 +1917,7 @@ function clampKeystonesBelowPeak(modules) {
       for (const mod of lowerSupports) {
         ks.position[0] = mod.position[0];
         ks.position[2] = mod.position[2];
-        ks.position[1] = stackY(mod.position[1], mod.size[1], size);
+        ks.position[1] = stackY(mod.position[1], mod.size[1], height);
         if (!keystonePenetrates(modules, ks, resolved)) {
           placed = true;
           break;
@@ -1748,6 +2040,8 @@ function trimToMaxModules(modules, max = MAX_MODULES) {
     isKeystoneMod(mod) ||
     isDeckModule(mod) ||
     isTwinLegModule(mod) ||
+    /beam-pad/.test(mod.id) ||
+    /^forced-ped-/.test(mod.id) ||
     mod.type === 'lintel' ||
     mod.type === 'gable' ||
     mod.type === 'gate';
@@ -1928,6 +2222,7 @@ function buildCastle(difficulty, variant) {
     }
     pruneIndependentSurvivors(modules);
     enforceKeystoneColumnCap(modules, difficulty);
+    ensureAsymmetricTwinLayout(modules, difficulty, variant, rng);
     // Nadproża po prune — nie znikają z bazy; gable dokłada / poprawia po cap.
     addSpanningLintels(modules, modules.filter(isKeystoneMod), difficulty, rng);
     addCastleSuperstructure(modules, difficulty, rng);
@@ -1961,6 +2256,7 @@ function buildCastle(difficulty, variant) {
   if (difficulty >= 3) clampKeystonesBelowPeak(modules);
   pruneIndependentSurvivors(modules);
   enforceKeystoneColumnCap(modules, difficulty);
+  ensureAsymmetricTwinLayout(modules, difficulty, variant, fallbackRng);
   addSpanningLintels(modules, modules.filter(isKeystoneMod), difficulty, fallbackRng);
   addCastleSuperstructure(modules, difficulty, fallbackRng);
   finalizeStructurePhysics(modules);
@@ -1991,6 +2287,8 @@ for (let d = 1; d <= 10; d++) {
     const finishRng = rngFor(d, v + 4242);
     if (d >= 2) addCastleSuperstructure(modules, d, finishRng);
     addSpanningLintels(modules, modules.filter(isKeystoneMod), d, finishRng);
+    // Po finish: ponownie oprzyj stosy (gable/lintel) — inaczej unanchored przy starcie.
+    finalizeStructurePhysics(modules);
     const label = BLUEPRINT_LABELS[blueprint] ?? blueprint;
     const clearReward = runClearReward(d, v);
     const ammoLimit = runAmmoLimit(d, v, keyCount);

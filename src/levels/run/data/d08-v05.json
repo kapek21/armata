@@ -61,46 +61,12 @@
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "outer-gate",
-        "type": "gate",
-        "material": "stone",
-        "position": [
-          0,
-          0.55,
-          -1.65
-        ],
-        "size": [
-          1.5,
-          1.1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
         "id": "flank-l-0",
         "type": "tower",
         "material": "stone",
         "position": [
           -2.2,
           0.5,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "flank-l-1",
-        "type": "tower",
-        "material": "stone",
-        "position": [
-          -2.2,
-          1.5,
           -2
         ],
         "size": [
@@ -146,64 +112,13 @@
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "rampart-0",
+        "id": "rampart-4",
         "type": "wall",
         "material": "wood",
         "position": [
-          -2.1,
+          2.1,
           1.5,
           -2.15
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "rampart-2",
-        "type": "wall",
-        "material": "wood",
-        "position": [
-          0,
-          1.5,
-          -2.15
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "keep-core-0",
-        "type": "wall",
-        "material": "stone",
-        "position": [
-          0,
-          0.5,
-          -2.35
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "keep-core-1",
-        "type": "wall",
-        "material": "wood",
-        "position": [
-          0,
-          1.5,
-          -2.35
         ],
         "size": [
           1,
@@ -219,33 +134,49 @@
         "material": "wood",
         "position": [
           0,
-          2.41,
+          1.26,
           -2
         ],
         "size": [
-          0.8200000000000001,
-          0.8200000000000001,
-          0.8200000000000001
+          2.35,
+          0.52,
+          0.95
         ],
         "hitPoints": 171
       },
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "ks-deck-0",
-        "type": "lintel",
+        "id": "keystone-beam-pad-a",
+        "type": "wall",
         "material": "stone",
         "position": [
-          0,
-          3.0600000000000005,
+          -0.575,
+          0.5,
           -2
         ],
         "size": [
-          2.15,
-          0.48,
+          0.95,
+          1,
           0.95
+        ]
+      },
+      {
+        "importance": "structural",
+        "isStatic": false,
+        "id": "keystone-beam-pad-b",
+        "type": "wall",
+        "material": "stone",
+        "position": [
+          0.575,
+          0.5,
+          -2
         ],
-        "shape": "box"
+        "size": [
+          0.95,
+          1,
+          0.95
+        ]
       },
       {
         "importance": "structural",
@@ -254,8 +185,8 @@
         "type": "wall",
         "material": "wood",
         "position": [
-          -0.5250000000000001,
-          3.8000000000000007,
+          -0.575,
+          2.02,
           -2
         ],
         "size": [
@@ -268,45 +199,11 @@
         "importance": "structural",
         "isStatic": false,
         "id": "ks-col-1a-1",
-        "type": "wall",
-        "material": "stone",
-        "position": [
-          -0.5250000000000001,
-          4.800000000000001,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "ks-col-1a-2",
-        "type": "wall",
-        "material": "wood",
-        "position": [
-          -0.5250000000000001,
-          5.800000000000001,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "ks-col-1a-3",
         "type": "tower",
         "material": "wood",
         "position": [
-          -0.5250000000000001,
-          6.800000000000001,
+          -0.575,
+          3.02,
           -2
         ],
         "size": [
@@ -320,10 +217,10 @@
         "isStatic": false,
         "id": "ks-col-1b-0",
         "type": "wall",
-        "material": "stone",
+        "material": "wood",
         "position": [
-          0.525,
-          3.8000000000000007,
+          0.575,
+          2.02,
           -2
         ],
         "size": [
@@ -336,11 +233,11 @@
         "importance": "structural",
         "isStatic": false,
         "id": "ks-col-1b-1",
-        "type": "wall",
+        "type": "tower",
         "material": "stone",
         "position": [
-          0.525,
-          4.800000000000001,
+          0.575,
+          3.02,
           -2
         ],
         "size": [
@@ -352,29 +249,12 @@
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "ks-col-1b-2",
-        "type": "wall",
-        "material": "wood",
-        "position": [
-          0.525,
-          5.800000000000001,
-          -2
-        ],
-        "size": [
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "importance": "structural",
-        "isStatic": false,
-        "id": "gable-0-b",
+        "id": "gable-0-a",
         "type": "gable",
         "material": "stone",
         "position": [
-          0.525,
-          6.660000000000001,
+          -0.575,
+          3.88,
           -2
         ],
         "size": [
@@ -387,12 +267,12 @@
       {
         "importance": "structural",
         "isStatic": false,
-        "id": "gable-0-a",
+        "id": "gable-0-b",
         "type": "gable",
-        "material": "stone",
+        "material": "wood",
         "position": [
-          -0.5250000000000001,
-          7.660000000000001,
+          0.575,
+          3.88,
           -2
         ],
         "size": [
