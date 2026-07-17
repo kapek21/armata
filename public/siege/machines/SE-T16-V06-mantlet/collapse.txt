@@ -1,0 +1,1 @@
+Destroying B19, B20, B21 (central bracing beam) causes the shielding panels to buckle inward; posts remain but coverage is lost.

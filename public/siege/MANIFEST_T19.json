@@ -1,0 +1,65 @@
+{
+  "tier": 19,
+  "machines": [
+    {
+      "machine_id": "SE-T19-V01-trebuchet",
+      "archetype": "trebuchet",
+      "bricks": 18,
+      "critical": 4
+    },
+    {
+      "machine_id": "SE-T19-V02-mangonel",
+      "archetype": "mangonel",
+      "bricks": 17,
+      "critical": 4
+    },
+    {
+      "machine_id": "SE-T19-V03-ram",
+      "archetype": "ram",
+      "bricks": 23,
+      "critical": 4
+    },
+    {
+      "machine_id": "SE-T19-V04-siege_tower",
+      "archetype": "siege_tower",
+      "bricks": 25,
+      "critical": 4
+    },
+    {
+      "machine_id": "SE-T19-V05-ballista",
+      "archetype": "ballista",
+      "bricks": 15,
+      "critical": 4
+    },
+    {
+      "machine_id": "SE-T19-V06-mantlet",
+      "archetype": "mantlet",
+      "bricks": 23,
+      "critical": 4
+    },
+    {
+      "machine_id": "SE-T19-V07-trebuchet",
+      "archetype": "trebuchet",
+      "bricks": 18,
+      "critical": 4
+    },
+    {
+      "machine_id": "SE-T19-V08-mangonel",
+      "archetype": "mangonel",
+      "bricks": 17,
+      "critical": 4
+    },
+    {
+      "machine_id": "SE-T19-V09-ram",
+      "archetype": "ram",
+      "bricks": 23,
+      "critical": 4
+    },
+    {
+      "machine_id": "SE-T19-V10-siege_tower",
+      "archetype": "siege_tower",
+      "bricks": 25,
+      "critical": 4
+    }
+  ]
+}

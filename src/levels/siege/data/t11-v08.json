@@ -1,0 +1,270 @@
+{
+  "id": "siege-t11-v08",
+  "name": "Mangonela",
+  "chapter": 11,
+  "difficulty": 10,
+  "runDifficulty": 11,
+  "siegeTier": 11,
+  "variant": 8,
+  "archetype": "mangonel",
+  "clearReward": 2060,
+  "ammoLimit": 13,
+  "timeLimitSec": 999,
+  "starTimeSec": [
+    999,
+    999,
+    999
+  ],
+  "starShots": [
+    13,
+    13,
+    13
+  ],
+  "starScore": [
+    2460,
+    2260,
+    2060
+  ],
+  "killZoneY": -2,
+  "cannon": {
+    "position": [
+      0,
+      0.6,
+      8.2
+    ],
+    "angleMinDeg": 12,
+    "angleMaxDeg": 47
+  },
+  "enemyCastle": {
+    "origin": [
+      0,
+      0,
+      -2
+    ],
+    "modules": [
+      {
+        "id": "B00",
+        "type": "foundation",
+        "material": "ground",
+        "position": [
+          0,
+          -0.25,
+          -2
+        ],
+        "size": [
+          7.5,
+          0.5,
+          5.25
+        ],
+        "importance": "structural",
+        "isStatic": true
+      },
+      {
+        "id": "B01",
+        "type": "tower",
+        "material": "wood",
+        "position": [
+          0,
+          0.3,
+          -2
+        ],
+        "size": [
+          6,
+          0.6,
+          3.75
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B02",
+        "type": "tower",
+        "material": "metal",
+        "position": [
+          -2.4,
+          0.45,
+          -0.19999999999999996
+        ],
+        "size": [
+          0.6,
+          0.9,
+          0.4
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B03",
+        "type": "tower",
+        "material": "metal",
+        "position": [
+          2.4,
+          0.45,
+          -0.19999999999999996
+        ],
+        "size": [
+          0.6,
+          0.9,
+          0.4
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B04",
+        "type": "tower",
+        "material": "metal",
+        "position": [
+          -2.4,
+          0.45,
+          -3.8
+        ],
+        "size": [
+          0.6,
+          0.9,
+          0.4
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B05",
+        "type": "tower",
+        "material": "metal",
+        "position": [
+          2.4,
+          0.45,
+          -3.8
+        ],
+        "size": [
+          0.6,
+          0.9,
+          0.4
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B06",
+        "type": "tower",
+        "material": "wood",
+        "position": [
+          -1.8,
+          1.8,
+          -2
+        ],
+        "size": [
+          0.4,
+          2.4,
+          0.4
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B07",
+        "type": "tower",
+        "material": "wood",
+        "position": [
+          1.8,
+          1.8,
+          -2
+        ],
+        "size": [
+          0.4,
+          2.4,
+          0.4
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B08",
+        "type": "tower",
+        "material": "metal",
+        "position": [
+          0,
+          3.2,
+          -1.5
+        ],
+        "size": [
+          3.6,
+          0.35,
+          0.35
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B09",
+        "type": "wall",
+        "material": "metal",
+        "position": [
+          1.5,
+          3.5,
+          -1.5
+        ],
+        "size": [
+          0.7,
+          0.5,
+          0.7
+        ],
+        "importance": "decorative",
+        "isStatic": false
+      },
+      {
+        "id": "B10",
+        "type": "wall",
+        "material": "metal",
+        "position": [
+          -0.9,
+          1.8,
+          -2.6
+        ],
+        "size": [
+          0.4,
+          0.4,
+          0.4
+        ],
+        "importance": "decorative",
+        "isStatic": false
+      },
+      {
+        "id": "B11",
+        "type": "keystone",
+        "material": "metal",
+        "position": [
+          -0.55,
+          1.8000000000000003,
+          -2
+        ],
+        "size": [
+          0.8,
+          0.8,
+          0.8
+        ],
+        "importance": "critical",
+        "isStatic": false,
+        "hitPoints": 180
+      },
+      {
+        "id": "B12",
+        "type": "keystone",
+        "material": "metal",
+        "position": [
+          0.55,
+          1.8000000000000003,
+          -2
+        ],
+        "size": [
+          0.8,
+          0.8,
+          0.8
+        ],
+        "importance": "critical",
+        "isStatic": false,
+        "hitPoints": 180
+      }
+    ]
+  }
+}

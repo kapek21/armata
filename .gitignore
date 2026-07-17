@@ -5,3 +5,7 @@ dist/
 *.log
 .DS_Store
 _extracted/
+# Siege QA renders (game uses blocks.json + textures only)
+public/siege/machines/**/hero.png
+public/siege/machines/**/ortho_*.png
+armata-assets-final.zip

@@ -9,7 +9,9 @@
     "preview": "vite preview --port 5186",
     "typecheck": "tsc --noEmit",
     "generate-levels": "node scripts/generate-levels.mjs",
-    "generate:run": "node scripts/generate-run-targets.mjs"
+    "generate:run": "node scripts/generate-run-targets.mjs",
+    "import:siege": "node scripts/import-siege-assets.mjs",
+    "validate:siege": "node scripts/validate-siege-assets.mjs"
   },
   "dependencies": {
     "@dimforge/rapier3d-compat": "^0.14.0",

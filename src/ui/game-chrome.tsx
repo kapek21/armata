@@ -5,7 +5,7 @@ import { POWERUP_COST, powerupTotal } from '../meta/economy.js';
 import { formatCampaignClock } from '../meta/campaign-time.js';
 import { shouldShowAimHint } from '../meta/profile.js';
 
-/** „Cel 1 — Wieża strażnicza 9” → „Wieża strażnicza” */
+/** „Cel 1 — Wieża…” / czyste nazwy siege → tytuł HUD */
 function displayLevelTitle(name: string): string {
   let title = name.replace(/^Cel\s+\d+\s*[—–-]\s*/i, '').trim();
   title = title.replace(/\s+\d+$/, '').trim();

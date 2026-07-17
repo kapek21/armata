@@ -17,7 +17,7 @@ const Z = -2;
 const ROW = { low: 0.5, mid: 1.5, high: 2.5, top: 3.5 };
 const DEEP_Z = -0.35;
 const MAX_MODULES = 50;
-const MAX_KEYSTONES = 3;
+const MAX_KEYSTONES = 5;
 const MIN_COLLAPSE_RATIO = 0.7;
 const MAX_SURVIVING_RATIO = 1 - MIN_COLLAPSE_RATIO;
 

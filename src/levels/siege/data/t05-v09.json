@@ -1,0 +1,286 @@
+{
+  "id": "siege-t05-v09",
+  "name": "Taran",
+  "chapter": 5,
+  "difficulty": 5,
+  "runDifficulty": 5,
+  "siegeTier": 5,
+  "variant": 9,
+  "archetype": "ram",
+  "clearReward": 1190,
+  "ammoLimit": 9,
+  "timeLimitSec": 999,
+  "starTimeSec": [
+    999,
+    999,
+    999
+  ],
+  "starShots": [
+    9,
+    9,
+    9
+  ],
+  "starScore": [
+    1590,
+    1390,
+    1190
+  ],
+  "killZoneY": -2,
+  "cannon": {
+    "position": [
+      0,
+      0.6,
+      8.2
+    ],
+    "angleMinDeg": 11,
+    "angleMaxDeg": 45
+  },
+  "enemyCastle": {
+    "origin": [
+      0,
+      0,
+      -2
+    ],
+    "modules": [
+      {
+        "id": "B00",
+        "type": "foundation",
+        "material": "ground",
+        "position": [
+          0,
+          -0.25,
+          -2
+        ],
+        "size": [
+          6.6,
+          0.5,
+          3
+        ],
+        "importance": "structural",
+        "isStatic": true
+      },
+      {
+        "id": "B01",
+        "type": "tower",
+        "material": "wood",
+        "position": [
+          0,
+          0.4,
+          -0.8
+        ],
+        "size": [
+          6,
+          0.4,
+          0.4
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B02",
+        "type": "tower",
+        "material": "wood",
+        "position": [
+          0,
+          0.4,
+          -3.2
+        ],
+        "size": [
+          6,
+          0.4,
+          0.4
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B03",
+        "type": "tower",
+        "material": "metal",
+        "position": [
+          -2.16,
+          0.45,
+          -0.6799999999999999
+        ],
+        "size": [
+          0.6,
+          0.9,
+          0.4
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B04",
+        "type": "tower",
+        "material": "metal",
+        "position": [
+          2.16,
+          0.45,
+          -0.6799999999999999
+        ],
+        "size": [
+          0.6,
+          0.9,
+          0.4
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B05",
+        "type": "tower",
+        "material": "metal",
+        "position": [
+          -2.16,
+          0.45,
+          -3.3200000000000003
+        ],
+        "size": [
+          0.6,
+          0.9,
+          0.4
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B06",
+        "type": "tower",
+        "material": "metal",
+        "position": [
+          2.16,
+          0.45,
+          -3.3200000000000003
+        ],
+        "size": [
+          0.6,
+          0.9,
+          0.4
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B07",
+        "type": "tower",
+        "material": "wood",
+        "position": [
+          -2.4,
+          1.24,
+          -0.9199999999999999
+        ],
+        "size": [
+          0.35,
+          1.68,
+          0.35
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B08",
+        "type": "tower",
+        "material": "wood",
+        "position": [
+          -2.4,
+          1.24,
+          -3.08
+        ],
+        "size": [
+          0.35,
+          1.68,
+          0.35
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B09",
+        "type": "tower",
+        "material": "wood",
+        "position": [
+          2.4,
+          1.24,
+          -0.9199999999999999
+        ],
+        "size": [
+          0.35,
+          1.68,
+          0.35
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B10",
+        "type": "tower",
+        "material": "wood",
+        "position": [
+          2.4,
+          1.24,
+          -3.08
+        ],
+        "size": [
+          0.35,
+          1.68,
+          0.35
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B11",
+        "type": "tower",
+        "material": "metal",
+        "position": [
+          0,
+          2.23,
+          -2
+        ],
+        "size": [
+          6,
+          0.3,
+          2.64
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B12",
+        "type": "wall",
+        "material": "metal",
+        "position": [
+          3,
+          0.9,
+          -2
+        ],
+        "size": [
+          1.2,
+          0.9,
+          0.9
+        ],
+        "importance": "decorative",
+        "isStatic": false
+      },
+      {
+        "id": "B13",
+        "type": "keystone",
+        "material": "wood",
+        "position": [
+          0,
+          1.6800000000000002,
+          -2
+        ],
+        "size": [
+          1.2,
+          0.6,
+          0.6
+        ],
+        "importance": "critical",
+        "isStatic": false,
+        "hitPoints": 120
+      }
+    ]
+  }
+}

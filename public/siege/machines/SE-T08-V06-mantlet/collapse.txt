@@ -1,0 +1,1 @@
+Destroying B14, B15 (central bracing beam) causes the shielding panels to buckle inward; posts remain but coverage is lost.

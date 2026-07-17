@@ -1,0 +1,253 @@
+{
+  "id": "siege-t09-v01",
+  "name": "Trebusz",
+  "chapter": 9,
+  "difficulty": 9,
+  "runDifficulty": 9,
+  "siegeTier": 9,
+  "variant": 1,
+  "archetype": "trebuchet",
+  "clearReward": 1800,
+  "ammoLimit": 12,
+  "timeLimitSec": 999,
+  "starTimeSec": [
+    999,
+    999,
+    999
+  ],
+  "starShots": [
+    12,
+    12,
+    12
+  ],
+  "starScore": [
+    2200,
+    2000,
+    1800
+  ],
+  "killZoneY": -2,
+  "cannon": {
+    "position": [
+      0,
+      0.6,
+      8.2
+    ],
+    "angleMinDeg": 12,
+    "angleMaxDeg": 47
+  },
+  "enemyCastle": {
+    "origin": [
+      0,
+      0,
+      -2
+    ],
+    "modules": [
+      {
+        "id": "B00",
+        "type": "foundation",
+        "material": "ground",
+        "position": [
+          0,
+          -0.25,
+          -2
+        ],
+        "size": [
+          8.4,
+          0.5,
+          5.6
+        ],
+        "importance": "structural",
+        "isStatic": true
+      },
+      {
+        "id": "B01",
+        "type": "tower",
+        "material": "wood",
+        "position": [
+          -2.1,
+          1.4,
+          -0.6000000000000001
+        ],
+        "size": [
+          1,
+          2.8,
+          1
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B02",
+        "type": "tower",
+        "material": "wood",
+        "position": [
+          2.1,
+          1.4,
+          -0.6000000000000001
+        ],
+        "size": [
+          1,
+          2.8,
+          1
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B03",
+        "type": "tower",
+        "material": "wood",
+        "position": [
+          -2.1,
+          1.4,
+          -3.4
+        ],
+        "size": [
+          1,
+          2.8,
+          1
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B04",
+        "type": "tower",
+        "material": "wood",
+        "position": [
+          2.1,
+          1.4,
+          -3.4
+        ],
+        "size": [
+          1,
+          2.8,
+          1
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B05",
+        "type": "tower",
+        "material": "wood",
+        "position": [
+          0,
+          3,
+          -2
+        ],
+        "size": [
+          5.6,
+          0.4,
+          0.8
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B06",
+        "type": "tower",
+        "material": "metal",
+        "position": [
+          -3.08,
+          4.2,
+          -2
+        ],
+        "size": [
+          1.96,
+          1.96,
+          1.96
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B07",
+        "type": "tower",
+        "material": "wood",
+        "position": [
+          0.42,
+          4.5,
+          -2
+        ],
+        "size": [
+          4.2,
+          0.35,
+          0.35
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B08",
+        "type": "wall",
+        "material": "metal",
+        "position": [
+          -3.08,
+          5.46,
+          -1.4
+        ],
+        "size": [
+          0.6,
+          0.6,
+          0.6
+        ],
+        "importance": "decorative",
+        "isStatic": false
+      },
+      {
+        "id": "B09",
+        "type": "wall",
+        "material": "wood",
+        "position": [
+          3.22,
+          4.35,
+          -2
+        ],
+        "size": [
+          0.5,
+          0.5,
+          0.5
+        ],
+        "importance": "decorative",
+        "isStatic": false
+      },
+      {
+        "id": "B10",
+        "type": "keystone",
+        "material": "wood",
+        "position": [
+          -0.6,
+          3.9199999999999995,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ],
+        "importance": "critical",
+        "isStatic": false,
+        "hitPoints": 160
+      },
+      {
+        "id": "B11",
+        "type": "keystone",
+        "material": "wood",
+        "position": [
+          0.6,
+          3.9199999999999995,
+          -2
+        ],
+        "size": [
+          1,
+          1,
+          1
+        ],
+        "importance": "critical",
+        "isStatic": false,
+        "hitPoints": 160
+      }
+    ]
+  }
+}

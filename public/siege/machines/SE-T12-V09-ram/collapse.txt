@@ -1,0 +1,1 @@
+Destroying B17, B18 (ram suspension) drops the beam to the ground; frame stays intact but the ram cannot swing.

@@ -322,6 +322,58 @@ export function createCastleMaterials(tier: QualityTier): CastleMaterials {
   };
 }
 
+const SIEGE_TEX = {
+  wood: '/siege/textures/tex_wood_albedo_512.png',
+  metal: '/siege/textures/tex_metal_albedo_512.png',
+  stone: '/siege/textures/tex_stone_albedo_512.png',
+  ground: '/siege/textures/tex_ground_albedo_512.png',
+  shield: '/siege/textures/tex_keystone_shield_256.png',
+} as const;
+
+function loadTexture(url: string): Promise<THREE.Texture | null> {
+  return new Promise((resolve) => {
+    const loader = new THREE.TextureLoader();
+    loader.load(
+      url,
+      (tex) => {
+        tex.colorSpace = THREE.SRGBColorSpace;
+        tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+        tex.needsUpdate = true;
+        resolve(tex);
+      },
+      undefined,
+      () => resolve(null),
+    );
+  });
+}
+
+/** Podmienia canvasowe albedo na PNG z paczki siege (gdy dostępne). */
+export async function applySiegeAlbedoMaps(mats: CastleMaterials): Promise<void> {
+  const [wood, metal, stone, ground, shield] = await Promise.all([
+    loadTexture(SIEGE_TEX.wood),
+    loadTexture(SIEGE_TEX.metal),
+    loadTexture(SIEGE_TEX.stone),
+    loadTexture(SIEGE_TEX.ground),
+    loadTexture(SIEGE_TEX.shield),
+  ]);
+
+  const swap = (mat: THREE.MeshStandardMaterial, tex: THREE.Texture | null): void => {
+    if (!tex) return;
+    const prev = mat.map;
+    mat.map = tex;
+    mat.needsUpdate = true;
+    prev?.dispose();
+  };
+
+  swap(mats.wood, wood);
+  swap(mats.metal, metal);
+  swap(mats.stone, stone);
+  swap(mats.ground, ground);
+  if (shield) {
+    swap(mats.keystoneShield, shield);
+  }
+}
+
 export function setupCastleScene(
   scene: THREE.Scene,
   tier: QualityTier,

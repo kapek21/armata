@@ -1,0 +1,439 @@
+{
+  "machine_id": "SE-T28-V05-ballista",
+  "archetype": "ballista",
+  "tier": 28,
+  "variant": 5,
+  "brick_count": 18,
+  "critical_count": 5,
+  "palette": "palette_ref",
+  "textures": {
+    "wood": "tex_wood_albedo_512.png",
+    "metal": "tex_metal_albedo_512.png",
+    "stone": "tex_stone_albedo_512.png",
+    "ground": "tex_ground_albedo_512.png",
+    "shield": "tex_keystone_shield_256.png"
+  },
+  "blocks": [
+    {
+      "id": "B00",
+      "role": "foundation",
+      "material": "ground",
+      "size": [
+        10.575,
+        0.5,
+        7.05
+      ],
+      "pos": [
+        0,
+        -0.25,
+        0
+      ],
+      "supports": [],
+      "render": {
+        "castShadow": true,
+        "receiveShadow": true
+      }
+    },
+    {
+      "id": "B01",
+      "role": "structural",
+      "material": "stone",
+      "size": [
+        0.35,
+        3.76,
+        0.35
+      ],
+      "pos": [
+        -2.82,
+        1.88,
+        -2.35
+      ],
+      "supports": [
+        "B00"
+      ],
+      "render": {
+        "castShadow": true,
+        "receiveShadow": true
+      }
+    },
+    {
+      "id": "B02",
+      "role": "structural",
+      "material": "stone",
+      "size": [
+        0.35,
+        3.76,
+        0.35
+      ],
+      "pos": [
+        2.82,
+        1.88,
+        -2.35
+      ],
+      "supports": [
+        "B00"
+      ],
+      "render": {
+        "castShadow": true,
+        "receiveShadow": true
+      }
+    },
+    {
+      "id": "B03",
+      "role": "structural",
+      "material": "wood",
+      "size": [
+        0.35,
+        3.76,
+        0.35
+      ],
+      "pos": [
+        0,
+        1.88,
+        2.35
+      ],
+      "supports": [
+        "B00"
+      ],
+      "render": {
+        "castShadow": true,
+        "receiveShadow": true
+      }
+    },
+    {
+      "id": "B04",
+      "role": "structural",
+      "material": "metal",
+      "size": [
+        1.0,
+        0.6,
+        1.0
+      ],
+      "pos": [
+        0,
+        4.06,
+        0
+      ],
+      "supports": [
+        "B01",
+        "B02",
+        "B03"
+      ],
+      "render": {
+        "castShadow": true,
+        "receiveShadow": true
+      }
+    },
+    {
+      "id": "B05",
+      "role": "structural",
+      "material": "wood",
+      "size": [
+        5.17,
+        0.25,
+        0.25
+      ],
+      "pos": [
+        -2.35,
+        4.26,
+        0.4
+      ],
+      "supports": [
+        "B04"
+      ],
+      "render": {
+        "castShadow": true,
+        "receiveShadow": true
+      }
+    },
+    {
+      "id": "B06",
+      "role": "structural",
+      "material": "metal",
+      "size": [
+        5.17,
+        0.25,
+        0.25
+      ],
+      "pos": [
+        2.35,
+        4.26,
+        0.4
+      ],
+      "supports": [
+        "B04"
+      ],
+      "render": {
+        "castShadow": true,
+        "receiveShadow": true
+      }
+    },
+    {
+      "id": "B07",
+      "role": "decorative",
+      "material": "stone",
+      "size": [
+        5.875,
+        0.2,
+        0.35
+      ],
+      "pos": [
+        0,
+        4.46,
+        -0.4
+      ],
+      "supports": [
+        "B04"
+      ],
+      "render": {
+        "castShadow": true,
+        "receiveShadow": true
+      }
+    },
+    {
+      "id": "B08",
+      "role": "decorative",
+      "material": "metal",
+      "size": [
+        0.3,
+        0.3,
+        0.3
+      ],
+      "pos": [
+        -2.35,
+        4.06,
+        0.3
+      ],
+      "supports": [
+        "B04"
+      ],
+      "render": {
+        "castShadow": true,
+        "receiveShadow": true
+      }
+    },
+    {
+      "id": "B09",
+      "role": "decorative",
+      "material": "metal",
+      "size": [
+        0.3,
+        0.3,
+        0.3
+      ],
+      "pos": [
+        -0.94,
+        4.06,
+        0.3
+      ],
+      "supports": [
+        "B04"
+      ],
+      "render": {
+        "castShadow": true,
+        "receiveShadow": true
+      }
+    },
+    {
+      "id": "B10",
+      "role": "decorative",
+      "material": "metal",
+      "size": [
+        0.3,
+        0.3,
+        0.3
+      ],
+      "pos": [
+        0.47,
+        4.06,
+        0.3
+      ],
+      "supports": [
+        "B04"
+      ],
+      "render": {
+        "castShadow": true,
+        "receiveShadow": true
+      }
+    },
+    {
+      "id": "B11",
+      "role": "decorative",
+      "material": "metal",
+      "size": [
+        0.3,
+        0.3,
+        0.3
+      ],
+      "pos": [
+        1.88,
+        4.06,
+        0.3
+      ],
+      "supports": [
+        "B04"
+      ],
+      "render": {
+        "castShadow": true,
+        "receiveShadow": true
+      }
+    },
+    {
+      "id": "B12",
+      "role": "decorative",
+      "material": "metal",
+      "size": [
+        0.3,
+        0.3,
+        0.3
+      ],
+      "pos": [
+        3.29,
+        4.06,
+        0.3
+      ],
+      "supports": [
+        "B04"
+      ],
+      "render": {
+        "castShadow": true,
+        "receiveShadow": true
+      }
+    },
+    {
+      "id": "B13",
+      "role": "critical",
+      "material": "metal",
+      "size": [
+        0.7,
+        0.7,
+        0.7
+      ],
+      "pos": [
+        -2.0,
+        4.0600000000000005,
+        -0.9
+      ],
+      "supports": [
+        "B04"
+      ],
+      "render": {
+        "castShadow": true,
+        "receiveShadow": true,
+        "decal": {
+          "type": "shield",
+          "face": "+Z",
+          "asset": "tex_keystone_shield_256.png"
+        }
+      }
+    },
+    {
+      "id": "B14",
+      "role": "critical",
+      "material": "metal",
+      "size": [
+        0.7,
+        0.7,
+        0.7
+      ],
+      "pos": [
+        -1.0,
+        4.0600000000000005,
+        -0.9
+      ],
+      "supports": [
+        "B04"
+      ],
+      "render": {
+        "castShadow": true,
+        "receiveShadow": true,
+        "decal": {
+          "type": "shield",
+          "face": "+Z",
+          "asset": "tex_keystone_shield_256.png"
+        }
+      }
+    },
+    {
+      "id": "B15",
+      "role": "critical",
+      "material": "metal",
+      "size": [
+        0.7,
+        0.7,
+        0.7
+      ],
+      "pos": [
+        0.0,
+        4.0600000000000005,
+        -0.9
+      ],
+      "supports": [
+        "B04"
+      ],
+      "render": {
+        "castShadow": true,
+        "receiveShadow": true,
+        "decal": {
+          "type": "shield",
+          "face": "+Z",
+          "asset": "tex_keystone_shield_256.png"
+        }
+      }
+    },
+    {
+      "id": "B16",
+      "role": "critical",
+      "material": "metal",
+      "size": [
+        0.7,
+        0.7,
+        0.7
+      ],
+      "pos": [
+        1.0,
+        4.0600000000000005,
+        -0.9
+      ],
+      "supports": [
+        "B04"
+      ],
+      "render": {
+        "castShadow": true,
+        "receiveShadow": true,
+        "decal": {
+          "type": "shield",
+          "face": "+Z",
+          "asset": "tex_keystone_shield_256.png"
+        }
+      }
+    },
+    {
+      "id": "B17",
+      "role": "critical",
+      "material": "metal",
+      "size": [
+        0.7,
+        0.7,
+        0.7
+      ],
+      "pos": [
+        2.0,
+        4.0600000000000005,
+        -0.9
+      ],
+      "supports": [
+        "B04"
+      ],
+      "render": {
+        "castShadow": true,
+        "receiveShadow": true,
+        "decal": {
+          "type": "shield",
+          "face": "+Z",
+          "asset": "tex_keystone_shield_256.png"
+        }
+      }
+    }
+  ]
+}

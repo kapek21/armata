@@ -1,0 +1,1 @@
+Destroying B09 (prod-lock keystone) snaps the crossbow prod (B06), releasing the bolt channel (B07) and bolt (B08); the carriage falls back onto the ground slab.

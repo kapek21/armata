@@ -42,7 +42,7 @@ import {
 import { runTarget } from '../levels/run/index.js';
 import { countKeystones, getKeystoneModule } from '../levels/normalize.js';
 import { useHudStore } from '../ui/hud-store.js';
-import { setupCastleScene } from './castle-assets.js';
+import { applySiegeAlbedoMaps, setupCastleScene } from './castle-assets.js';
 import { pulseKeystoneAssembly } from './siege-visuals.js';
 import { createModuleMesh, disposeModuleVisual, getCastleMaterials } from './castle-renderer.js';
 import { createModuleCollider } from './module-shapes.js';
@@ -166,7 +166,8 @@ export class GameSession {
     this.host = host;
     this.tier = tier;
     setupCastleScene(this.scene, tier);
-    getCastleMaterials(tier);
+    const mats = getCastleMaterials(tier);
+    await applySiegeAlbedoMaps(mats);
 
     this.renderer = new THREE.WebGLRenderer({
       antialias: tier !== 'low',

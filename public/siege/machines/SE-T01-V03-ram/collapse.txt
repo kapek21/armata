@@ -1,0 +1,1 @@
+Destroying B08 (attachment keystone) drops the ram beam (B06) and iron head (B07) to the ground; roof (B05) collapses on top and the shed frame breaks apart.

@@ -36,6 +36,8 @@ export function normalizeLevel(raw: LevelDefinition): LevelDefinition {
     blueprint: raw.blueprint,
     runDifficulty: raw.runDifficulty,
     variant: raw.variant,
+    siegeTier: raw.siegeTier,
+    archetype: raw.archetype,
     clearReward: raw.clearReward,
     ammoLimit: raw.ammoLimit ?? defaults.ammoLimit,
     timeLimitSec: raw.timeLimitSec ?? defaults.timeLimitSec,

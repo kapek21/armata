@@ -1,0 +1,235 @@
+{
+  "id": "siege-t02-v02",
+  "name": "Mangonela",
+  "chapter": 2,
+  "difficulty": 2,
+  "runDifficulty": 2,
+  "siegeTier": 2,
+  "variant": 2,
+  "archetype": "mangonel",
+  "clearReward": 800,
+  "ammoLimit": 7,
+  "timeLimitSec": 999,
+  "starTimeSec": [
+    999,
+    999,
+    999
+  ],
+  "starShots": [
+    7,
+    7,
+    7
+  ],
+  "starScore": [
+    1200,
+    1000,
+    800
+  ],
+  "killZoneY": -2,
+  "cannon": {
+    "position": [
+      0,
+      0.6,
+      8.2
+    ],
+    "angleMinDeg": 10,
+    "angleMaxDeg": 44
+  },
+  "enemyCastle": {
+    "origin": [
+      0,
+      0,
+      -2
+    ],
+    "modules": [
+      {
+        "id": "B00",
+        "type": "foundation",
+        "material": "ground",
+        "position": [
+          0,
+          -0.25,
+          -2
+        ],
+        "size": [
+          5.25,
+          0.5,
+          3.675
+        ],
+        "importance": "structural",
+        "isStatic": true
+      },
+      {
+        "id": "B01",
+        "type": "tower",
+        "material": "wood",
+        "position": [
+          0,
+          0.3,
+          -2
+        ],
+        "size": [
+          4.2,
+          0.6,
+          2.625
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B02",
+        "type": "tower",
+        "material": "metal",
+        "position": [
+          -1.68,
+          0.45,
+          -0.74
+        ],
+        "size": [
+          0.6,
+          0.9,
+          0.4
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B03",
+        "type": "tower",
+        "material": "metal",
+        "position": [
+          1.68,
+          0.45,
+          -0.74
+        ],
+        "size": [
+          0.6,
+          0.9,
+          0.4
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B04",
+        "type": "tower",
+        "material": "metal",
+        "position": [
+          -1.68,
+          0.45,
+          -3.26
+        ],
+        "size": [
+          0.6,
+          0.9,
+          0.4
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B05",
+        "type": "tower",
+        "material": "metal",
+        "position": [
+          1.68,
+          0.45,
+          -3.26
+        ],
+        "size": [
+          0.6,
+          0.9,
+          0.4
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B06",
+        "type": "tower",
+        "material": "wood",
+        "position": [
+          -1.26,
+          1.44,
+          -2
+        ],
+        "size": [
+          0.4,
+          1.68,
+          0.4
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B07",
+        "type": "tower",
+        "material": "wood",
+        "position": [
+          1.26,
+          1.44,
+          -2
+        ],
+        "size": [
+          0.4,
+          1.68,
+          0.4
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B08",
+        "type": "tower",
+        "material": "wood",
+        "position": [
+          0,
+          2.48,
+          -1.5
+        ],
+        "size": [
+          2.52,
+          0.35,
+          0.35
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B09",
+        "type": "wall",
+        "material": "metal",
+        "position": [
+          1.05,
+          2.78,
+          -1.5
+        ],
+        "size": [
+          0.7,
+          0.5,
+          0.7
+        ],
+        "importance": "decorative",
+        "isStatic": false
+      },
+      {
+        "id": "B10",
+        "type": "keystone",
+        "material": "metal",
+        "position": [
+          0,
+          1.44,
+          -2
+        ],
+        "size": [
+          0.8,
+          0.8,
+          0.8
+        ],
+        "importance": "critical",
+        "isStatic": false,
+        "hitPoints": 90
+      }
+    ]
+  }
+}

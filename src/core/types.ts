@@ -73,10 +73,14 @@ export interface LevelDefinition {
   difficulty: number;
   /** Szablon zamku z generatora poziomów */
   blueprint?: CastleBlueprint;
-  /** Tryb run: trudność 1–10 */
+  /** Tryb run: trudność / siege tier */
   runDifficulty?: number;
   /** Tryb run: wariant 1–10 w puli trudności */
   variant?: number;
+  /** Pula machin oblężniczych: tier 1–30 */
+  siegeTier?: number;
+  /** Archetyp machiny (trebuchet, ram, …) */
+  archetype?: string;
   /** Tryb run: punkty za zniszczenie keystone */
   clearReward?: number;
   ammoLimit: number;

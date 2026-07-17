@@ -1,0 +1,1 @@
+Destroying B19, B20, B21, B22 (ram suspension) drops the beam to the ground; frame stays intact but the ram cannot swing.

@@ -1,0 +1,579 @@
+{
+  "id": "siege-t28-v06",
+  "name": "Hulajgród",
+  "chapter": 28,
+  "difficulty": 10,
+  "runDifficulty": 28,
+  "siegeTier": 28,
+  "variant": 6,
+  "archetype": "mantlet",
+  "clearReward": 4540,
+  "ammoLimit": 16,
+  "timeLimitSec": 999,
+  "starTimeSec": [
+    999,
+    999,
+    999
+  ],
+  "starShots": [
+    16,
+    16,
+    16
+  ],
+  "starScore": [
+    4940,
+    4740,
+    4540
+  ],
+  "killZoneY": -2,
+  "cannon": {
+    "position": [
+      0,
+      0.6,
+      8.2
+    ],
+    "angleMinDeg": 17,
+    "angleMaxDeg": 53
+  },
+  "enemyCastle": {
+    "origin": [
+      0,
+      0,
+      -2
+    ],
+    "modules": [
+      {
+        "id": "B00",
+        "type": "foundation",
+        "material": "ground",
+        "position": [
+          0,
+          -0.25,
+          -2
+        ],
+        "size": [
+          11.75,
+          0.5,
+          4.7
+        ],
+        "importance": "structural",
+        "isStatic": true
+      },
+      {
+        "id": "B01",
+        "type": "tower",
+        "material": "stone",
+        "position": [
+          -4.7,
+          2.585,
+          -2
+        ],
+        "size": [
+          0.4,
+          5.17,
+          0.4
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B02",
+        "type": "tower",
+        "material": "stone",
+        "position": [
+          -3.656,
+          2.585,
+          -2
+        ],
+        "size": [
+          0.4,
+          5.17,
+          0.4
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B03",
+        "type": "tower",
+        "material": "metal",
+        "position": [
+          -2.611,
+          2.585,
+          -2
+        ],
+        "size": [
+          0.4,
+          5.17,
+          0.4
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B04",
+        "type": "tower",
+        "material": "wood",
+        "position": [
+          -1.567,
+          2.585,
+          -2
+        ],
+        "size": [
+          0.4,
+          5.17,
+          0.4
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B05",
+        "type": "tower",
+        "material": "wood",
+        "position": [
+          -0.522,
+          2.585,
+          -2
+        ],
+        "size": [
+          0.4,
+          5.17,
+          0.4
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B06",
+        "type": "tower",
+        "material": "stone",
+        "position": [
+          0.522,
+          2.585,
+          -2
+        ],
+        "size": [
+          0.4,
+          5.17,
+          0.4
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B07",
+        "type": "tower",
+        "material": "metal",
+        "position": [
+          1.567,
+          2.585,
+          -2
+        ],
+        "size": [
+          0.4,
+          5.17,
+          0.4
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B08",
+        "type": "tower",
+        "material": "metal",
+        "position": [
+          2.611,
+          2.585,
+          -2
+        ],
+        "size": [
+          0.4,
+          5.17,
+          0.4
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B09",
+        "type": "tower",
+        "material": "stone",
+        "position": [
+          3.656,
+          2.585,
+          -2
+        ],
+        "size": [
+          0.4,
+          5.17,
+          0.4
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B10",
+        "type": "tower",
+        "material": "stone",
+        "position": [
+          4.7,
+          2.585,
+          -2
+        ],
+        "size": [
+          0.4,
+          5.17,
+          0.4
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B11",
+        "type": "tower",
+        "material": "stone",
+        "position": [
+          0,
+          0.517,
+          -1.65
+        ],
+        "size": [
+          10.81,
+          0.984,
+          0.25
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B12",
+        "type": "tower",
+        "material": "metal",
+        "position": [
+          0,
+          1.551,
+          -1.65
+        ],
+        "size": [
+          10.81,
+          0.984,
+          0.25
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B13",
+        "type": "tower",
+        "material": "stone",
+        "position": [
+          0,
+          2.585,
+          -1.65
+        ],
+        "size": [
+          10.81,
+          0.984,
+          0.25
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B14",
+        "type": "tower",
+        "material": "metal",
+        "position": [
+          0,
+          3.619,
+          -1.65
+        ],
+        "size": [
+          10.81,
+          0.984,
+          0.25
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B15",
+        "type": "tower",
+        "material": "stone",
+        "position": [
+          0,
+          4.653,
+          -1.65
+        ],
+        "size": [
+          10.81,
+          0.984,
+          0.25
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B16",
+        "type": "wall",
+        "material": "metal",
+        "position": [
+          -4.7,
+          5.37,
+          -1.9
+        ],
+        "size": [
+          0.2,
+          0.4,
+          0.2
+        ],
+        "importance": "decorative",
+        "isStatic": false
+      },
+      {
+        "id": "B17",
+        "type": "wall",
+        "material": "metal",
+        "position": [
+          -3.656,
+          5.37,
+          -1.9
+        ],
+        "size": [
+          0.2,
+          0.4,
+          0.2
+        ],
+        "importance": "decorative",
+        "isStatic": false
+      },
+      {
+        "id": "B18",
+        "type": "wall",
+        "material": "metal",
+        "position": [
+          -2.611,
+          5.37,
+          -1.9
+        ],
+        "size": [
+          0.2,
+          0.4,
+          0.2
+        ],
+        "importance": "decorative",
+        "isStatic": false
+      },
+      {
+        "id": "B19",
+        "type": "wall",
+        "material": "metal",
+        "position": [
+          -1.567,
+          5.37,
+          -1.9
+        ],
+        "size": [
+          0.2,
+          0.4,
+          0.2
+        ],
+        "importance": "decorative",
+        "isStatic": false
+      },
+      {
+        "id": "B20",
+        "type": "wall",
+        "material": "metal",
+        "position": [
+          -0.522,
+          5.37,
+          -1.9
+        ],
+        "size": [
+          0.2,
+          0.4,
+          0.2
+        ],
+        "importance": "decorative",
+        "isStatic": false
+      },
+      {
+        "id": "B21",
+        "type": "wall",
+        "material": "metal",
+        "position": [
+          0.522,
+          5.37,
+          -1.9
+        ],
+        "size": [
+          0.2,
+          0.4,
+          0.2
+        ],
+        "importance": "decorative",
+        "isStatic": false
+      },
+      {
+        "id": "B22",
+        "type": "wall",
+        "material": "metal",
+        "position": [
+          1.567,
+          5.37,
+          -1.9
+        ],
+        "size": [
+          0.2,
+          0.4,
+          0.2
+        ],
+        "importance": "decorative",
+        "isStatic": false
+      },
+      {
+        "id": "B23",
+        "type": "wall",
+        "material": "metal",
+        "position": [
+          2.611,
+          5.37,
+          -1.9
+        ],
+        "size": [
+          0.2,
+          0.4,
+          0.2
+        ],
+        "importance": "decorative",
+        "isStatic": false
+      },
+      {
+        "id": "B24",
+        "type": "wall",
+        "material": "metal",
+        "position": [
+          3.656,
+          5.37,
+          -1.9
+        ],
+        "size": [
+          0.2,
+          0.4,
+          0.2
+        ],
+        "importance": "decorative",
+        "isStatic": false
+      },
+      {
+        "id": "B25",
+        "type": "wall",
+        "material": "metal",
+        "position": [
+          4.7,
+          5.37,
+          -1.9
+        ],
+        "size": [
+          0.2,
+          0.4,
+          0.2
+        ],
+        "importance": "decorative",
+        "isStatic": false
+      },
+      {
+        "id": "B26",
+        "type": "keystone",
+        "material": "wood",
+        "position": [
+          -2.8,
+          2.5850000000000004,
+          -2.4
+        ],
+        "size": [
+          1,
+          0.8,
+          0.5
+        ],
+        "importance": "critical",
+        "isStatic": false,
+        "hitPoints": 350
+      },
+      {
+        "id": "B27",
+        "type": "keystone",
+        "material": "wood",
+        "position": [
+          -1.4,
+          2.5850000000000004,
+          -2.4
+        ],
+        "size": [
+          1,
+          0.8,
+          0.5
+        ],
+        "importance": "critical",
+        "isStatic": false,
+        "hitPoints": 350
+      },
+      {
+        "id": "B28",
+        "type": "keystone",
+        "material": "wood",
+        "position": [
+          0,
+          2.5850000000000004,
+          -2.4
+        ],
+        "size": [
+          1,
+          0.8,
+          0.5
+        ],
+        "importance": "critical",
+        "isStatic": false,
+        "hitPoints": 350
+      },
+      {
+        "id": "B29",
+        "type": "keystone",
+        "material": "wood",
+        "position": [
+          1.4,
+          2.5850000000000004,
+          -2.4
+        ],
+        "size": [
+          1,
+          0.8,
+          0.5
+        ],
+        "importance": "critical",
+        "isStatic": false,
+        "hitPoints": 350
+      },
+      {
+        "id": "B30",
+        "type": "keystone",
+        "material": "wood",
+        "position": [
+          2.8,
+          2.5850000000000004,
+          -2.4
+        ],
+        "size": [
+          1,
+          0.8,
+          0.5
+        ],
+        "importance": "critical",
+        "isStatic": false,
+        "hitPoints": 350
+      }
+    ]
+  }
+}

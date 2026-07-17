@@ -1,0 +1,1 @@
+Destroying B26, B27, B28, B29, B30 (central bracing beam) causes the shielding panels to buckle inward; posts remain but coverage is lost.

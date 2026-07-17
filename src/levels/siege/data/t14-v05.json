@@ -1,0 +1,271 @@
+{
+  "id": "siege-t14-v05",
+  "name": "Balista",
+  "chapter": 14,
+  "difficulty": 10,
+  "runDifficulty": 14,
+  "siegeTier": 14,
+  "variant": 5,
+  "archetype": "ballista",
+  "clearReward": 2540,
+  "ammoLimit": 15,
+  "timeLimitSec": 999,
+  "starTimeSec": [
+    999,
+    999,
+    999
+  ],
+  "starShots": [
+    15,
+    15,
+    15
+  ],
+  "starScore": [
+    2940,
+    2740,
+    2540
+  ],
+  "killZoneY": -2,
+  "cannon": {
+    "position": [
+      0,
+      0.6,
+      8.2
+    ],
+    "angleMinDeg": 13,
+    "angleMaxDeg": 48
+  },
+  "enemyCastle": {
+    "origin": [
+      0,
+      0,
+      -2
+    ],
+    "modules": [
+      {
+        "id": "B00",
+        "type": "foundation",
+        "material": "ground",
+        "position": [
+          0,
+          -0.25,
+          -2
+        ],
+        "size": [
+          7.425,
+          0.5,
+          4.95
+        ],
+        "importance": "structural",
+        "isStatic": true
+      },
+      {
+        "id": "B01",
+        "type": "tower",
+        "material": "wood",
+        "position": [
+          -1.98,
+          1.32,
+          -3.65
+        ],
+        "size": [
+          0.35,
+          2.64,
+          0.35
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B02",
+        "type": "tower",
+        "material": "wood",
+        "position": [
+          1.98,
+          1.32,
+          -3.65
+        ],
+        "size": [
+          0.35,
+          2.64,
+          0.35
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B03",
+        "type": "tower",
+        "material": "metal",
+        "position": [
+          0,
+          1.32,
+          -0.3500000000000001
+        ],
+        "size": [
+          0.35,
+          2.64,
+          0.35
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B04",
+        "type": "tower",
+        "material": "metal",
+        "position": [
+          0,
+          2.94,
+          -2
+        ],
+        "size": [
+          1,
+          0.6,
+          1
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B05",
+        "type": "tower",
+        "material": "wood",
+        "position": [
+          -1.65,
+          3.14,
+          -1.6
+        ],
+        "size": [
+          3.63,
+          0.25,
+          0.25
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B06",
+        "type": "tower",
+        "material": "stone",
+        "position": [
+          1.65,
+          3.14,
+          -1.6
+        ],
+        "size": [
+          3.63,
+          0.25,
+          0.25
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B07",
+        "type": "wall",
+        "material": "metal",
+        "position": [
+          0,
+          3.34,
+          -2.4
+        ],
+        "size": [
+          4.125,
+          0.2,
+          0.35
+        ],
+        "importance": "decorative",
+        "isStatic": false
+      },
+      {
+        "id": "B08",
+        "type": "wall",
+        "material": "metal",
+        "position": [
+          -1.65,
+          2.94,
+          -1.7
+        ],
+        "size": [
+          0.3,
+          0.3,
+          0.3
+        ],
+        "importance": "decorative",
+        "isStatic": false
+      },
+      {
+        "id": "B09",
+        "type": "wall",
+        "material": "metal",
+        "position": [
+          -0.66,
+          2.94,
+          -1.7
+        ],
+        "size": [
+          0.3,
+          0.3,
+          0.3
+        ],
+        "importance": "decorative",
+        "isStatic": false
+      },
+      {
+        "id": "B10",
+        "type": "keystone",
+        "material": "metal",
+        "position": [
+          -1,
+          2.94,
+          -2.9
+        ],
+        "size": [
+          0.7,
+          0.7,
+          0.7
+        ],
+        "importance": "critical",
+        "isStatic": false,
+        "hitPoints": 210
+      },
+      {
+        "id": "B11",
+        "type": "keystone",
+        "material": "metal",
+        "position": [
+          0,
+          2.94,
+          -2.9
+        ],
+        "size": [
+          0.7,
+          0.7,
+          0.7
+        ],
+        "importance": "critical",
+        "isStatic": false,
+        "hitPoints": 210
+      },
+      {
+        "id": "B12",
+        "type": "keystone",
+        "material": "metal",
+        "position": [
+          1,
+          2.94,
+          -2.9
+        ],
+        "size": [
+          0.7,
+          0.7,
+          0.7
+        ],
+        "importance": "critical",
+        "isStatic": false,
+        "hitPoints": 210
+      }
+    ]
+  }
+}

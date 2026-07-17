@@ -1,0 +1,218 @@
+{
+  "id": "siege-t02-v06",
+  "name": "Hulajgród",
+  "chapter": 2,
+  "difficulty": 2,
+  "runDifficulty": 2,
+  "siegeTier": 2,
+  "variant": 6,
+  "archetype": "mantlet",
+  "clearReward": 800,
+  "ammoLimit": 7,
+  "timeLimitSec": 999,
+  "starTimeSec": [
+    999,
+    999,
+    999
+  ],
+  "starShots": [
+    7,
+    7,
+    7
+  ],
+  "starScore": [
+    1200,
+    1000,
+    800
+  ],
+  "killZoneY": -2,
+  "cannon": {
+    "position": [
+      0,
+      0.6,
+      8.2
+    ],
+    "angleMinDeg": 10,
+    "angleMaxDeg": 44
+  },
+  "enemyCastle": {
+    "origin": [
+      0,
+      0,
+      -2
+    ],
+    "modules": [
+      {
+        "id": "B00",
+        "type": "foundation",
+        "material": "ground",
+        "position": [
+          0,
+          -0.25,
+          -2
+        ],
+        "size": [
+          5.25,
+          0.5,
+          2.1
+        ],
+        "importance": "structural",
+        "isStatic": true
+      },
+      {
+        "id": "B01",
+        "type": "tower",
+        "material": "wood",
+        "position": [
+          -2.1,
+          1.155,
+          -2
+        ],
+        "size": [
+          0.4,
+          2.31,
+          0.4
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B02",
+        "type": "tower",
+        "material": "wood",
+        "position": [
+          0,
+          1.155,
+          -2
+        ],
+        "size": [
+          0.4,
+          2.31,
+          0.4
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B03",
+        "type": "tower",
+        "material": "wood",
+        "position": [
+          2.1,
+          1.155,
+          -2
+        ],
+        "size": [
+          0.4,
+          2.31,
+          0.4
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B04",
+        "type": "tower",
+        "material": "stone",
+        "position": [
+          0,
+          0.578,
+          -1.65
+        ],
+        "size": [
+          4.83,
+          1.105,
+          0.25
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B05",
+        "type": "tower",
+        "material": "metal",
+        "position": [
+          0,
+          1.733,
+          -1.65
+        ],
+        "size": [
+          4.83,
+          1.105,
+          0.25
+        ],
+        "importance": "structural",
+        "isStatic": false
+      },
+      {
+        "id": "B06",
+        "type": "wall",
+        "material": "metal",
+        "position": [
+          -2.1,
+          2.51,
+          -1.9
+        ],
+        "size": [
+          0.2,
+          0.4,
+          0.2
+        ],
+        "importance": "decorative",
+        "isStatic": false
+      },
+      {
+        "id": "B07",
+        "type": "wall",
+        "material": "metal",
+        "position": [
+          0,
+          2.51,
+          -1.9
+        ],
+        "size": [
+          0.2,
+          0.4,
+          0.2
+        ],
+        "importance": "decorative",
+        "isStatic": false
+      },
+      {
+        "id": "B08",
+        "type": "wall",
+        "material": "metal",
+        "position": [
+          2.1,
+          2.51,
+          -1.9
+        ],
+        "size": [
+          0.2,
+          0.4,
+          0.2
+        ],
+        "importance": "decorative",
+        "isStatic": false
+      },
+      {
+        "id": "B09",
+        "type": "keystone",
+        "material": "wood",
+        "position": [
+          0,
+          1.1550000000000002,
+          -2.4
+        ],
+        "size": [
+          1,
+          0.8,
+          0.5
+        ],
+        "importance": "critical",
+        "isStatic": false,
+        "hitPoints": 90
+      }
+    ]
+  }
+}
