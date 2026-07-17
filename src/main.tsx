@@ -10,6 +10,15 @@ import { useHudStore } from './ui/hud-store.js';
 import { useSiegeMusic } from './ui/use-siege-music.js';
 import './index.css';
 
+/** Launcher / Studio nakłada ← i Admin na iframe — potrzebny odstęp w HUD. */
+function isHostedInIframe(): boolean {
+  try {
+    return window.self !== window.top;
+  } catch {
+    return true;
+  }
+}
+
 function App(): JSX.Element {
   const viewportRef = useRef<HTMLDivElement>(null);
   const sessionRef = useRef<GameSession | null>(null);
@@ -18,6 +27,7 @@ function App(): JSX.Element {
   const helpOpen = useHudStore((s) => s.helpOpen);
   const setHelpOpen = useHudStore((s) => s.setHelpOpen);
   const { muted: musicMuted, toggle: toggleMusic } = useSiegeMusic();
+  const hosted = isHostedInIframe();
 
   useEffect(() => {
     let cancelled = false;
@@ -57,7 +67,9 @@ function App(): JSX.Element {
   const session = sessionRef.current;
 
   return (
-    <div className="game-shell relative h-full w-full overflow-hidden">
+    <div
+      className={`game-shell relative h-full w-full overflow-hidden${hosted ? ' game-shell--hosted' : ''}`}
+    >
       <GameChromeTop phase={phase} musicMuted={musicMuted} onToggleMusic={toggleMusic} />
       <CastleFrame viewportRef={viewportRef} />
       <GameChromeBottom

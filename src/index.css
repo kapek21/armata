@@ -243,6 +243,19 @@ body,
   position: relative;
 }
 
+/* Studio / launcher: ← i Admin nakładają się na górę iframe — zsuń HUD poniżej */
+.game-shell--hosted .game-chrome-top {
+  padding-top: max(3.25rem, calc(env(safe-area-inset-top, 0px) + 2.75rem));
+  padding-left: max(0.5rem, env(safe-area-inset-left, 0px));
+  padding-right: max(0.5rem, env(safe-area-inset-right, 0px));
+}
+
+@media (max-width: 640px) {
+  .game-shell--hosted .game-chrome-top {
+    padding-top: max(3rem, calc(env(safe-area-inset-top, 0px) + 2.5rem));
+  }
+}
+
 .panel {
   background: rgba(20, 16, 10, 0.88);
   border: 1px solid rgba(255, 200, 100, 0.35);
@@ -332,7 +345,7 @@ body,
     min-height: 0;
   }
 
-  .game-chrome-top {
+  .game-shell:not(.game-shell--hosted) .game-chrome-top {
     padding-top: max(6px, env(safe-area-inset-top));
   }
 
