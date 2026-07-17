@@ -1096,12 +1096,30 @@ export class GameSession {
   }
 
   destroy(): void {
-    this.detachInput();
-    this.clearLevel();
-    this.removeBall();
+    if (this.renderer) {
+      try {
+        this.detachInput();
+      } catch {
+        /* ignore */
+      }
+    }
+    if (this.world) {
+      try {
+        this.clearLevel();
+        this.removeBall();
+      } catch {
+        /* ignore */
+      }
+    } else {
+      this.entries = [];
+    }
     disposeCannonMaterials();
-    this.renderer.dispose();
-    this.renderer.domElement.remove();
-    this.world.free();
+    if (this.renderer) {
+      this.renderer.dispose();
+      this.renderer.domElement.remove();
+    }
+    if (this.world) {
+      this.world.free();
+    }
   }
 }

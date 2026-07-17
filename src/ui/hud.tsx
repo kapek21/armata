@@ -1,7 +1,7 @@
 import { useHudStore } from './hud-store.js';
 import { POWERUP_DEFS } from '../game/powerups.js';
 import { POWERUP_COST } from '../meta/economy.js';
-import { buyPowerup, saveProfile, shouldShowAimHint } from '../meta/profile.js';
+import { buyPowerup, saveProfile } from '../meta/profile.js';
 import { getWeeklyLeaderboard } from '../meta/leaderboard.js';
 import { RUN_TARGET_COUNT } from '../meta/run-state.js';
 import type { GamePhase, PowerupType } from '../core/types.js';
@@ -28,7 +28,6 @@ export function Hud({
   const snap = useHudStore((s) => s.snapshot);
   const profile = useHudStore((s) => s.profile);
   const setProfile = useHudStore((s) => s.setProfile);
-  const showAimHint = phase === 'aiming' && shouldShowAimHint(profile);
 
   const buyPowerupItem = (type: PowerupType): void => {
     const next = buyPowerup(profile, type);
@@ -163,12 +162,6 @@ export function Hud({
             )}
           </div>
         </div>
-      )}
-
-      {showAimHint && (
-        <p className="pointer-events-none absolute inset-x-0 bottom-[5.5rem] z-10 text-center text-[10px] text-white/45 safe-bottom">
-          Traf moduł ze znakiem tarczy
-        </p>
       )}
 
       {helpOverlay}

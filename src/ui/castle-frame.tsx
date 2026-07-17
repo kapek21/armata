@@ -17,7 +17,7 @@ export function CastleFrame({ viewportRef, children }: CastleFrameProps): JSX.El
   );
 
   return (
-    <div className="castle-viewport relative mx-auto w-full max-w-lg flex-1 min-h-0 px-1 py-1">
+    <div className="castle-viewport relative mx-auto w-full max-w-lg min-h-0 px-1 py-1">
       <div className="castle-frame relative h-full w-full">
         <div className="castle-frame__merlons" aria-hidden>
           {Array.from({ length: 9 }, (_, i) => (

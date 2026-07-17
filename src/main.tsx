@@ -57,7 +57,7 @@ function App(): JSX.Element {
   const session = sessionRef.current;
 
   return (
-    <div className="game-shell relative flex h-full w-full flex-col overflow-hidden">
+    <div className="game-shell relative h-full w-full overflow-hidden">
       <GameChromeTop phase={phase} musicMuted={musicMuted} onToggleMusic={toggleMusic} />
       <CastleFrame viewportRef={viewportRef} />
       <GameChromeBottom

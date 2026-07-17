@@ -33,15 +33,15 @@ export function GameChromeTop({ phase, musicMuted, onToggleMusic }: GameChromeTo
         </button>
         <div className="min-w-0 flex-1 pr-9">
           <div className="truncate font-semibold text-amber-200">{snap.levelName}</div>
-          <div className="text-white/55">
+          <div className="truncate text-white/55">
             Cel {snap.runTargetIndex}/{snap.runTargetCount} · trudność {snap.runDifficulty}
           </div>
         </div>
-        <div className="text-center px-2">
+        <div className="text-center px-1 sm:px-2">
           <div className="text-white/55">Punkty</div>
           <div className="text-lg font-bold text-amber-300">{snap.runScore}</div>
         </div>
-        <div className="text-center px-2">
+        <div className="text-center px-1 sm:px-2">
           <div className="text-white/55">Czas</div>
           <div
             className={`text-lg font-bold tabular-nums ${
@@ -51,15 +51,15 @@ export function GameChromeTop({ phase, musicMuted, onToggleMusic }: GameChromeTo
             {formatCampaignClock(snap.timeLeftSec)}
           </div>
         </div>
-        <div className="text-center px-2">
-          <div className="text-white/55">Amunicja</div>
+        <div className="text-center px-1 sm:px-2">
+          <div className="text-white/55">Strzały</div>
           <div className="text-lg font-bold text-amber-300">
             {snap.ammoLeft}/{snap.ammoTotal}
           </div>
         </div>
       </div>
       <div
-        className={`mt-1 flex min-h-[1.125rem] items-center gap-2 px-1 ${ended ? 'invisible' : ''}`}
+        className={`game-chrome-keystone mt-1 flex min-h-[1.125rem] items-center gap-2 px-1 ${ended ? 'invisible' : ''}`}
         aria-hidden={ended}
       >
         <span className="text-[10px] text-white/45">
@@ -128,8 +128,8 @@ export function GameChromeBottom({
   return (
     <footer className="game-chrome-bottom shrink-0 px-2 pb-2 safe-bottom">
       <p
-        className={`mb-1 min-h-[2.5rem] flex items-center justify-center text-center text-[10px] text-white/45 ${
-          aimHint ? '' : 'invisible'
+        className={`mb-1 flex items-center justify-center text-center text-[10px] text-white/45 ${
+          aimHint ? 'min-h-[1.25rem]' : 'hidden'
         }`}
         aria-hidden={!aimHint}
       >
@@ -167,7 +167,7 @@ export function GameChromeBottom({
         </p>
       )}
 
-      <div className="mt-2 flex min-h-[6.75rem] flex-wrap content-center items-center justify-center gap-2">
+      <div className="mt-2 flex flex-wrap content-center items-center justify-center gap-2">
         <button
           type="button"
           className="btn-secondary min-h-11 min-w-11"
