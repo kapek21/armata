@@ -5,6 +5,13 @@ import { POWERUP_COST, powerupTotal } from '../meta/economy.js';
 import { formatCampaignClock } from '../meta/campaign-time.js';
 import { shouldShowAimHint } from '../meta/profile.js';
 
+/** „Cel 1 — Wieża strażnicza 9” → „Wieża strażnicza” */
+function displayLevelTitle(name: string): string {
+  let title = name.replace(/^Cel\s+\d+\s*[—–-]\s*/i, '').trim();
+  title = title.replace(/\s+\d+$/, '').trim();
+  return title || name;
+}
+
 interface GameChromeTopProps {
   phase: GamePhase;
   musicMuted: boolean;
@@ -32,9 +39,11 @@ export function GameChromeTop({ phase, musicMuted, onToggleMusic }: GameChromeTo
           {musicMuted ? '🔇' : '♫'}
         </button>
         <div className="min-w-0 flex-1 pr-9">
-          <div className="truncate font-semibold text-amber-200">{snap.levelName}</div>
-          <div className="truncate text-white/55">
-            Cel {snap.runTargetIndex}/{snap.runTargetCount} · trudność {snap.runDifficulty}
+          <div className="truncate font-semibold text-amber-200">
+            {displayLevelTitle(snap.levelName)}
+          </div>
+          <div className="truncate tabular-nums text-white/55">
+            {snap.runTargetIndex}/{snap.runTargetCount}
           </div>
         </div>
         <div className="text-center px-1 sm:px-2">
