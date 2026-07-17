@@ -129,20 +129,21 @@ export function GameChromeBottom({
         ? 'Dotknij moduł → odsuń w bok (siła), w górę tylko dla łuku'
         : '';
 
+  const totalPowerups = powerupTotal(profile.powerups);
+  const showPowerupHint = totalPowerups <= 0 && phase !== 'menu';
   const showBonusShot = phase === 'lost' && snap.runEnded && !profile.adsRemoved;
   const showRetry = phase !== 'menu' && phase !== 'loading';
   const showNext = false;
-  const totalPowerups = powerupTotal(profile.powerups);
 
   return (
     <footer className="game-chrome-bottom shrink-0 px-2 pb-2 safe-bottom">
       <p
-        className={`mb-1 flex items-center justify-center text-center text-[10px] text-white/45 ${
-          aimHint ? 'min-h-[1.25rem]' : 'hidden'
-        }`}
+        className="mb-1 flex min-h-[2.5rem] items-center justify-center px-1 text-center text-[10px] leading-snug text-white/45"
         aria-hidden={!aimHint}
       >
-        {aimHint || '·'}
+        <span className={aimHint ? '' : 'invisible'}>
+          {aimHint || 'Dotknij moduł → odsuń w bok (siła), w górę tylko dla łuku'}
+        </span>
       </p>
 
       <div className="flex flex-wrap items-center justify-center gap-2">
@@ -170,13 +171,16 @@ export function GameChromeBottom({
           );
         })}
       </div>
-      {totalPowerups <= 0 && phase !== 'menu' && (
-        <p className="mt-1 text-center text-[10px] text-amber-200/70">
-          Brak power-upów — wygraj z 2★ lub kup w menu
-        </p>
-      )}
+      <p
+        className={`mt-1 min-h-[1rem] text-center text-[10px] text-amber-200/70 ${
+          showPowerupHint ? '' : 'invisible'
+        }`}
+        aria-hidden={!showPowerupHint}
+      >
+        Brak power-upów — wygraj z 2★ lub kup w menu
+      </p>
 
-      <div className="mt-2 flex flex-wrap content-center items-center justify-center gap-2">
+      <div className="mt-2 flex min-h-11 flex-wrap content-center items-center justify-center gap-2">
         <button
           type="button"
           className="btn-secondary min-h-11 min-w-11"
