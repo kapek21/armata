@@ -2,13 +2,14 @@ import type { PowerupType } from '../core/types.js';
 import { powerupRewardsForWin } from './economy.js';
 import type { Profile } from './profile.js';
 import { addCoins, applyLevelLoss, grantPowerup } from './profile.js';
+import { RUN_TARGET_COUNT } from './run-state.js';
 
 export function coinsForRun(runScore: number, targetsCleared: number): number {
   return Math.floor(runScore / 150) + targetsCleared * 25;
 }
 
 export function powerupsForRun(targetsCleared: number, runScore: number): PowerupType[] {
-  if (targetsCleared >= 10 || runScore >= 8000) return powerupRewardsForWin(3);
+  if (targetsCleared >= RUN_TARGET_COUNT || runScore >= 8000) return powerupRewardsForWin(3);
   if (targetsCleared >= 2) return powerupRewardsForWin(2);
   return [];
 }
@@ -57,7 +58,7 @@ export function runEndMessage(
     return `Run ukończony! ${runScore} pkt · +${coins} 🪙${bonus}`;
   }
   if (targetsCleared > 0) {
-    return `Czas minął — ${targetsCleared}/10 celów · ${runScore} pkt · +${coins} 🪙`;
+    return `Czas minął — ${targetsCleared}/${RUN_TARGET_COUNT} celów · ${runScore} pkt · +${coins} 🪙`;
   }
   return 'Czas minął — spróbuj ponownie';
 }

@@ -1,7 +1,7 @@
 import type { RunTargetDefinition } from '../core/types.js';
 import { CAMPAIGN_TIME_SEC } from './campaign-time.js';
 
-export const RUN_TARGET_COUNT = 10;
+export const RUN_TARGET_COUNT = 20;
 export const VARIANTS_PER_DIFFICULTY = 10;
 
 export interface RunState {

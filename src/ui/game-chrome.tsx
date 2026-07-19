@@ -14,11 +14,9 @@ function displayLevelTitle(name: string): string {
 
 interface GameChromeTopProps {
   phase: GamePhase;
-  musicMuted: boolean;
-  onToggleMusic: () => void;
 }
 
-export function GameChromeTop({ phase, musicMuted, onToggleMusic }: GameChromeTopProps): JSX.Element {
+export function GameChromeTop({ phase }: GameChromeTopProps): JSX.Element {
   const snap = useHudStore((s) => s.snapshot);
   if (!snap.ready || phase === 'menu') return <></>;
 
@@ -28,17 +26,8 @@ export function GameChromeTop({ phase, musicMuted, onToggleMusic }: GameChromeTo
 
   return (
     <header className="game-chrome-top shrink-0 px-2 pt-2 safe-top">
-      <div className="panel relative flex items-stretch justify-between gap-1 px-2 py-2 text-xs">
-        <button
-          type="button"
-          className="btn-secondary absolute right-1 top-1 min-h-8 min-w-8 px-0 text-sm leading-none"
-          aria-label={musicMuted ? 'Włącz muzykę oblężniczą' : 'Wycisz muzykę'}
-          title={musicMuted ? 'Muzyka wyłączona' : 'Muzyka oblężnicza'}
-          onClick={onToggleMusic}
-        >
-          {musicMuted ? '🔇' : '♫'}
-        </button>
-        <div className="min-w-0 flex-1 pr-9">
+      <div className="panel game-chrome-stats relative grid items-center gap-x-1 px-2 py-2 text-xs">
+        <div className="game-chrome-stats__title min-w-0 overflow-hidden">
           <div className="truncate font-semibold text-amber-200">
             {displayLevelTitle(snap.levelName)}
           </div>
@@ -46,23 +35,23 @@ export function GameChromeTop({ phase, musicMuted, onToggleMusic }: GameChromeTo
             {snap.runTargetIndex}/{snap.runTargetCount}
           </div>
         </div>
-        <div className="text-center px-1 sm:px-2">
+        <div className="game-chrome-stats__cell text-center">
           <div className="text-white/55">Punkty</div>
-          <div className="text-lg font-bold text-amber-300">{snap.runScore}</div>
+          <div className="text-lg font-bold tabular-nums text-amber-300">{snap.runScore}</div>
         </div>
-        <div className="text-center px-1 sm:px-2">
+        <div className="game-chrome-stats__cell text-center">
           <div className="text-white/55">Czas</div>
           <div
             className={`text-lg font-bold tabular-nums ${
-              urgent ? 'text-red-400 animate-pulse' : warn ? 'text-yellow-300' : 'text-emerald-300'
+              urgent ? 'text-red-400' : warn ? 'text-yellow-300' : 'text-emerald-300'
             }`}
           >
             {formatCampaignClock(snap.timeLeftSec)}
           </div>
         </div>
-        <div className="text-center px-1 sm:px-2">
+        <div className="game-chrome-stats__cell text-center">
           <div className="text-white/55">Strzały</div>
-          <div className="text-lg font-bold text-amber-300">
+          <div className="text-lg font-bold text-amber-300 tabular-nums">
             {snap.ammoLeft}/{snap.ammoTotal}
           </div>
         </div>
@@ -71,22 +60,55 @@ export function GameChromeTop({ phase, musicMuted, onToggleMusic }: GameChromeTo
         className={`game-chrome-keystone mt-1 flex min-h-[1.125rem] items-center gap-2 px-1 ${ended ? 'invisible' : ''}`}
         aria-hidden={ended}
       >
-        <span className="text-[10px] text-white/45">
-          {snap.keystoneTotal > 1 ? 'Tarcze:' : 'Tarcza:'}
+        <span
+          id="stability-label"
+          className="game-chrome-keystone__label shrink-0 text-[10px] text-white/45"
+        >
+          Stabilność:
         </span>
-        <div className="h-2 flex-1 overflow-hidden rounded-full bg-black/40 border border-amber-900/50">
+        <div
+          className="h-2 min-w-0 flex-1 overflow-hidden rounded-full bg-black/40 border border-amber-900/50"
+          role="progressbar"
+          aria-labelledby="stability-label"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={Math.max(0, Math.min(100, snap.stabilityPct ?? 100))}
+          aria-valuetext={`${Math.max(0, Math.min(100, snap.stabilityPct ?? 100))} procent, tarcze ${Math.max(0, snap.keystoneTotal - snap.keystoneCleared)} z ${snap.keystoneTotal}`}
+        >
           <div
             className="h-full bg-gradient-to-r from-amber-700 to-yellow-400 transition-all duration-200"
             style={{
-              width: `${snap.keystoneHpMax > 0 ? (snap.keystoneHp / snap.keystoneHpMax) * 100 : 0}%`,
+              width: `${Math.max(0, Math.min(100, snap.stabilityPct ?? 100))}%`,
             }}
           />
         </div>
-        <span className="min-w-[2.25rem] text-right text-[10px] text-amber-300 tabular-nums">
-          {snap.keystoneTotal > 1
-            ? `${snap.keystoneCleared}/${snap.keystoneTotal}`
-            : snap.keystoneHp}
-        </span>
+        <div
+          className="flex shrink-0 items-center gap-0.5 text-[11px] font-semibold tabular-nums text-amber-300"
+          title="Tarcze na celu"
+        >
+          <svg
+            className="game-chrome-shield-icon"
+            viewBox="0 0 24 28"
+            width={14}
+            height={16}
+            aria-hidden
+          >
+            <path
+              fill="#c4a878"
+              stroke="#6a5538"
+              strokeWidth="1.2"
+              d="M12 1.5 L21 5.2 V13.5 C21 20 16.5 24.5 12 26.5 C7.5 24.5 3 20 3 13.5 V5.2 Z"
+            />
+            <path
+              fill="none"
+              stroke="#8b6914"
+              strokeWidth="1.4"
+              strokeLinecap="round"
+              d="M12 8 V18 M8.5 13 H15.5"
+            />
+          </svg>
+          <span>{Math.max(0, snap.keystoneTotal - snap.keystoneCleared)}</span>
+        </div>
       </div>
     </header>
   );
@@ -131,7 +153,8 @@ export function GameChromeBottom({
 
   const totalPowerups = powerupTotal(profile.powerups);
   const showPowerupHint = totalPowerups <= 0 && phase !== 'menu';
-  const showBonusShot = phase === 'lost' && snap.runEnded && !profile.adsRemoved;
+  // +1 strzał / adsRemoved — stub; po finishRun runEnding blokuje dalszą grę.
+  const showBonusShot = false;
   const showRetry = phase !== 'menu' && phase !== 'loading';
   const showNext = false;
 
@@ -177,7 +200,7 @@ export function GameChromeBottom({
         }`}
         aria-hidden={!showPowerupHint}
       >
-        Brak power-upów — wygraj z 2★ lub kup w menu
+        Brak power-upów — zniszcz 2+ cele w runie lub kup w menu
       </p>
 
       <div className="mt-2 flex min-h-11 flex-wrap content-center items-center justify-center gap-2">

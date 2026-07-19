@@ -7,6 +7,7 @@ export const POWERUP_COST: Record<PowerupType, number> = {
   explosive: 100,
   trajectory: 60,
   breach: 120,
+  spy: 100,
 };
 export const NO_ADS_COST = 500;
 
@@ -16,7 +17,13 @@ export interface EconomyState {
   adsRemoved: boolean;
 }
 
-export const POWERUP_TYPES: PowerupType[] = ['heavy', 'explosive', 'trajectory', 'breach'];
+export const POWERUP_TYPES: PowerupType[] = [
+  'heavy',
+  'explosive',
+  'trajectory',
+  'breach',
+  'spy',
+];
 
 /** Zapas startowy — każdy gracz dostaje po jednym z każdego typu. */
 export const STARTER_POWERUPS: Record<PowerupType, number> = {
@@ -24,6 +31,7 @@ export const STARTER_POWERUPS: Record<PowerupType, number> = {
   explosive: 1,
   trajectory: 1,
   breach: 1,
+  spy: 1,
 };
 
 /** Gdy zapis ma pusty ekwipunek — jednorazowy refill. */
@@ -32,6 +40,7 @@ export const EMPTY_INVENTORY_REFILL: Record<PowerupType, number> = {
   explosive: 0,
   trajectory: 1,
   breach: 1,
+  spy: 1,
 };
 
 export function defaultEconomy(): EconomyState {
@@ -65,8 +74,10 @@ export function powerupRewardsForWin(stars: number): PowerupType[] {
 
 function pickPowerupReward(stars: number): PowerupType {
   const roll = Math.random();
-  if (stars >= 3 && roll < 0.22) return 'breach';
-  if (stars >= 3 && roll < 0.38) return 'explosive';
-  if (roll < 0.58) return 'trajectory';
+  if (stars >= 3 && roll < 0.18) return 'breach';
+  if (stars >= 3 && roll < 0.32) return 'explosive';
+  if (stars >= 3 && roll < 0.42) return 'spy';
+  if (roll < 0.52) return 'trajectory';
+  if (roll < 0.64) return 'spy';
   return 'heavy';
 }

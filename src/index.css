@@ -263,6 +263,34 @@ body,
   backdrop-filter: blur(8px);
 }
 
+/* Stałe kolumny — punkty/czas/strzały nie skaczą przy zmianie cyfr / nazwy poziomu */
+.game-chrome-stats {
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(3.75rem, 4.75rem)
+    minmax(3.5rem, 4.5rem)
+    minmax(3.5rem, 4.5rem);
+}
+
+.game-chrome-stats__cell {
+  min-width: 0;
+}
+
+.game-chrome-stats__cell .text-lg {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+
+.game-chrome-keystone__label {
+  width: 4.5rem;
+}
+
+.game-chrome-shield-icon {
+  width: 1rem;
+  height: 1.125rem;
+  display: block;
+}
+
 .btn-primary {
   background: linear-gradient(180deg, #d4a017 0%, #a67c00 100%);
   border: 1px solid #ffd666;
@@ -354,6 +382,14 @@ body,
     gap: 2px;
   }
 
+  .game-chrome-stats {
+    grid-template-columns:
+      minmax(0, 1fr)
+      minmax(3.25rem, 4rem)
+      minmax(3rem, 3.75rem)
+      minmax(3.25rem, 4rem);
+  }
+
   .game-chrome-top .panel .text-lg {
     font-size: 1rem;
     line-height: 1.2;
@@ -371,5 +407,31 @@ body,
 
   .castle-frame {
     padding: 12px 14px 14px;
+  }
+}
+
+/* Landscape / niski viewport: zwarty dolny chrome, więcej miejsca na stage. */
+@media (orientation: landscape) and (max-height: 520px) {
+  .game-chrome-bottom {
+    padding-top: 2px;
+    padding-bottom: max(4px, env(safe-area-inset-bottom));
+  }
+
+  .game-chrome-bottom .btn-secondary.flex {
+    min-width: 3.25rem;
+    min-height: 2.5rem;
+    padding: 4px 6px;
+  }
+
+  .game-chrome-bottom .btn-secondary.flex .text-base {
+    font-size: 0.85rem;
+  }
+
+  .game-chrome-top .panel {
+    padding: 4px 6px;
+  }
+
+  .castle-frame {
+    padding: 8px 10px 10px;
   }
 }

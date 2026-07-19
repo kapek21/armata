@@ -80,7 +80,11 @@ export function loadProfile(): Profile {
     if (!raw) return defaultProfile();
     const parsed = JSON.parse(raw) as Partial<Profile>;
     const levels = parsed.levels ?? {};
-    const playedBefore = Object.keys(levels).length > 0;
+    // Run nie zapisuje `levels` — „grał wcześniej” = runy / best score / kampania.
+    const playedBefore =
+      Object.keys(levels).length > 0 ||
+      (typeof parsed.runsPlayed === 'number' && parsed.runsPlayed > 0) ||
+      (typeof parsed.bestRunScore === 'number' && parsed.bestRunScore > 0);
     const eco = defaultEconomy();
     const powerups = normalizePowerups(parsed.powerups, playedBefore);
     const profile: Profile = {

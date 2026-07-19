@@ -70,7 +70,7 @@ function App(): JSX.Element {
     <div
       className={`game-shell relative h-full w-full overflow-hidden${hosted ? ' game-shell--hosted' : ''}`}
     >
-      <GameChromeTop phase={phase} musicMuted={musicMuted} onToggleMusic={toggleMusic} />
+      <GameChromeTop phase={phase} />
       <CastleFrame viewportRef={viewportRef} />
       <GameChromeBottom
         phase={phase}

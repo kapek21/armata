@@ -29,6 +29,7 @@ const initial: HudSnapshot = {
   keystoneHpMax: 100,
   keystoneTotal: 1,
   keystoneCleared: 0,
+  stabilityPct: 100,
   starsEarned: 0,
   finalScore: 0,
   message: '',
@@ -41,20 +42,25 @@ interface HudStore {
   snapshot: HudSnapshot;
   profile: ReturnType<typeof loadProfile>;
   helpOpen: boolean;
+  /** Plansza instrukcji przed startem (pauzuje czas). */
+  briefingOpen: boolean;
   setSnapshot: (patch: Partial<HudSnapshot>) => void;
   setProfile: (profile: ReturnType<typeof loadProfile>) => void;
   reloadProfile: () => void;
   setHelpOpen: (open: boolean) => void;
+  setBriefingOpen: (open: boolean) => void;
 }
 
 export const useHudStore = create<HudStore>((set) => ({
   snapshot: initial,
   profile: loadProfile(),
   helpOpen: false,
+  briefingOpen: false,
   setSnapshot: (patch) => set((s) => ({ snapshot: { ...s.snapshot, ...patch } })),
   setProfile: (profile) => set({ profile }),
   reloadProfile: () => set({ profile: loadProfile() }),
   setHelpOpen: (open) => set({ helpOpen: open }),
+  setBriefingOpen: (open) => set({ briefingOpen: open }),
 }));
 
 export function phaseLabel(phase: GamePhase): string {

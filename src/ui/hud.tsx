@@ -2,10 +2,11 @@ import { useHudStore } from './hud-store.js';
 import { POWERUP_DEFS } from '../game/powerups.js';
 import { POWERUP_COST } from '../meta/economy.js';
 import { buyPowerup, saveProfile } from '../meta/profile.js';
-import { getWeeklyLeaderboard } from '../meta/leaderboard.js';
+import { currentWeekId, getWeeklyLeaderboard } from '../meta/leaderboard.js';
 import { RUN_TARGET_COUNT } from '../meta/run-state.js';
 import type { GamePhase, PowerupType } from '../core/types.js';
-import { HelpDialog } from './help-dialog.js';
+import { HelpDialog, HowToPlayBoard } from './how-to-play.js';
+import { useOverlayFocus } from './use-overlay-focus.js';
 
 interface HudProps {
   phase: GamePhase;
@@ -28,6 +29,8 @@ export function Hud({
   const snap = useHudStore((s) => s.snapshot);
   const profile = useHudStore((s) => s.profile);
   const setProfile = useHudStore((s) => s.setProfile);
+  const briefingOpen = useHudStore((s) => s.briefingOpen);
+  const setBriefingOpen = useHudStore((s) => s.setBriefingOpen);
 
   const buyPowerupItem = (type: PowerupType): void => {
     const next = buyPowerup(profile, type);
@@ -37,7 +40,11 @@ export function Hud({
   };
 
   const helpOverlay = helpOpen ? <HelpDialog onClose={onCloseHelp} /> : null;
+  const briefingOverlay = briefingOpen ? (
+    <HowToPlayBoard onStart={() => setBriefingOpen(false)} />
+  ) : null;
   const weekly = getWeeklyLeaderboard(profile.bestRunScore ?? snap.runScore);
+  const menuPanelRef = useOverlayFocus(phase === 'menu' && !helpOpen && !briefingOpen, onCloseMenu);
 
   if (phase === 'menu') {
     return (
@@ -48,6 +55,7 @@ export function Hud({
           role="presentation"
         >
           <div
+            ref={menuPanelRef}
             className="panel relative flex max-h-[90vh] w-full max-w-sm flex-col p-4"
             onClick={(e) => e.stopPropagation()}
             role="dialog"
@@ -78,7 +86,12 @@ export function Hud({
             <button
               type="button"
               className="btn-primary mt-4 w-full min-h-12"
-              onClick={() => onStartLevel(0)}
+              data-overlay-primary
+              onClick={() => {
+                onStartLevel(0);
+                onCloseMenu();
+                setBriefingOpen(true);
+              }}
             >
               Nowa rozgrywka (3:00)
             </button>
@@ -114,10 +127,12 @@ export function Hud({
             </div>
 
             <details className="mt-3 text-xs text-white/60">
-              <summary className="cursor-pointer text-amber-200/90">Ranking tygodnia</summary>
+              <summary className="cursor-pointer text-amber-200/90">
+                Ranking tygodnia ({currentWeekId()})
+              </summary>
               <ol className="mt-1 space-y-0.5">
                 {weekly.slice(0, 5).map((e) => (
-                  <li key={e.rank}>
+                  <li key={`${e.rank}-${e.name}`}>
                     {e.rank}. {e.name} — {e.score}
                   </li>
                 ))}
@@ -137,12 +152,14 @@ export function Hud({
           </div>
         </div>
         {helpOverlay}
+        {briefingOverlay}
       </>
     );
   }
 
   return (
     <>
+      {briefingOverlay}
       {snap.message && (phase === 'simulating' || phase === 'won') && (
         <div className="pointer-events-none absolute inset-x-0 top-[18%] z-10 flex justify-center">
           <span className="panel px-4 py-2 text-sm text-amber-200">{snap.message}</span>

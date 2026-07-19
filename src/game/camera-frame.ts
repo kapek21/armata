@@ -211,17 +211,11 @@ function pickFromRaycast(
   const hits = _raycaster.intersectObjects(meshes, true);
   if (hits.length === 0) return null;
 
-  let best = hits[0];
-  let bestScreen = Infinity;
-  for (const hit of hits) {
-    const root = moduleRootFromObject(hit.object);
-    const d = screenDistToMesh(root, camera, clientX, clientY, rect);
-    if (d < bestScreen) {
-      bestScreen = d;
-      best = { ...hit, object: root };
-    }
-  }
-  return { point: meshAimPoint(best.object), mesh: best.object };
+  // Pierwszy hit wzdłuż promienia = dokładny punkt na powierzchni (narożnik, krawędź).
+  // Nie zamieniamy go na środek AABB klocka — przy dużych belkach to psuło celowanie.
+  const hit = hits[0];
+  const root = moduleRootFromObject(hit.object);
+  return { point: hit.point.clone(), mesh: root };
 }
 
 /** Kolumna pod dotykiem — trafienia w strefie armaty (lewo/prawo, nisko). */

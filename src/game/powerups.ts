@@ -32,6 +32,12 @@ export const POWERUP_DEFS: PowerupDef[] = [
     icon: '🔨',
     description: 'Niszczy statyczne mury i wieże — odsłania ukryty klucz.',
   },
+  {
+    id: 'spy',
+    label: 'Szpieg',
+    icon: '🕵️',
+    description: 'Rentgen: pokazuje tarcze nawet gdy są zasłonięte.',
+  },
 ];
 
 export const IMPULSE_HEAVY_MULT = 1.6;

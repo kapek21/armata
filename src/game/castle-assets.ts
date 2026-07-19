@@ -1,6 +1,9 @@
 import * as THREE from 'three';
 import type { QualityTier } from '../core/types.js';
 
+/** Kolor wizualnej platformy / podłoża pod celem. */
+export const PLATFORM_GROUND_COLOR = 0x4a5c32;
+
 function makeStoneTexture(size = 128): THREE.CanvasTexture {
   const canvas = document.createElement('canvas');
   canvas.width = size;
@@ -280,10 +283,11 @@ export function createCastleMaterials(tier: QualityTier): CastleMaterials {
       roughness: 0.92,
       metalness: 0.03,
     }),
-    wood: new THREE.MeshStandardMaterial({
+  // Canvas fallback też w stronę pomarańczowego drewna.
+  wood: new THREE.MeshStandardMaterial({
       map: woodTex,
-      color: 0x9a7030,
-      roughness: 0.78,
+      color: 0xffc070,
+      roughness: 0.68,
       metalness: 0.02,
     }),
     metal: new THREE.MeshStandardMaterial({
@@ -302,7 +306,7 @@ export function createCastleMaterials(tier: QualityTier): CastleMaterials {
     }),
     ground: new THREE.MeshStandardMaterial({
       map: groundTex,
-      color: 0x6a7a5a,
+      color: PLATFORM_GROUND_COLOR,
       roughness: 0.96,
       metalness: 0,
     }),
@@ -372,6 +376,18 @@ export async function applySiegeAlbedoMaps(mats: CastleMaterials): Promise<void>
   if (shield) {
     swap(mats.keystoneShield, shield);
   }
+
+  // Jaśniejsze, bardziej pomarańczowe drewno — bez mahoniowego brązu.
+  mats.wood.color.setHex(0xffc878);
+  mats.wood.roughness = 0.62;
+  mats.metal.color.setHex(0xd8e2ec);
+  mats.metal.metalness = 0.72;
+  mats.metal.roughness = 0.3;
+  mats.stone.color.setHex(0xe8dcc8);
+  mats.stone.roughness = 0.84;
+  mats.ground.color.setHex(PLATFORM_GROUND_COLOR);
+  mats.keystoneGold.color.setHex(0xf0c070);
+  mats.keystoneGold.emissiveIntensity = 0.2;
 }
 
 export function setupCastleScene(
@@ -381,7 +397,7 @@ export function setupCastleScene(
   scene.background = new THREE.Color(0x7eb8d8);
   scene.fog = new THREE.Fog(0x9ec4e8, 28, 55);
 
-  const hemi = new THREE.HemisphereLight(0xddeeff, 0x445533, 1.15);
+  const hemi = new THREE.HemisphereLight(0xddeeff, 0x3a4428, 1.15);
   scene.add(hemi);
 
   const sun = new THREE.DirectionalLight(0xfff5e6, 1.25);
@@ -396,7 +412,7 @@ export function setupCastleScene(
 
   const ground = new THREE.Mesh(
     new THREE.PlaneGeometry(80, 80),
-    new THREE.MeshStandardMaterial({ color: 0x5a7a48, roughness: 1 }),
+    new THREE.MeshStandardMaterial({ color: PLATFORM_GROUND_COLOR, roughness: 1 }),
   );
   ground.rotation.x = -Math.PI / 2;
   ground.position.y = -0.5;
@@ -405,7 +421,7 @@ export function setupCastleScene(
 
   const hills = new THREE.Mesh(
     new THREE.PlaneGeometry(120, 40),
-    new THREE.MeshStandardMaterial({ color: 0x6a8a5a, roughness: 1 }),
+    new THREE.MeshStandardMaterial({ color: 0x556838, roughness: 1 }),
   );
   hills.position.set(0, 8, -35);
   scene.add(hills);

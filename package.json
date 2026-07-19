@@ -11,7 +11,8 @@
     "generate-levels": "node scripts/generate-levels.mjs",
     "generate:run": "node scripts/generate-run-targets.mjs",
     "import:siege": "node scripts/import-siege-assets.mjs",
-    "validate:siege": "node scripts/validate-siege-assets.mjs"
+    "validate:siege": "node scripts/validate-siege-assets.mjs",
+    "audit:physics": "node scripts/audit-physics.mjs"
   },
   "dependencies": {
     "@dimforge/rapier3d-compat": "^0.14.0",

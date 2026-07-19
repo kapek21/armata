@@ -16,7 +16,12 @@ export type ModuleShape = 'box' | 'wedge';
 
 export type ModuleImportance = 'critical' | 'structural' | 'decorative';
 
-export type PowerupType = 'heavy' | 'explosive' | 'trajectory' | 'breach';
+export type PowerupType =
+  | 'heavy'
+  | 'explosive'
+  | 'trajectory'
+  | 'breach'
+  | 'spy';
 
 export interface Vec3 {
   x: number;
@@ -126,7 +131,7 @@ export interface HudSnapshot {
   runTargetCount: number;
   runDifficulty: number;
   runVariant: number;
-  /** Cały run ukończony (10/10) */
+  /** Cały run ukończony (np. 20/20) */
   runComplete: boolean;
   /** Run zakończony — pokaż ekran podsumowania */
   runEnded: boolean;
@@ -139,6 +144,8 @@ export interface HudSnapshot {
   keystoneHpMax: number;
   keystoneTotal: number;
   keystoneCleared: number;
+  /** 0–100: integralność celu (klocki + tarcze). */
+  stabilityPct: number;
   starsEarned: number;
   finalScore: number;
   message: string;

@@ -1,6 +1,8 @@
 import type { RunTargetDefinition } from '../../core/types.js';
 import { normalizeLevel } from '../normalize.js';
-import { RUN_TARGET_COUNT, VARIANTS_PER_DIFFICULTY } from '../../meta/run-state.js';
+import { VARIANTS_PER_DIFFICULTY } from '../../meta/run-state.js';
+
+const SIEGE_TIER_MAX = 30;
 
 const modules = import.meta.glob('./data/t*-v*.json', {
   eager: true,
@@ -22,16 +24,14 @@ export function allSiegeTargets(): RunTargetDefinition[] {
   return TARGETS;
 }
 
-/** Cel runu: trudność 1–10 mapuje się na siege tier 1–10. */
-export function siegeRunTarget(difficulty: number, variant: number): RunTargetDefinition {
-  const d = Math.max(1, Math.min(RUN_TARGET_COUNT, difficulty));
-  const v = Math.max(1, Math.min(VARIANTS_PER_DIFFICULTY, variant));
-  return byKey.get(`${d}-${v}`) ?? TARGETS[0];
+/** Cel runu po tierze maszyny (1–30) × wariant (1–10). */
+export function siegeRunTarget(tier: number, variant: number): RunTargetDefinition {
+  return siegeTarget(tier, variant);
 }
 
-/** Pełna pula 1–30 (rozszerzenie poza bieżący run). */
+/** Pełna pula 1–30. */
 export function siegeTarget(tier: number, variant: number): RunTargetDefinition {
-  const t = Math.max(1, Math.min(30, tier));
+  const t = Math.max(1, Math.min(SIEGE_TIER_MAX, tier));
   const v = Math.max(1, Math.min(VARIANTS_PER_DIFFICULTY, variant));
   return byKey.get(`${t}-${v}`) ?? TARGETS[0];
 }
@@ -40,4 +40,4 @@ export function siegeTargetCount(): number {
   return TARGETS.length;
 }
 
-export { RUN_TARGET_COUNT, VARIANTS_PER_DIFFICULTY };
+export { VARIANTS_PER_DIFFICULTY, SIEGE_TIER_MAX };
