@@ -169,7 +169,7 @@ export function GameChromeBottom({
         </span>
       </p>
 
-      <div className="flex flex-wrap items-center justify-center gap-2">
+      <div className="game-chrome-powerups flex flex-nowrap items-stretch justify-center gap-1.5 sm:gap-2">
         {POWERUP_DEFS.map((p) => {
           const count = profile.powerups[p.id] ?? 0;
           const active = snap.activePowerup === p.id;
@@ -178,7 +178,7 @@ export function GameChromeBottom({
               key={p.id}
               type="button"
               disabled={phase !== 'aiming' && phase !== 'simulating' || count <= 0}
-              className={`btn-secondary flex min-h-11 min-w-[4.5rem] flex-col items-center justify-center px-2 py-1 text-xs ${
+              className={`btn-secondary game-chrome-powerups__btn flex min-h-11 min-w-0 flex-1 flex-col items-center justify-center px-1 py-1 text-xs sm:min-w-[4.5rem] sm:flex-none sm:px-2 ${
                 active ? 'ring-2 ring-amber-400' : ''
               } ${count <= 0 ? 'opacity-40' : ''}`}
               onClick={() => onSelectPowerup(p.id)}

@@ -243,6 +243,17 @@ body,
   position: relative;
 }
 
+/* Power-upy: zawsze jeden wiersz; na wąskim ekranie równy podział szerokości. */
+.game-chrome-powerups {
+  width: 100%;
+  max-width: 28rem;
+  margin-inline: auto;
+}
+
+.game-chrome-powerups__btn {
+  max-width: 5.5rem;
+}
+
 /* Studio / launcher: ← i Admin nakładają się na górę iframe — zsuń HUD poniżej */
 .game-shell--hosted .game-chrome-top {
   padding-top: max(3.25rem, calc(env(safe-area-inset-top, 0px) + 2.75rem));
@@ -410,6 +421,24 @@ body,
   }
 }
 
+@media (max-width: 640px) {
+  .game-chrome-powerups {
+    gap: 0.35rem;
+    max-width: none;
+  }
+
+  .game-chrome-powerups__btn {
+    min-height: 2.75rem;
+    max-width: none;
+    padding-left: 0.2rem;
+    padding-right: 0.2rem;
+  }
+
+  .game-chrome-powerups__btn .text-base {
+    font-size: 0.95rem;
+  }
+}
+
 /* Landscape / niski viewport: zwarty dolny chrome, więcej miejsca na stage. */
 @media (orientation: landscape) and (max-height: 520px) {
   .game-chrome-bottom {
@@ -417,13 +446,12 @@ body,
     padding-bottom: max(4px, env(safe-area-inset-bottom));
   }
 
-  .game-chrome-bottom .btn-secondary.flex {
-    min-width: 3.25rem;
+  .game-chrome-powerups__btn {
     min-height: 2.5rem;
-    padding: 4px 6px;
+    padding: 4px 2px;
   }
 
-  .game-chrome-bottom .btn-secondary.flex .text-base {
+  .game-chrome-powerups__btn .text-base {
     font-size: 0.85rem;
   }
 
